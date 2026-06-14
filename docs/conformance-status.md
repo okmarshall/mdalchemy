@@ -55,6 +55,9 @@ Document/rendering coverage:
 - Lightweight syntax highlighting for JS/TS, C#, JSON, HTML/XML, CSS, shell, and Markdown code fences.
 - Built-in theme CSS.
 - User theme loading through config or CLI theme path.
+- Theme token validation for unknown tokens, unsafe CSS fragments, color-like tokens, length-like tokens, and font stack emptiness.
+- Config validation for unknown keys, section shapes, field types, supported Markdown extensions, raw HTML policy, TOC depth, and profile/format support.
+- CLI strict mode, which treats warnings as errors.
 
 ## Known Gaps
 
@@ -84,7 +87,8 @@ The test suite includes:
 
 - Parser unit coverage.
 - Renderer behavior coverage.
-- CLI integration coverage.
+- Config loader validation coverage.
+- CLI integration coverage, including stdout fragments, safe mode, strict mode, invalid config, and usage errors.
 - A complex fixture test that verifies `examples/complex-spec.md` renders exactly to `examples/complex-spec.html`.
 
 ## Next Conformance Work

@@ -226,6 +226,65 @@ If whitespace-only diffs become noisy, prefer improving renderer formatting or
 the fixture comparison helper over weakening the fixture. HTML snapshots should
 remain useful to read in code review.
 
+## 7. Browser Layout Verification
+
+Run browser checks for visual or layout-sensitive changes, especially changes to
+themes, page width, code blocks, tables, images, the table of contents, or mobile
+CSS.
+
+Use the checked example artifact:
+
+```sh
+npm run render:example
+python3 -m http.server 4173
+```
+
+Open:
+
+```text
+http://localhost:4173/examples/complex-spec.html
+```
+
+Minimum desktop checks:
+
+- The document surface is centered and does not create page-level horizontal
+  overflow.
+- Code blocks remain readable and scroll internally when needed.
+- Wide tables stay inside `.mda-table-scroll` and scroll horizontally inside the
+  table region rather than widening the page.
+- The table of contents, heading anchors, images, blockquotes, lists, and inline
+  code remain visually coherent.
+
+Minimum narrow viewport checks, using a width around `390px`:
+
+- The document fills the viewport without horizontal page overflow.
+- Tables and code blocks scroll internally where needed.
+- Text does not overlap controls, headings, images, or table content.
+- Padding remains comfortable enough for touch reading.
+
+Record the checked viewport sizes and any notable measurements in the change
+summary when layout changes are intentional.
+
+## 8. Accessibility Checklist
+
+Run this checklist whenever renderer structure or theme CSS changes:
+
+- Standalone documents keep one main content region inside `.mda-document`.
+- Generated table of contents uses `aria-label="Table of contents"`.
+- Wide Markdown tables are wrapped in a focusable region with
+  `role="region"` and `aria-label="Scrollable table"`.
+- Images preserve Markdown alt text in the rendered `alt` attribute.
+- Heading anchors do not replace the readable heading text.
+- Link text remains visible and distinguishable from normal prose.
+- Keyboard focus styles remain visible on interactive or focusable generated
+  elements.
+- Color changes preserve readable contrast for body text, links, inline code,
+  code blocks, and table headers.
+
+The current automated tests cover the generated TOC label, image alt text, and
+scrollable table region. Contrast and keyboard review remain manual checks when
+theme colors or focus styles change.
+
 ## Suggested CI Shape
 
 A minimal CI job should run:

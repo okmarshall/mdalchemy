@@ -141,16 +141,9 @@ Config should be discovered from:
 1. Explicit `--config <path>`.
 2. `mdalchemy.config.json` in the current working directory.
 3. `.mdalchemyrc.json` in the current working directory.
-4. Walk parent directories until filesystem root or project boundary.
-5. No config file, use defaults.
+4. No config file, use defaults.
 
-For v1, keep this simpler if needed:
-
-- Explicit `--config`.
-- Current directory `mdalchemy.config.json`.
-- Defaults.
-
-Avoid surprising global config in v1.
+mdalchemy does not currently walk parent directories or read global config. This keeps early CLI behavior local and predictable.
 
 ## Config Precedence
 
@@ -380,19 +373,19 @@ Watch mode should not be required for the core architecture.
 
 ## Config Validation
 
-Validation should produce all useful errors at once where possible.
+Validation produces all useful errors at once where possible. The loader validates section shapes and field types before resolving defaults, so malformed config cannot crash downstream validation.
 
 Example:
 
 ```text
-error MDA_CONFIG_INVALID at mdalchemy.config.json
-  html.rawHtml must be one of "allow", "escape", or "strip".
+error MDA_CONFIG_INVALID_TYPE at mdalchemy.config.json
+  Config key "html.tocDepth" must be a number.
 
-error MDA_CONFIG_INVALID at mdalchemy.config.json
+error MDA_CONFIG_INVALID_TOC_DEPTH at mdalchemy.config.json
   html.tocDepth must be an integer from 1 to 6.
 ```
 
-Do not silently ignore unknown config keys in strict mode. In normal mode, unknown top-level keys should warn.
+Unknown config keys produce `MDA_CONFIG_UNKNOWN_KEY` warnings for top-level keys and supported nested config sections. In normal mode, warnings are printed and rendering continues. In `--strict` mode, warnings are treated as errors and the CLI exits with code `6`.
 
 ## Theme Validation
 
@@ -400,12 +393,11 @@ Theme config errors:
 
 - Missing name.
 - Unknown parent theme.
-- Extends cycle.
 - Unknown token.
 - Invalid color value.
 - Invalid length value.
 - Invalid font stack value.
-- Unsupported asset reference.
+- Unsafe CSS fragments such as `url()` and semicolons.
 
 Themes are user-facing. Error messages should say which token is wrong and what shape is expected.
 

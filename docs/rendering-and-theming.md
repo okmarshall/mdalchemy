@@ -433,28 +433,21 @@ Example:
 Validation:
 
 - `name` must be present for theme files.
-- `extends` must resolve to a built-in or loaded theme.
-- Unknown tokens should warn or error depending on strict mode.
-- Token values should be validated by type category.
-- Dangerous CSS constructs should be rejected where possible.
+- `extends` currently resolves built-in theme names only.
+- Unknown tokens produce `MDA_THEME_UNKNOWN_TOKEN` warnings. In CLI strict mode, warnings become errors.
+- Token values are validated by category: colors/syntax colors, length-like spacing/layout/font-size tokens, line-height values, and font stacks.
+- Dangerous CSS fragments such as semicolons, braces, `url()`, and `expression()` are rejected.
 
 ## Theme Resolution
 
 Resolution order:
 
 1. Built-in theme base.
-2. Extended parent themes.
+2. Extended built-in parent theme, if a user theme declares `extends`.
 3. User theme tokens.
 4. CLI overrides, if later supported.
 
-Cycle detection is required:
-
-```text
-A extends B
-B extends A
-```
-
-This should produce `MDA_THEME_EXTENDS_CYCLE`.
+Custom theme files do not currently form a registry, so custom-to-custom inheritance is intentionally not implemented. If a theme extends an unknown parent, mdalchemy reports `MDA_THEME_UNKNOWN_PARENT` and falls back to base tokens for the unresolved parent.
 
 ## Theme File Discovery
 

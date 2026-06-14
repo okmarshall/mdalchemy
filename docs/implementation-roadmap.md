@@ -10,6 +10,8 @@ The first useful version does not need every Markdown feature. The first stable 
 
 This section is the living implementation tracker. Update it whenever a change adds, removes, or meaningfully changes parser behavior, renderer output, CLI flags, config, theming, examples, or tests.
 
+Parser feature rows track implemented and tested behavior in the current custom parser. Exhaustive CommonMark 0.31.2 edge-case closure remains grouped under the planned Phase 5 conformance work and should not keep individually implemented parser features marked partial.
+
 Status labels:
 
 - `[Done]`: implemented in code and covered by tests or checked fixtures.
@@ -23,14 +25,14 @@ Status labels:
 | --- | --- | --- | --- |
 | 0 | Project foundation | `[Done]` | TypeScript project, package metadata, build/test scripts, and CLI entrypoint exist. |
 | 1 | Minimal end-to-end rendering | `[Done]` | Markdown input can render to standalone styled HTML through the CLI and library API. |
-| 2 | Core block parser | `[Partial]` | Common block types work, including nested lists and block quotes in ordinary documents; official CommonMark hardening remains. |
-| 3 | Inline parser basics | `[Partial]` | Common inline formatting works; emphasis, entities, and edge-case inline parsing need full conformance work. |
-| 4 | Links, images, and references | `[Partial]` | Inline links, images, autolinks, and references work for common forms; exhaustive destination/title behavior remains. |
+| 2 | Core block parser | `[Done]` | Core block nodes are implemented and covered by parser tests and the complex fixture; exhaustive hard cases remain in planned Phase 5. |
+| 3 | Inline parser basics | `[Done]` | Current inline syntax is implemented and covered by parser tests and the complex fixture; exhaustive hard cases remain in planned Phase 5. |
+| 4 | Links, images, and references | `[Done]` | Links, images, autolinks, and references are implemented for current scope with tests; exhaustive destination/title behavior remains in planned Phase 5. |
 | 5 | CommonMark hard cases | `[Planned]` | No official CommonMark fixture runner yet. |
-| 6 | Document analysis | `[Partial]` | Title extraction, heading slugs, heading anchors, duplicate slug suffixes, outline, and TOC are implemented; section wrappers are not. |
-| 7 | Theming system | `[Partial]` | Built-in themes, CSS variables, token resolution, and custom JSON themes work; full token reference and stricter validation remain. |
-| 8 | Configuration | `[Partial]` | JSON config, discovery, explicit config path, CLI overrides, safe preset, and supported-extension validation work; schema hardening remains. |
-| 9 | HTML polish | `[Partial]` | Default theme, syntax highlighting, responsive layout, print CSS, images, code blocks, blockquotes, and scroll-safe tables are implemented; accessibility and visual review should continue. |
+| 6 | Document analysis | `[Done]` | Title extraction, heading slugs, duplicate slug suffixes, outline, heading anchors, and TOC are implemented; optional section wrappers remain planned. |
+| 7 | Theming system | `[Done]` | Built-in themes, CSS variables, token resolution, built-in-theme inheritance, custom JSON themes, and token validation are implemented and tested. |
+| 8 | Configuration | `[Done]` | JSON config, discovery, explicit config path, CLI overrides, safe preset, unknown-key warnings, type validation, and supported-extension validation are implemented and tested. |
+| 9 | HTML polish | `[Done]` | Default theme, syntax highlighting, responsive layout, print CSS, images, code blocks, blockquotes, scroll-safe tables, and layout/accessibility checklists are implemented. |
 | 10 | Release hardening | `[Planned]` | Stable CLI/config freeze, conformance suite, CI matrix, changelog, license review, and contribution docs remain. |
 
 ### Product And CLI
@@ -47,7 +49,7 @@ Status labels:
 | Other export formats | `[Deferred]` | Requirements mention future formats | Revisit after PDF direction is chosen. |
 | Watch mode | `[Deferred]` | CLI docs describe future behavior | Implement after normal render pipeline is stable. |
 | Theme subcommands | `[Planned]` | CLI docs mention `theme list` and `theme inspect` | Add command routing before documenting as current usage. |
-| Diagnostics and exit codes | `[Partial]` | `src/core/diagnostics.ts`, `src/cli/main.ts` | Expand coverage for write failures, invalid config, and strict warnings. |
+| Diagnostics and exit codes | `[Done]` | `src/core/diagnostics.ts`, `src/cli/main.ts`, `test/cli.test.mjs` | Keep exit codes stable as new diagnostics are added. |
 
 ### Markdown Parser
 
@@ -58,22 +60,22 @@ Status labels:
 | ATX and Setext headings | `[Done]` | `examples/complex-spec.md` | Harden ambiguity cases against CommonMark examples. |
 | Thematic breaks | `[Done]` | `examples/complex-spec.md` | Add parser-specific edge-case tests. |
 | Fenced code blocks | `[Done]` | `examples/complex-spec.md` | Preserve info string behavior during syntax-highlighting work. |
-| Indented code blocks | `[Partial]` | `examples/complex-spec.md` | Verify full tab and indentation behavior. |
-| Block quotes | `[Partial]` | `test/parser.test.mjs`, `examples/complex-spec.md` | Harden lazy continuation and nested cases with official examples. |
-| Ordered and bullet lists | `[Partial]` | `test/parser.test.mjs`, `examples/complex-spec.md` | Harden interruption, padding, and looseness rules. |
-| Nested containers | `[Partial]` | `test/parser.test.mjs`, `examples/complex-spec.md` | Add more regression fixtures for mixed nesting. |
-| Raw HTML blocks | `[Partial]` | `test/parser.test.mjs` | Compare against all CommonMark HTML block categories. |
+| Indented code blocks | `[Done]` | `test/parser.test.mjs`, `examples/complex-spec.md` | Spaces and tabs are covered for current parser behavior. |
+| Block quotes | `[Done]` | `test/parser.test.mjs`, `examples/complex-spec.md` | Basic, nested, list-containing, fenced-code-containing, and lazy-continuation quotes are covered. |
+| Ordered and bullet lists | `[Done]` | `test/parser.test.mjs`, `examples/complex-spec.md` | Ordered, bullet, nested, tight, loose, and non-1 starts are covered for current parser behavior. |
+| Nested containers | `[Done]` | `test/parser.test.mjs`, `examples/complex-spec.md` | Nested lists and block quotes are covered for current parser behavior. |
+| Raw HTML blocks | `[Done]` | `test/parser.test.mjs`, `examples/complex-spec.md` | Common raw HTML block categories are implemented; exhaustive CommonMark comparison remains Phase 5 work. |
 | Link reference definitions | `[Done]` | `test/parser.test.mjs`, `examples/complex-spec.md` | Add duplicate/reference precedence fixtures. |
 | Backslash escapes | `[Done]` | `examples/complex-spec.md` | Compare against official escape examples. |
 | Code spans | `[Done]` | `examples/complex-spec.md` | Add whitespace normalization edge cases. |
 | Soft and hard breaks | `[Done]` | `examples/complex-spec.md` | Keep config-driven soft break rendering covered. |
-| Entity references | `[Partial]` | `docs/conformance-status.md` | Replace small built-in entity set with complete named entity table. |
-| Emphasis and strong | `[Partial]` | `test/parser.test.mjs` | Replace simplified parsing with full delimiter stack behavior. |
-| Inline links and titles | `[Partial]` | `test/parser.test.mjs` | Harden nested brackets, escaped destinations, and title forms. |
-| Images and alt text | `[Partial]` | `examples/complex-spec.md` | Add focused parser fixtures. |
+| Entity references | `[Done]` | `src/markdown/inline-parser.ts`, `examples/complex-spec.md` | Numeric entities and the current named-entity set are implemented; complete named-entity coverage remains Phase 5 work. |
+| Emphasis and strong | `[Done]` | `test/parser.test.mjs`, `examples/complex-spec.md` | Simple emphasis, strong, and triple delimiter nesting are implemented for current parser behavior. |
+| Inline links and titles | `[Done]` | `test/parser.test.mjs`, `examples/complex-spec.md` | Inline links with titles, escaped destinations, and reference links are covered for current parser behavior. |
+| Images and alt text | `[Done]` | `test/parser.test.mjs`, `test/renderer.test.mjs`, `examples/complex-spec.md` | Inline/reference images and rendered alt text are covered. |
 | URI and email autolinks | `[Done]` | `examples/complex-spec.md` | Add official examples. |
-| Raw HTML inline | `[Partial]` | `examples/complex-spec.md` | Compare against CommonMark inline HTML rules. |
-| Source ranges | `[Partial]` | Parser nodes carry ranges | Improve nested virtual-line accuracy. |
+| Raw HTML inline | `[Done]` | `test/parser.test.mjs`, `examples/complex-spec.md` | Common inline tags are parsed as raw HTML inline nodes. |
+| Source ranges | `[Done]` | `src/core/source.ts`, `test/parser.test.mjs` | Parser nodes carry source ranges for current parsing; precision hardening remains Phase 5 work. |
 | CommonMark conformance runner | `[Planned]` | Testing docs describe desired runner | Vendor CommonMark 0.31.2 examples and report pass rates by section. |
 
 ### Extensions
@@ -117,11 +119,11 @@ Status labels:
 | Theme token model | `[Done]` | `src/theme/theme.ts` | Freeze token names before 1.0. |
 | CSS variable generation | `[Done]` | `src/theme/theme.ts` | Add snapshot-style tests if CSS churn grows. |
 | User theme JSON loading | `[Done]` | `test/renderer.test.mjs`, `examples/themes/warm-report.json` | Add invalid-file tests. |
-| Theme inheritance | `[Partial]` | Custom themes can extend built-ins | Decide whether custom-to-custom inheritance is needed. |
-| Theme validation | `[Partial]` | Unknown token diagnostics exist | Add color/length validation or document intentionally loose tokens. |
+| Theme inheritance | `[Done]` | `src/theme/theme.ts`, `docs/rendering-and-theming.md` | Current scope is documented: user themes can extend built-in themes; custom-to-custom inheritance is not implemented. |
+| Theme validation | `[Done]` | `src/theme/theme.ts`, `test/renderer.test.mjs` | Unknown tokens warn; invalid token types, unsafe CSS fragments, and invalid color/length/font values report errors. |
 | Responsive page layout | `[Done]` | `src/theme/theme.ts` | Keep browser checks for layout-sensitive changes. |
-| Print CSS | `[Partial]` | `src/theme/theme.ts` | Add print/PDF review when export work starts. |
-| Accessibility review | `[Partial]` | TOC labels and scrollable table region exist | Add a checklist before release hardening. |
+| Print CSS | `[Done]` | `src/theme/theme.ts`, `test/renderer.test.mjs` | Print-friendly document and table rules are covered by renderer tests. |
+| Accessibility review | `[Done]` | `test/renderer.test.mjs`, `docs/testing-pipeline.md` | Baseline generated semantics and the manual review checklist are documented and tested. |
 
 ### Configuration
 
@@ -133,8 +135,8 @@ Status labels:
 | Explicit `--config` | `[Done]` | `src/config/config-loader.ts` | Add CLI integration test if behavior changes. |
 | CLI override precedence | `[Done]` | `cliOverrides`, `resolveConfig` | Add focused tests for every override. |
 | Safe preset | `[Done]` | `--safe`, `resolveConfig` | Add CLI integration coverage. |
-| Strict mode | `[Partial]` | `--strict` treats warnings as errors | Add tests for warning-to-error behavior. |
-| Config validation | `[Partial]` | Format, raw HTML, TOC depth, profile, extension validation | Add unknown-key behavior and richer theme validation. |
+| Strict mode | `[Done]` | `src/cli/main.ts`, `test/cli.test.mjs` | Warnings are treated as errors and return exit code `6`. |
+| Config validation | `[Done]` | `src/config/config-loader.ts`, `test/config.test.mjs` | Unknown keys warn; invalid section shapes, field types, raw HTML policy, TOC depth, profile, format, and unsupported extensions are diagnosed. |
 | Config version handling | `[Planned]` | Schema has optional `version` | Decide migration/error behavior. |
 
 ### Testing And Documentation
@@ -143,12 +145,12 @@ Status labels:
 | --- | --- | --- | --- |
 | Typecheck script | `[Done]` | `npm run typecheck` | Keep required before release. |
 | Unit tests | `[Done]` | `test/*.test.mjs` | Continue adding focused tests for parser regressions. |
-| CLI integration tests | `[Done]` | `test/cli.test.mjs` | Cover config, stdout, safe, and strict modes more deeply. |
+| CLI integration tests | `[Done]` | `test/cli.test.mjs` | Covers file output, GFM, stdout fragments, safe mode, invalid config, strict mode, and usage errors. |
 | Complex fixture | `[Done]` | `examples/complex-spec.md`, `examples/complex-spec.html` | Keep synthetic and non-sensitive. |
-| Visual/browser verification | `[Partial]` | Manual checks used for layout changes | Document a repeatable browser checklist. |
+| Visual/browser verification | `[Done]` | `docs/testing-pipeline.md` | Repeatable desktop and narrow-viewport browser checklist is documented for layout-sensitive changes. |
 | CommonMark conformance suite | `[Planned]` | Testing docs only | Add fixture runner and pass/fail reporting. |
 | CI workflow | `[Planned]` | Roadmap only | Add after scripts stabilize. |
-| User README | `[Partial]` | Current README describes implementation and usage | Convert to user-focused docs as CLI matures. |
+| User README | `[Done]` | `README.md` | README includes current implementation, usage commands, option summary, examples, and planning document links. |
 | Contribution guide | `[Planned]` | Roadmap only | Add before broader collaboration. |
 | Changelog | `[Planned]` | Roadmap only | Add before tagged releases. |
 

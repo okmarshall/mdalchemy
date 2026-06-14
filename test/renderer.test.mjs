@@ -23,9 +23,26 @@ Text with [a link](https://example.com).
   const rendered = await renderDocument(document, { config });
 
   assert.match(rendered.content, /<!doctype html>/);
-  assert.match(rendered.content, /<nav class="mda-toc"/);
+  assert.match(rendered.content, /<nav class="mda-toc" aria-label="Table of contents">/);
   assert.match(rendered.content, /id="main-title"/);
   assert.match(rendered.content, /href="https:\/\/example.com"/);
+});
+
+test("renders accessible image alt text and table overflow regions", async () => {
+  const markdown = `# Accessible Output
+
+![Descriptive alt](./image.png)
+
+| Name | Value |
+| --- | --- |
+| Alpha | Beta |
+`;
+  const { document } = parseMarkdown(markdown, { extensions: ["gfm-table"] });
+  const config = resolveConfig({}, { overrides: { html: { fragment: true } } });
+  const rendered = await renderDocument(document, { config });
+
+  assert.match(rendered.content, /<img src=".\/image.png" alt="Descriptive alt">/);
+  assert.match(rendered.content, /<div class="mda-table-scroll" role="region" aria-label="Scrollable table" tabindex="0">/);
 });
 
 test("escapes raw html in safe mode", async () => {
@@ -55,6 +72,26 @@ test("loads a user-defined theme file", async () => {
   assert.equal(theme.name, "warm-report");
   assert.equal(theme.tokens["layout.maxWidth"], "760px");
   assert.equal(theme.diagnostics.some((diagnostic) => diagnostic.severity === "error"), false);
+});
+
+test("reports invalid user-defined theme token values", async () => {
+  const theme = await resolveTheme({
+    name: "invalid-theme",
+    tokens: {
+      "color.text": "url(https://example.com/color)",
+      "layout.maxWidth": "wide"
+    }
+  });
+
+  assert.equal(theme.diagnostics.filter((diagnostic) => diagnostic.code === "MDA_THEME_INVALID_TOKEN_VALUE").length, 2);
+});
+
+test("default theme includes print-friendly CSS rules", async () => {
+  const theme = await resolveTheme("serif", process.cwd());
+
+  assert.match(theme.css, /@media print/);
+  assert.match(theme.css, /\.mda-document \{\n    width: auto;/);
+  assert.match(theme.css, /\.mda-table-scroll \{\n    overflow: visible;/);
 });
 
 test("renders GFM tables with header, body, and alignment", async () => {

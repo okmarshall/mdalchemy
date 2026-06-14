@@ -21,11 +21,21 @@ export async function loadConfig(options: ConfigLoadOptions = {}): Promise<Confi
   const cwd = options.cwd ?? process.cwd();
   const diagnostics: Diagnostic[] = [];
   const located = await locateConfig(cwd, options.configPath);
-  let fileConfig: MdalchemyConfig = {};
+  let fileConfig: Record<string, unknown> = {};
 
   if (located) {
     try {
-      fileConfig = JSON.parse(await readFile(located, "utf8")) as MdalchemyConfig;
+      const parsed = JSON.parse(await readFile(located, "utf8")) as unknown;
+      if (isRecord(parsed)) {
+        fileConfig = parsed;
+        diagnostics.push(...validateConfigShape(fileConfig));
+      } else {
+        diagnostics.push({
+          severity: "error",
+          code: "MDA_CONFIG_INVALID_ROOT",
+          message: "Config file must contain a JSON object."
+        });
+      }
     } catch (error) {
       diagnostics.push({
         severity: "error",
@@ -52,32 +62,32 @@ export function resolveConfig(
   config: MdalchemyConfig = {},
   options: Pick<ConfigLoadOptions, "overrides" | "safe" | "strict"> = {}
 ): ResolvedConfig {
-  const fileOutput = config.output ?? {};
-  const fileMarkdown = config.markdown ?? {};
-  const fileHtml = config.html ?? {};
+  const fileOutput = isRecord(config.output) ? config.output : {};
+  const fileMarkdown = isRecord(config.markdown) ? config.markdown : {};
+  const fileHtml = isRecord(config.html) ? config.html : {};
   const resolved: ResolvedConfig = {
     output: {
-      format: fileOutput.format ?? defaultConfig.output.format,
-      standalone: fileOutput.standalone ?? defaultConfig.output.standalone,
-      createDirs: fileOutput.createDirs ?? defaultConfig.output.createDirs
+      format: stringOr(fileOutput.format, defaultConfig.output.format) as "html",
+      standalone: booleanOr(fileOutput.standalone, defaultConfig.output.standalone),
+      createDirs: booleanOr(fileOutput.createDirs, defaultConfig.output.createDirs)
     },
     markdown: {
-      profile: fileMarkdown.profile ?? defaultConfig.markdown.profile,
-      extensions: fileMarkdown.extensions ?? defaultConfig.markdown.extensions
+      profile: stringOr(fileMarkdown.profile, defaultConfig.markdown.profile) as "commonmark",
+      extensions: stringArrayOr(fileMarkdown.extensions, defaultConfig.markdown.extensions)
     },
     html: {
-      lang: fileHtml.lang ?? defaultConfig.html.lang,
-      rawHtml: fileHtml.rawHtml ?? defaultConfig.html.rawHtml,
-      safeUrls: fileHtml.safeUrls ?? defaultConfig.html.safeUrls,
-      headingAnchors: fileHtml.headingAnchors ?? defaultConfig.html.headingAnchors,
-      sections: fileHtml.sections ?? defaultConfig.html.sections,
-      tableOfContents: fileHtml.tableOfContents ?? defaultConfig.html.tableOfContents,
-      tocDepth: fileHtml.tocDepth ?? defaultConfig.html.tocDepth,
-      softBreak: fileHtml.softBreak ?? defaultConfig.html.softBreak,
-      fragment: fileHtml.fragment ?? defaultConfig.html.fragment,
-      title: fileHtml.title ?? defaultConfig.html.title
+      lang: stringOr(fileHtml.lang, defaultConfig.html.lang),
+      rawHtml: stringOr(fileHtml.rawHtml, defaultConfig.html.rawHtml) as "allow" | "escape" | "strip",
+      safeUrls: booleanOr(fileHtml.safeUrls, defaultConfig.html.safeUrls),
+      headingAnchors: booleanOr(fileHtml.headingAnchors, defaultConfig.html.headingAnchors),
+      sections: booleanOr(fileHtml.sections, defaultConfig.html.sections),
+      tableOfContents: tableOfContentsOr(fileHtml.tableOfContents, defaultConfig.html.tableOfContents),
+      tocDepth: numberOr(fileHtml.tocDepth, defaultConfig.html.tocDepth),
+      softBreak: stringOr(fileHtml.softBreak, defaultConfig.html.softBreak) as "newline" | "space" | "br",
+      fragment: booleanOr(fileHtml.fragment, defaultConfig.html.fragment),
+      title: stringOr(fileHtml.title, defaultConfig.html.title)
     },
-    theme: config.theme ?? defaultConfig.theme,
+    theme: typeof config.theme === "string" || isRecord(config.theme) ? config.theme : defaultConfig.theme,
     strict: options.strict ?? defaultConfig.strict
   };
 
@@ -152,4 +162,159 @@ function validateConfig(config: ResolvedConfig): Diagnostic[] {
     });
   }
   return diagnostics;
+}
+
+const topLevelKeys = new Set(["version", "output", "markdown", "html", "theme"]);
+const outputKeys = new Set(["format", "standalone", "createDirs"]);
+const markdownKeys = new Set(["profile", "extensions"]);
+const htmlKeys = new Set([
+  "lang",
+  "rawHtml",
+  "safeUrls",
+  "headingAnchors",
+  "sections",
+  "tableOfContents",
+  "tocDepth",
+  "softBreak",
+  "fragment",
+  "title"
+]);
+
+function validateConfigShape(config: Record<string, unknown>): Diagnostic[] {
+  const diagnostics: Diagnostic[] = [];
+  warnUnknownKeys(config, topLevelKeys, "", diagnostics);
+
+  if (config.version !== undefined && typeof config.version !== "number") {
+    diagnostics.push(invalidType("version", "a number"));
+  }
+
+  validateSection(config.output, "output", outputKeys, diagnostics, {
+    format: "string",
+    standalone: "boolean",
+    createDirs: "boolean"
+  });
+  validateSection(config.markdown, "markdown", markdownKeys, diagnostics, {
+    profile: "string",
+    extensions: "string[]"
+  });
+  validateSection(config.html, "html", htmlKeys, diagnostics, {
+    lang: "string",
+    rawHtml: "string",
+    safeUrls: "boolean",
+    headingAnchors: "boolean",
+    sections: "boolean",
+    tableOfContents: "boolean-or-auto",
+    tocDepth: "number",
+    softBreak: "string",
+    fragment: "boolean",
+    title: "string"
+  });
+
+  if (config.theme !== undefined && typeof config.theme !== "string" && !isRecord(config.theme)) {
+    diagnostics.push(invalidType("theme", "a built-in theme name, theme path, or theme object"));
+  }
+
+  return diagnostics;
+}
+
+function validateSection(
+  value: unknown,
+  pathPrefix: string,
+  allowedKeys: Set<string>,
+  diagnostics: Diagnostic[],
+  fieldTypes: Record<string, "string" | "boolean" | "number" | "string[]" | "boolean-or-auto">
+): void {
+  if (value === undefined) return;
+  if (!isRecord(value)) {
+    diagnostics.push(invalidType(pathPrefix, "an object"));
+    return;
+  }
+
+  warnUnknownKeys(value, allowedKeys, pathPrefix, diagnostics);
+  for (const [key, expected] of Object.entries(fieldTypes)) {
+    const fieldValue = value[key];
+    if (fieldValue === undefined) continue;
+    const fullPath = `${pathPrefix}.${key}`;
+    if (!matchesExpectedType(fieldValue, expected)) {
+      diagnostics.push(invalidType(fullPath, expectedLabel(expected)));
+    }
+  }
+}
+
+function warnUnknownKeys(
+  value: Record<string, unknown>,
+  allowedKeys: Set<string>,
+  pathPrefix: string,
+  diagnostics: Diagnostic[]
+): void {
+  for (const key of Object.keys(value)) {
+    if (allowedKeys.has(key)) continue;
+    diagnostics.push({
+      severity: "warning",
+      code: "MDA_CONFIG_UNKNOWN_KEY",
+      message: `Unknown config key "${pathPrefix ? `${pathPrefix}.` : ""}${key}".`
+    });
+  }
+}
+
+function matchesExpectedType(value: unknown, expected: "string" | "boolean" | "number" | "string[]" | "boolean-or-auto"): boolean {
+  switch (expected) {
+    case "string":
+      return typeof value === "string";
+    case "boolean":
+      return typeof value === "boolean";
+    case "number":
+      return typeof value === "number";
+    case "string[]":
+      return Array.isArray(value) && value.every((item) => typeof item === "string");
+    case "boolean-or-auto":
+      return typeof value === "boolean" || value === "auto";
+  }
+}
+
+function expectedLabel(expected: "string" | "boolean" | "number" | "string[]" | "boolean-or-auto"): string {
+  switch (expected) {
+    case "string":
+      return "a string";
+    case "boolean":
+      return "a boolean";
+    case "number":
+      return "a number";
+    case "string[]":
+      return "an array of strings";
+    case "boolean-or-auto":
+      return "a boolean or \"auto\"";
+  }
+}
+
+function invalidType(pathName: string, expected: string): Diagnostic {
+  return {
+    severity: "error",
+    code: "MDA_CONFIG_INVALID_TYPE",
+    message: `Config key "${pathName}" must be ${expected}.`
+  };
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function stringOr(value: unknown, fallback: string): string {
+  return typeof value === "string" ? value : fallback;
+}
+
+function booleanOr(value: unknown, fallback: boolean): boolean {
+  return typeof value === "boolean" ? value : fallback;
+}
+
+function numberOr(value: unknown, fallback: number): number {
+  return typeof value === "number" ? value : fallback;
+}
+
+function stringArrayOr(value: unknown, fallback: string[]): string[] {
+  return Array.isArray(value) && value.every((item) => typeof item === "string") ? value : fallback;
+}
+
+function tableOfContentsOr(value: unknown, fallback: boolean | "auto"): boolean | "auto" {
+  return typeof value === "boolean" || value === "auto" ? value : fallback;
 }

@@ -43,6 +43,16 @@ const value = 1;
   assert.equal(code.language, "ts");
 });
 
+test("parses indented code blocks with spaces and tabs", () => {
+  const markdown = "    const spaced = true;\n\tconst tabbed = true;\n";
+  const { document } = parseMarkdown(markdown);
+  const code = document.children[0];
+
+  assert.equal(code.type, "codeBlock");
+  assert.equal(code.kind, "indented");
+  assert.equal(code.literal, "const spaced = true;\nconst tabbed = true;");
+});
+
 test("parses block quotes and raw HTML blocks", () => {
   const markdown = `> Quoted paragraph
 >
@@ -56,6 +66,43 @@ test("parses block quotes and raw HTML blocks", () => {
 
   assert.equal(document.children[0].type, "blockquote");
   assert.equal(document.children[1].type, "htmlBlock");
+});
+
+test("parses lazy block quote continuation and loose lists", () => {
+  const markdown = `> Quoted paragraph
+lazy continuation
+
+1. Loose item
+
+   Continuation paragraph.
+2. Next item
+`;
+  const { document } = parseMarkdown(markdown);
+  const quote = document.children[0];
+  const list = document.children[1];
+
+  assert.equal(quote.type, "blockquote");
+  assert.equal(quote.children[0].type, "paragraph");
+  assert.equal(quote.children[0].raw, "Quoted paragraph\nlazy continuation");
+  assert.equal(list.type, "list");
+  assert.equal(list.tight, false);
+});
+
+test("parses links with titles, images, raw html inline, and source ranges", () => {
+  const markdown = `# Range
+
+[label](https://example.com/a\\(b\\) "Title") ![alt *text*](./image.png) <kbd>Ctrl</kbd>
+`;
+  const { document } = parseMarkdown(markdown);
+  const heading = document.children[0];
+  const paragraph = document.children[1];
+
+  assert.equal(heading.type, "heading");
+  assert.deepEqual(heading.range.start, { offset: 0, line: 1, column: 1 });
+  assert.equal(paragraph.type, "paragraph");
+  assert.equal(paragraph.children.some((node) => node.type === "link" && node.title === "Title"), true);
+  assert.equal(paragraph.children.some((node) => node.type === "image" && node.alt === "alt text"), true);
+  assert.equal(paragraph.children.some((node) => node.type === "htmlInline"), true);
 });
 
 test("parses GFM pipe tables when the table extension is enabled", () => {

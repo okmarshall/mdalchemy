@@ -13,9 +13,10 @@ The repository now contains a working TypeScript CLI and library:
 - HTML standalone and fragment rendering.
 - Built-in `serif`, `sans`, and `technical` themes. The default is `serif`.
 - Built-in syntax highlighting for JS/TS, C#, JSON, HTML/XML, CSS, shell, and Markdown fences.
-- JSON config loading with CLI overrides.
+- JSON config loading with CLI overrides, unknown-key warnings, type validation, and strict-mode diagnostics.
 - Safe mode for raw HTML and unsafe URLs.
 - GFM pipe-table parsing through `--gfm` or `markdown.extensions`, with scroll-safe HTML output for wide tables.
+- Theme token validation for custom themes.
 - Heading anchors and table of contents generation.
 - Node built-in test runner coverage.
 - Complex Markdown smoke fixture plus checked HTML output.
@@ -25,6 +26,54 @@ Install dependencies:
 ```sh
 npm install
 ```
+
+## Usage
+
+Build the CLI:
+
+```sh
+npm run build
+```
+
+Render a Markdown file to standalone HTML:
+
+```sh
+node dist/cli/main.js input.md -o output.html
+```
+
+Enable the currently supported GitHub Flavored Markdown extension for pipe tables:
+
+```sh
+node dist/cli/main.js input.md -o output.html --gfm
+```
+
+Render a fragment to stdout:
+
+```sh
+node dist/cli/main.js input.md --stdout --fragment
+```
+
+Use safe mode when rendering untrusted Markdown:
+
+```sh
+node dist/cli/main.js input.md -o output.html --safe
+```
+
+Useful options:
+
+| Option | Purpose |
+| --- | --- |
+| `-o, --output <path>` | Write rendered HTML to a file. |
+| `--stdout` | Write rendered HTML to stdout. |
+| `--fragment` | Omit the standalone HTML shell and inline theme CSS. |
+| `--theme <name-or-path>` | Use a built-in theme or a JSON theme file. |
+| `--config <path>` | Load a specific config file. |
+| `--safe` | Escape raw HTML and reject unsafe URLs. |
+| `--strict` | Treat warnings as errors. |
+| `--gfm` | Enable supported GFM extensions, currently pipe tables. |
+| `--toc` / `--no-toc` | Force table of contents on or off. |
+
+## Development
 
 Run the checks:
 
@@ -37,13 +86,6 @@ Render the complex fixture:
 
 ```sh
 npm run render:example
-```
-
-Render your own file:
-
-```sh
-npm run build
-node dist/cli/main.js input.md -o output.html --toc --gfm
 ```
 
 Try the example custom theme:

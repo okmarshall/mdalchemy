@@ -5,7 +5,9 @@ import type {
   HeadingNode,
   InlineNode,
   ListNode,
-  ParagraphNode
+  ParagraphNode,
+  TableCellNode,
+  TableNode
 } from "../../markdown/ast.js";
 import { parseMarkdown, type MarkdownOptions } from "../../markdown/parser.js";
 import { defaultConfig, type ResolvedConfig } from "../../config/config-schema.js";
@@ -36,7 +38,7 @@ interface RenderContext {
 }
 
 export async function renderMarkdown(markdown: string, options: RenderOptions = {}): Promise<RenderResult> {
-  const parsed = parseMarkdown(markdown, options.markdown);
+  const parsed = parseMarkdown(markdown, options.markdown ?? options.config?.markdown);
   return renderDocument(parsed.document, options);
 }
 
@@ -107,6 +109,8 @@ function renderBlock(block: BlockNode, context: RenderContext, parentList?: List
       return `<blockquote>\n${renderBlocks(block.children, context)}\n</blockquote>`;
     case "list":
       return renderList(block, context);
+    case "table":
+      return renderTable(block, context);
     case "listItem":
       return `<li>${renderBlocks(block.children, context, parentList)}</li>`;
     case "codeBlock":
@@ -116,6 +120,20 @@ function renderBlock(block: BlockNode, context: RenderContext, parentList?: List
     case "linkReferenceDefinition":
       return "";
   }
+}
+
+function renderTable(table: TableNode, context: RenderContext): string {
+  const header = table.header.map((cell) => renderTableCell(cell, context, "th")).join("");
+  const rows = table.rows.map((row) => (
+    `<tr>${row.map((cell) => renderTableCell(cell, context, "td")).join("")}</tr>`
+  )).join("\n");
+  const body = rows ? `\n<tbody>\n${rows}\n</tbody>` : "";
+  return `<table>\n<thead>\n<tr>${header}</tr>\n</thead>${body}\n</table>`;
+}
+
+function renderTableCell(cell: TableCellNode, context: RenderContext, tag: "th" | "td"): string {
+  const alignment = cell.alignment ? ` style="text-align: ${cell.alignment}"` : "";
+  return `<${tag}${alignment}>${renderInlines(cell.children, context)}</${tag}>`;
 }
 
 function renderHeading(heading: HeadingNode, context: RenderContext): string {

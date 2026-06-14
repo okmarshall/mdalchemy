@@ -58,3 +58,28 @@ test("parses block quotes and raw HTML blocks", () => {
   assert.equal(document.children[1].type, "htmlBlock");
 });
 
+test("parses GFM pipe tables when the table extension is enabled", () => {
+  const markdown = `| Name | Count | Notes |
+| :--- | ---: | :---: |
+| Alpha | 1 | **bold** |
+| Beta | 2 | \`code\` |
+`;
+  const { document } = parseMarkdown(markdown, { extensions: ["gfm-table"] });
+  const table = document.children[0];
+
+  assert.equal(table.type, "table");
+  assert.deepEqual(table.alignments, ["left", "right", "center"]);
+  assert.equal(table.header.length, 3);
+  assert.equal(table.rows.length, 2);
+  assert.equal(table.rows[0][2].children.some((node) => node.type === "strong"), true);
+});
+
+test("leaves pipe tables as paragraphs without the GFM table extension", () => {
+  const markdown = `| Name | Count |
+| --- | ---: |
+| Alpha | 1 |
+`;
+  const { document } = parseMarkdown(markdown);
+
+  assert.equal(document.children[0].type, "paragraph");
+});

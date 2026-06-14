@@ -14,6 +14,7 @@ The repository now contains a working TypeScript CLI and library:
 - Built-in `serif`, `sans`, and `technical` themes.
 - JSON config loading with CLI overrides.
 - Safe mode for raw HTML and unsafe URLs.
+- GFM pipe-table parsing through `--gfm` or `markdown.extensions`.
 - Heading anchors and table of contents generation.
 - Node built-in test runner coverage.
 - Complex Markdown smoke fixture plus checked HTML output.
@@ -41,13 +42,13 @@ Render your own file:
 
 ```sh
 npm run build
-node dist/cli/main.js input.md -o output.html --theme technical --toc
+node dist/cli/main.js input.md -o output.html --theme technical --toc --gfm
 ```
 
 Try the example custom theme:
 
 ```sh
-node dist/cli/main.js examples/complex-spec.md -o examples/complex-spec.warm.html --theme examples/themes/warm-report.json --toc
+node dist/cli/main.js examples/complex-spec.md -o examples/complex-spec.warm.html --theme examples/themes/warm-report.json --toc --gfm
 ```
 
 ## Planning Documents
@@ -70,10 +71,20 @@ node dist/cli/main.js examples/complex-spec.md -o examples/complex-spec.warm.htm
 
 The test suite verifies that the current renderer output matches the checked HTML artifact.
 
+Tables use the GitHub Flavored Markdown pipe-table extension, so enable them with `--gfm` or this config:
+
+```json
+{
+  "markdown": {
+    "extensions": ["gfm-table"]
+  }
+}
+```
+
 ## Core Decisions
 
 - Use CommonMark 0.31.2 as the baseline for "full Markdown" conformance.
-- Treat GitHub Flavored Markdown as a later extension layer, not part of the initial core parser contract.
+- Treat GitHub Flavored Markdown as an extension layer, not part of the core CommonMark parser contract.
 - Represent parsed content as a renderer-neutral document AST.
 - Build the HTML renderer as the first renderer, with PDF/export formats layered on later.
 - Keep theme files declarative and portable, with built-in themes and user-defined themes loaded from config.

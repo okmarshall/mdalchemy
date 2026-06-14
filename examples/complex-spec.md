@@ -16,6 +16,14 @@ Escapes: \*literal asterisks\*, \[literal brackets\], \`literal backticks\`,
 and \\literal backslashes\\.
 Inline HTML: <span data-kind="inline">raw span</span> and <kbd>Ctrl</kbd>.
 
+GFM table extension:
+
+| Feature | Status | Notes |
+| :--- | :---: | ---: |
+| Tables | Working | `gfm-table` |
+| Alignment | Centered | Right aligned |
+| Escaped pipe | A \| B | Inline `a | b` code |
+
 This line ends with a soft break
 and continues in the same paragraph.
 This line ends with a hard break\

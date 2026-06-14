@@ -11,6 +11,7 @@ export interface CliArgs {
   strict: boolean;
   safe: boolean;
   fragment: boolean;
+  gfm: boolean;
   title: string | undefined;
   toc: boolean | undefined;
   help: boolean;
@@ -31,6 +32,7 @@ export function parseCliArgs(argv: string[]): CliArgs {
       strict: { type: "boolean" },
       safe: { type: "boolean" },
       fragment: { type: "boolean" },
+      gfm: { type: "boolean" },
       title: { type: "string" },
       toc: { type: "boolean" },
       "no-toc": { type: "boolean" },
@@ -55,6 +57,7 @@ export function parseCliArgs(argv: string[]): CliArgs {
     strict: Boolean(parsed.values.strict),
     safe: Boolean(parsed.values.safe),
     fragment: Boolean(parsed.values.fragment),
+    gfm: Boolean(parsed.values.gfm),
     title: parsed.values.title,
     toc: parsed.values.toc === true ? true : parsed.values["no-toc"] === true ? false : undefined,
     help: Boolean(parsed.values.help),
@@ -75,6 +78,7 @@ export function cliOverrides(args: CliArgs): Partial<ResolvedConfig> {
   };
   if (args.theme) overrides.theme = args.theme;
   if (args.format) overrides.output = { format: args.format, standalone: true, createDirs: false };
+  if (args.gfm) overrides.markdown = { profile: "commonmark", extensions: ["gfm-table"] };
   if (Object.keys(html).length > 0) overrides.html = html as ResolvedConfig["html"];
   return overrides;
 }
@@ -90,6 +94,7 @@ Options:
       --stdout              Write to stdout
       --safe                Escape raw HTML and reject unsafe URLs
       --strict              Treat warnings as errors
+      --gfm                 Enable supported GitHub Flavored Markdown extensions
       --fragment            Render an HTML fragment
       --title <title>       Override document title
       --toc                 Force table of contents on

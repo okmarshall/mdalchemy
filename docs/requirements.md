@@ -210,9 +210,9 @@ Derived features are not separate Markdown syntax. They are computed from the pa
 
 ### Extension Candidates
 
-These are explicitly outside the initial CommonMark core unless added behind an extension flag.
+These are explicitly outside the CommonMark core unless added behind an extension flag.
 
-- GitHub Flavored Markdown tables.
+- GitHub Flavored Markdown tables. Implemented as `gfm-table`.
 - Task list items.
 - Strikethrough.
 - Autolink literal extension.

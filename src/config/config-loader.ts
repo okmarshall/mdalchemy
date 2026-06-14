@@ -142,11 +142,13 @@ function validateConfig(config: ResolvedConfig): Diagnostic[] {
       message: `Unsupported markdown profile "${config.markdown.profile}".`
     });
   }
-  if (config.markdown.extensions.length > 0) {
+  const supportedExtensions = new Set(["gfm-table"]);
+  const unsupportedExtensions = config.markdown.extensions.filter((extension) => !supportedExtensions.has(extension));
+  if (unsupportedExtensions.length > 0) {
     diagnostics.push({
-      severity: "warning",
-      code: "MDA_MARKDOWN_EXTENSIONS_PENDING",
-      message: "Markdown extensions are recorded in config but not implemented in this release."
+      severity: "error",
+      code: "MDA_MARKDOWN_UNSUPPORTED_EXTENSION",
+      message: `Unsupported Markdown extension(s): ${unsupportedExtensions.join(", ")}.`
     });
   }
   return diagnostics;

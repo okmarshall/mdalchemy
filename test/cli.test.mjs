@@ -22,3 +22,15 @@ test("cli renders an input markdown file to html", async () => {
   assert.match(html, /Rendered by the CLI/);
 });
 
+test("cli enables GFM table rendering with --gfm", async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), "mdalchemy-"));
+  const input = path.join(dir, "table.md");
+  const output = path.join(dir, "table.html");
+  await writeFile(input, "| A | B |\n| --- | ---: |\n| one | two |\n", "utf8");
+
+  await execFileAsync("node", ["dist/cli/main.js", input, "-o", output, "--gfm"]);
+  const html = await readFile(output, "utf8");
+
+  assert.match(html, /<table>/);
+  assert.match(html, /<td style="text-align: right">two<\/td>/);
+});

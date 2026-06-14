@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { parseMarkdown, renderDocument } from "../dist/index.js";
+import { parseMarkdown, renderDocument, renderMarkdown } from "../dist/index.js";
 import { resolveConfig } from "../dist/config/config-loader.js";
 import { resolveTheme } from "../dist/theme/theme.js";
 
@@ -55,4 +55,34 @@ test("loads a user-defined theme file", async () => {
   assert.equal(theme.name, "warm-report");
   assert.equal(theme.tokens["layout.maxWidth"], "760px");
   assert.equal(theme.diagnostics.some((diagnostic) => diagnostic.severity === "error"), false);
+});
+
+test("renders GFM tables with header, body, and alignment", async () => {
+  const markdown = `| Name | Count |
+| :--- | ---: |
+| Alpha | **1** |
+`;
+  const { document } = parseMarkdown(markdown, { extensions: ["gfm-table"] });
+  const config = resolveConfig({}, { overrides: { html: { fragment: true } } });
+  const rendered = await renderDocument(document, { config });
+
+  assert.match(rendered.content, /<table>/);
+  assert.match(rendered.content, /<thead>/);
+  assert.match(rendered.content, /<tbody>/);
+  assert.match(rendered.content, /<th style="text-align: left">Name<\/th>/);
+  assert.match(rendered.content, /<td style="text-align: right"><strong>1<\/strong><\/td>/);
+});
+
+test("renderMarkdown respects markdown extensions from config", async () => {
+  const config = resolveConfig({
+    markdown: {
+      extensions: ["gfm-table"]
+    },
+    html: {
+      fragment: true
+    }
+  });
+  const rendered = await renderMarkdown("| A |\n| --- |\n| B |\n", { config });
+
+  assert.match(rendered.content, /<table>/);
 });

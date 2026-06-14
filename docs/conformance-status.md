@@ -21,6 +21,7 @@ Block coverage:
 - Tight and loose list rendering in common cases.
 - Raw HTML blocks for common block tags, comments, declarations, processing instructions, CDATA, and script-like tags.
 - Link reference definitions.
+- GFM pipe tables when the `gfm-table` extension is enabled.
 
 Inline coverage:
 
@@ -50,6 +51,7 @@ Document/rendering coverage:
 - HTML fragment output.
 - Raw HTML policies: `allow`, `escape`, and `strip`.
 - Safe URL filtering for HTML links and images.
+- Semantic HTML table rendering for GFM pipe tables.
 - Built-in theme CSS.
 - User theme loading through config or CLI theme path.
 
@@ -64,7 +66,7 @@ These are the important areas to close before claiming full CommonMark conforman
 - List item continuation, indentation, and looseness are good for common documents but still need CommonMark example-by-example hardening.
 - Source ranges are useful for diagnostics but are approximate in nested virtual lines.
 - Tabs are handled for indentation helpers, but full tab behavior needs conformance tests.
-- GFM extensions are not implemented.
+- GFM extension support is currently limited to pipe tables.
 - PDF and other output formats are not implemented.
 
 ## Verification Available Now
@@ -94,5 +96,4 @@ Recommended next steps:
 4. Replace simplified emphasis parsing with the full delimiter stack algorithm.
 5. Expand entity support to the complete named entity table.
 6. Harden list and blockquote continuation against the official examples.
-7. Keep GFM extensions behind explicit extension flags.
-
+7. Keep additional GFM extensions behind explicit extension flags.

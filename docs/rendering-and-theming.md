@@ -70,6 +70,7 @@ The exact class names should be stable and documented.
 | `list` ordered | `<ol>` |
 | `list` unordered | `<ul>` |
 | `listItem` | `<li>` |
+| `table` | `<table>` with `<thead>` and `<tbody>` |
 | `codeBlock` | `<pre><code>` |
 | `htmlBlock` | raw, escaped, or stripped by policy |
 | `text` | escaped text |
@@ -558,4 +559,3 @@ Renderer tests should cover:
 - Tight and loose list rendering.
 
 Snapshot tests are useful, but they should not be the only tests. Important security behavior needs explicit assertions.
-

@@ -145,6 +145,33 @@ img {
   height: auto;
 }
 
+table {
+  width: 100%;
+  margin: 1.5rem 0;
+  border-collapse: collapse;
+  overflow: hidden;
+  border: var(--mda-layout-borderWidth) solid var(--mda-color-border);
+  border-radius: var(--mda-layout-radius);
+}
+
+th,
+td {
+  padding: 0.65rem 0.8rem;
+  border-bottom: var(--mda-layout-borderWidth) solid var(--mda-color-border);
+  text-align: left;
+  vertical-align: top;
+}
+
+th {
+  background: var(--mda-color-surface);
+  color: var(--mda-color-text);
+  font-weight: 700;
+}
+
+tr:last-child td {
+  border-bottom: 0;
+}
+
 .mda-toc {
   margin: 0 0 2rem;
   padding: 1rem;
@@ -220,6 +247,17 @@ Entities: &amp; &lt; &gt; " # A.
 Escapes: *literal asterisks*, [literal brackets], `literal backticks`,
 and \literal backslashes\.
 Inline HTML: <span data-kind="inline">raw span</span> and <kbd>Ctrl</kbd>.</p>
+<p>GFM table extension:</p>
+<table>
+<thead>
+<tr><th style="text-align: left">Feature</th><th style="text-align: center">Status</th><th style="text-align: right">Notes</th></tr>
+</thead>
+<tbody>
+<tr><td style="text-align: left">Tables</td><td style="text-align: center">Working</td><td style="text-align: right"><code>gfm-table</code></td></tr>
+<tr><td style="text-align: left">Alignment</td><td style="text-align: center">Centered</td><td style="text-align: right">Right aligned</td></tr>
+<tr><td style="text-align: left">Escaped pipe</td><td style="text-align: center">A | B</td><td style="text-align: right">Inline <code>a | b</code> code</td></tr>
+</tbody>
+</table>
 <p>This line ends with a soft break
 and continues in the same paragraph.
 This line ends with a hard break<br>

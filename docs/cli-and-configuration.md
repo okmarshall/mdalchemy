@@ -36,6 +36,7 @@ Options:
 --stdout                  Write rendered output to stdout.
 --strict                  Treat warnings as errors.
 --safe                    Enable safe rendering preset.
+--gfm                     Enable supported GitHub Flavored Markdown extensions.
 --fragment                Render HTML fragment instead of standalone document.
 --title <title>           Override document title.
 --toc                     Force table of contents on.
@@ -212,7 +213,7 @@ interface MarkdownConfig {
 }
 ```
 
-For v1, `extensions` should default to an empty list. Unsupported extension names should fail config validation.
+For v1, `extensions` defaults to an empty list. The implemented extension is `gfm-table`; unsupported extension names fail config validation.
 
 ### `html`
 
@@ -462,4 +463,3 @@ Test cases:
 - Safe mode raw HTML behavior.
 
 Use temporary directories for integration tests.
-

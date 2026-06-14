@@ -312,6 +312,33 @@ img {
   height: auto;
 }
 
+table {
+  width: 100%;
+  margin: 1.5rem 0;
+  border-collapse: collapse;
+  overflow: hidden;
+  border: var(--mda-layout-borderWidth) solid var(--mda-color-border);
+  border-radius: var(--mda-layout-radius);
+}
+
+th,
+td {
+  padding: 0.65rem 0.8rem;
+  border-bottom: var(--mda-layout-borderWidth) solid var(--mda-color-border);
+  text-align: left;
+  vertical-align: top;
+}
+
+th {
+  background: var(--mda-color-surface);
+  color: var(--mda-color-text);
+  font-weight: 700;
+}
+
+tr:last-child td {
+  border-bottom: 0;
+}
+
 .mda-toc {
   margin: 0 0 2rem;
   padding: 1rem;

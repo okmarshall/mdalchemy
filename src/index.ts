@@ -10,7 +10,10 @@ export type {
   InlineNode,
   LinkReferenceDefinition,
   SourcePosition,
-  SourceRange
+  SourceRange,
+  TableAlignment,
+  TableCellNode,
+  TableNode
 } from "./markdown/ast.js";
 export type { MdalchemyConfig, ResolvedConfig } from "./config/config-schema.js";
 export type { RenderResult } from "./render/html/html-renderer.js";

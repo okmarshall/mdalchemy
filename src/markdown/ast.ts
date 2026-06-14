@@ -30,6 +30,7 @@ export type BlockNode =
   | BlockQuoteNode
   | ListNode
   | ListItemNode
+  | TableNode
   | CodeBlockNode
   | HtmlBlockNode
   | LinkReferenceDefinitionNode;
@@ -71,6 +72,23 @@ export interface ListItemNode extends BaseNode {
   marker: string;
   padding: number;
   children: BlockNode[];
+}
+
+export type TableAlignment = "left" | "center" | "right" | null;
+
+export interface TableCellNode extends BaseNode {
+  type: "tableCell";
+  raw: string;
+  children: InlineNode[];
+  alignment: TableAlignment;
+  header: boolean;
+}
+
+export interface TableNode extends BaseNode {
+  type: "table";
+  alignments: TableAlignment[];
+  header: TableCellNode[];
+  rows: TableCellNode[][];
 }
 
 export interface CodeBlockNode extends BaseNode {

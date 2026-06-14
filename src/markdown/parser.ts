@@ -22,6 +22,9 @@ import type {
   ParagraphNode,
   ReferenceMap,
   SourceRange,
+  TableAlignment,
+  TableCellNode,
+  TableNode,
   ThematicBreakNode
 } from "./ast.js";
 import { parseInlines } from "./inline-parser.js";
@@ -68,9 +71,7 @@ class BlockParser {
   constructor(
     private readonly source: SourceText,
     private readonly options: MarkdownOptions
-  ) {
-    void this.options;
-  }
+  ) {}
 
   parse(): DocumentNode {
     const lines = this.source.lines.map(toWorkingLine);
@@ -152,6 +153,15 @@ class BlockParser {
         continue;
       }
 
+      if (this.hasExtension("gfm-table")) {
+        const parsed = this.tryParseTable(lines, index, end);
+        if (parsed) {
+          nodes.push(parsed.node);
+          index = parsed.next;
+          continue;
+        }
+      }
+
       if (countIndentColumns(line.text) >= 4) {
         const parsed = this.parseIndentedCode(lines, index, end);
         nodes.push(parsed.node);
@@ -204,6 +214,51 @@ class BlockParser {
       range
     };
     return { node, next: index };
+  }
+
+  private tryParseTable(lines: WorkingLine[], start: number, end: number): { node: TableNode; next: number } | undefined {
+    const headerLine = lines[start];
+    const delimiterLine = lines[start + 1];
+    if (!headerLine || !delimiterLine) return undefined;
+    if (countIndentColumns(headerLine.text) >= 4 || countIndentColumns(delimiterLine.text) >= 4) return undefined;
+
+    const headerCells = splitTableRow(headerLine.text);
+    const delimiterCells = splitTableRow(delimiterLine.text);
+    if (!headerCells || !delimiterCells) return undefined;
+    if (headerCells.length === 0 || headerCells.length !== delimiterCells.length) return undefined;
+
+    const alignments = delimiterCells.map(parseTableAlignment);
+    if (alignments.some((alignment) => alignment === undefined)) return undefined;
+    const tableAlignments = alignments as TableAlignment[];
+    const header = headerCells.map((raw, column) => this.tableCell(headerLine, raw, tableAlignments[column] ?? null, true));
+    const rows: TableCellNode[][] = [];
+    let index = start + 2;
+    let last = delimiterLine;
+
+    while (index < end) {
+      const line = lines[index];
+      if (!line || isBlankLine(line.text)) break;
+      if (countIndentColumns(line.text) >= 4) break;
+      if (isParagraphInterrupt(line.text)) break;
+      const cells = splitTableRow(line.text);
+      if (!cells) break;
+      rows.push(normalizeTableCells(cells, tableAlignments.length).map((raw, column) => (
+        this.tableCell(line, raw, tableAlignments[column] ?? null, false)
+      )));
+      last = line;
+      index += 1;
+    }
+
+    return {
+      node: {
+        type: "table",
+        alignments: tableAlignments,
+        header,
+        rows,
+        range: this.lineRange(headerLine, last)
+      },
+      next: index
+    };
   }
 
   private parseFencedCode(
@@ -489,6 +544,18 @@ class BlockParser {
     return node;
   }
 
+  private tableCell(line: WorkingLine, raw: string, alignment: TableAlignment, header: boolean): TableCellNode {
+    const range = this.lineRange(line, line);
+    return {
+      type: "tableCell",
+      raw,
+      children: parseInlines(raw, { references: this.references, baseRange: range }),
+      alignment,
+      header,
+      range
+    };
+  }
+
   private addReference(node: LinkReferenceDefinitionNode): void {
     const normalizedLabel = normalizeReferenceLabel(node.label);
     if (this.references.has(normalizedLabel)) return;
@@ -516,6 +583,16 @@ class BlockParser {
         case "list":
           for (const item of block.children) this.refreshInlineNodes(item.children);
           break;
+        case "table":
+          for (const cell of block.header) {
+            cell.children = parseInlines(cell.raw, { references: this.references, baseRange: cell.range });
+          }
+          for (const row of block.rows) {
+            for (const cell of row) {
+              cell.children = parseInlines(cell.raw, { references: this.references, baseRange: cell.range });
+            }
+          }
+          break;
         case "codeBlock":
         case "htmlBlock":
         case "linkReferenceDefinition":
@@ -527,6 +604,10 @@ class BlockParser {
 
   private lineRange(first: WorkingLine, last: WorkingLine): SourceRange {
     return rangeFromOffsets(this.source, first.startOffset, last.endOffset);
+  }
+
+  private hasExtension(extension: string): boolean {
+    return this.options.extensions?.includes(extension) ?? false;
   }
 }
 
@@ -637,6 +718,77 @@ function findNextNonBlank(lines: WorkingLine[], start: number, end: number): num
     if (line && !isBlankLine(line.text)) return index;
   }
   return -1;
+}
+
+function splitTableRow(text: string): string[] | undefined {
+  const cells: string[] = [];
+  let current = "";
+  let codeFenceLength = 0;
+  let sawPipe = false;
+
+  for (let index = 0; index < text.length; index += 1) {
+    const char = text[index];
+
+    if (char === "\\") {
+      current += char;
+      if (index + 1 < text.length) {
+        current += text[index + 1];
+        index += 1;
+      }
+      continue;
+    }
+
+    if (char === "`") {
+      const runLength = countCharRun(text, index, "`");
+      if (codeFenceLength === 0) {
+        codeFenceLength = runLength;
+      } else if (runLength === codeFenceLength) {
+        codeFenceLength = 0;
+      }
+      current += "`".repeat(runLength);
+      index += runLength - 1;
+      continue;
+    }
+
+    if (char === "|" && codeFenceLength === 0) {
+      sawPipe = true;
+      cells.push(current.trim());
+      current = "";
+      continue;
+    }
+
+    current += char;
+  }
+
+  cells.push(current.trim());
+  if (!sawPipe) return undefined;
+
+  if (cells[0] === "") cells.shift();
+  if (cells[cells.length - 1] === "") cells.pop();
+  return cells;
+}
+
+function countCharRun(text: string, start: number, char: string): number {
+  let index = start;
+  while (text[index] === char) index += 1;
+  return index - start;
+}
+
+function parseTableAlignment(value: string): TableAlignment | undefined {
+  const trimmed = value.trim();
+  if (!/^:?-{3,}:?$/.test(trimmed)) return undefined;
+  const left = trimmed.startsWith(":");
+  const right = trimmed.endsWith(":");
+  if (left && right) return "center";
+  if (left) return "left";
+  if (right) return "right";
+  return null;
+}
+
+function normalizeTableCells(cells: string[], length: number): string[] {
+  const normalized = cells.slice(0, length);
+  while (normalized.length < length) normalized.push("");
+  return normalized;
 }
 
 function parseReferenceDefinition(text: string):

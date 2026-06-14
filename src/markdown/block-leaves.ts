@@ -1,4 +1,6 @@
 import type { HeadingNode, HtmlBlockNode } from "./ast.js";
+import { isHtmlTag } from "./html.js";
+import { unescapeDestination } from "./inline-links.js";
 
 export interface FenceStart {
   char: "`" | "~";
@@ -32,6 +34,7 @@ export function matchAtxHeading(text: string): { level: HeadingNode["level"]; co
   const match = /^(?: {0,3})(#{1,6})(?:[ \t]+|$)(.*)$/.exec(text);
   if (!match?.[1]) return undefined;
   let content = match[2] ?? "";
+  if (/^#+[ \t]*$/.test(content)) content = "";
   content = content.replace(/[ \t]+#+[ \t]*$/, "").trim();
   return {
     level: match[1].length as HeadingNode["level"],
@@ -84,11 +87,12 @@ export function matchFootnoteDefinitionStart(text: string): FootnoteDefinitionSt
 export function parseReferenceDefinition(text: string): LinkReferenceStart | undefined {
   const match = /^ {0,3}\[([^\]\n]+)\]:[ \t]*(\S+)(?:[ \t]+(?:"([^"]*)"|'([^']*)'|\(([^)]*)\)))?[ \t]*$/.exec(text);
   if (!match?.[1] || !match[2]) return undefined;
-  let destination = match[2];
+  let destination = unescapeDestination(match[2]);
   if (destination.startsWith("<") && destination.endsWith(">")) {
     destination = destination.slice(1, -1);
   }
-  const title = match[3] ?? match[4] ?? match[5];
+  const rawTitle = match[3] ?? match[4] ?? match[5];
+  const title = rawTitle === undefined ? undefined : unescapeDestination(rawTitle);
   const result: LinkReferenceStart = {
     label: match[1],
     destination
@@ -126,7 +130,7 @@ export function matchHtmlBlockStart(text: string): HtmlBlockStart | undefined {
     return { kind: "block-tag", untilBlank: true };
   }
 
-  if (/^<\/?[A-Za-z][A-Za-z0-9-]*(?:\s[^<>]*)?>[ \t]*$/.test(trimmed)) {
+  if (isHtmlTag(trimmed)) {
     return { kind: "complete", untilBlank: true };
   }
 

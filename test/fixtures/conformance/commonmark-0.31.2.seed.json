@@ -1,6 +1,7 @@
 {
   "name": "CommonMark 0.31.2 seed fixtures",
   "profile": "commonmark",
+  "commonmarkCompatible": true,
   "fixtures": [
     {
       "name": "paragraph emphasis and strong",
@@ -20,12 +21,27 @@
     {
       "name": "fenced code block",
       "markdown": "```\nconst value = 1;\n```\n",
-      "expected": "<pre><code>const value = 1;</code></pre>"
+      "expected": "<pre><code>const value = 1;\n</code></pre>"
     },
     {
       "name": "raw html block",
       "markdown": "<section>\n<p>Raw HTML.</p>\n</section>\n",
       "expected": "<section>\n<p>Raw HTML.</p>\n</section>"
+    },
+    {
+      "name": "tab indentation and loose list item",
+      "markdown": "- foo\n\n\t\tbar\n",
+      "expected": "<ul>\n<li>\n<p>foo</p>\n<pre><code>  bar\n</code></pre>\n</li>\n</ul>"
+    },
+    {
+      "name": "multiline link reference definition",
+      "markdown": "[foo]:\n/url\n\"title\"\n\n[foo]\n",
+      "expected": "<p><a href=\"/url\" title=\"title\">foo</a></p>"
+    },
+    {
+      "name": "inline raw html and hard break",
+      "markdown": "<a/><b2/>\nfoo  \nbar\n",
+      "expected": "<p><a/><b2/>\nfoo<br />\nbar</p>"
     }
   ]
 }

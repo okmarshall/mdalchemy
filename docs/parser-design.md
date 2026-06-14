@@ -612,7 +612,7 @@ Because the renderer may intentionally emit richer standalone HTML, conformance 
 The full-corpus report currently outputs:
 
 ```text
-CommonMark 0.31.2 corpus: 243/652 examples passed
+CommonMark 0.31.2 corpus: 589/652 examples passed
 
 | Section | Passed | Total | First failing examples |
 ```

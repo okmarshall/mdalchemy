@@ -2,7 +2,8 @@ export function escapeText(value: string): string {
   return value
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;");
+    .replaceAll(">", "&gt;")
+    .replaceAll("\"", "&quot;");
 }
 
 export function escapeAttribute(value: string): string {
@@ -24,4 +25,3 @@ export function safeUrl(value: string): string | undefined {
     return undefined;
   }
 }
-

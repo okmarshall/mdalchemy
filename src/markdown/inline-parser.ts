@@ -25,21 +25,11 @@ import { isLiteralAutolinkBoundary, trimLiteralAutolinkCandidate } from "./inlin
 import { findMatchingBracket, readDestination, readTitle, skipSpaces } from "./inline-links.js";
 import { hasMarkdownExtension, type MarkdownExtension } from "./extensions.js";
 import { textContent } from "./ast.js";
+import { decodeCharacterReference } from "./entities.js";
+import { findHtmlTagEnd, isHtmlInlineLiteral } from "./html.js";
 import { normalizeReferenceLabel } from "./references.js";
 
-const escapable = /[\\`*{}\[\]()#+\-.!_>~|]/;
-const namedEntities: Record<string, string> = {
-  amp: "&",
-  lt: "<",
-  gt: ">",
-  quot: "\"",
-  apos: "'",
-  nbsp: "\u00a0",
-  copy: "\u00a9",
-  reg: "\u00ae",
-  trade: "\u2122"
-};
-
+const escapable = /[!"#$%&'()*+,\-./:;<=>?@\[\\\]^_`{|}~]/;
 export interface InlineParserOptions {
   references?: ReferenceMap;
   baseRange?: SourceRange;
@@ -237,7 +227,7 @@ class InlineParser {
 
   private parseAutolinkOrHtml(): boolean {
     const start = this.index;
-    const close = this.source.indexOf(">", start + 1);
+    const close = findHtmlTagEnd(this.source, start);
     if (close === -1) return false;
     const literal = this.source.slice(start, close + 1);
     const inner = this.source.slice(start + 1, close);
@@ -255,7 +245,7 @@ class InlineParser {
       return true;
     }
 
-    if (/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(inner)) {
+    if (/^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+$/.test(inner)) {
       this.index = close + 1;
       const node: AutoLinkNode = {
         type: "autoLink",
@@ -268,7 +258,7 @@ class InlineParser {
       return true;
     }
 
-    if (isHtmlInline(literal)) {
+    if (isHtmlInlineLiteral(literal)) {
       this.index = close + 1;
       const node: HtmlInlineNode = {
         type: "htmlInline",
@@ -284,19 +274,12 @@ class InlineParser {
 
   private parseEntity(): boolean {
     const start = this.index;
-    const match = /^&(#x[0-9A-Fa-f]+|#[0-9]+|[A-Za-z][A-Za-z0-9]+);/.exec(this.source.slice(start));
+    const match = /^&(#x[0-9A-Fa-f]+|#X[0-9A-Fa-f]+|#[0-9]+|[A-Za-z][A-Za-z0-9]+);/.exec(this.source.slice(start));
     if (!match) return false;
     const entity = match[1];
     if (!entity) return false;
 
-    let value: string | undefined;
-    if (entity.startsWith("#x")) {
-      value = codePointToString(Number.parseInt(entity.slice(2), 16));
-    } else if (entity.startsWith("#")) {
-      value = codePointToString(Number.parseInt(entity.slice(1), 10));
-    } else {
-      value = namedEntities[entity];
-    }
+    const value = decodeCharacterReference(entity);
 
     if (!value) return false;
     this.index += match[0].length;
@@ -426,6 +409,8 @@ class InlineParser {
         this.nodes.push(this.hardBreak(start, this.index));
         return;
       }
+
+      previous.value = previous.value.replace(/ +$/, "");
     }
 
     const node: SoftBreakNode = {
@@ -442,7 +427,7 @@ class InlineParser {
       if (this.hasExtension("gfm-literal-autolink") && this.literalAutolinkCanParseAt(this.index)) break;
       if ("\\`![<&*_~ \n".includes(char)) {
         if (char === " " || (char !== "\n" && !this.specialCanParseAt(this.index))) {
-          this.index += 1;
+          this.index += char === "`" ? this.countRunAt(this.index, "`") : 1;
           continue;
         }
         break;
@@ -451,7 +436,8 @@ class InlineParser {
     }
 
     if (this.index === start) {
-      this.index += 1;
+      const char = this.source[this.index] ?? "";
+      this.index += char === "*" || char === "_" ? this.countRunAt(this.index, char) : 1;
     }
 
     this.nodes.push(this.text(this.source.slice(start, this.index), start, this.index));
@@ -463,11 +449,14 @@ class InlineParser {
       const next = this.source[index + 1];
       return next === "\n" || Boolean(next && escapable.test(next));
     }
-    if (char === "`") return this.findClosingRun("`", this.countRunAt(index, "`"), index + 1) !== -1;
+    if (char === "`") {
+      const tickCount = this.countRunAt(index, "`");
+      return this.findClosingRun("`", tickCount, index + tickCount) !== -1;
+    }
     if (char === "!" && this.source[index + 1] === "[") return true;
     if (char === "[") return true;
     if (char === "<") return this.source.indexOf(">", index + 1) !== -1;
-    if (char === "&") return /^&(#x[0-9A-Fa-f]+|#[0-9]+|[A-Za-z][A-Za-z0-9]+);/.test(this.source.slice(index));
+    if (char === "&") return /^&(#x[0-9A-Fa-f]+|#X[0-9A-Fa-f]+|#[0-9]+|[A-Za-z][A-Za-z0-9]+);/.test(this.source.slice(index));
     if (char === "*" || char === "_") return true;
     if (char === "~") return this.hasExtension("gfm-strikethrough") && this.source.startsWith("~~", index);
     return false;
@@ -508,7 +497,14 @@ class InlineParser {
 
   private findClosingRun(char: string, count: number, from: number): number {
     const delimiter = char.repeat(count);
-    return this.source.indexOf(delimiter, from);
+    let cursor = from;
+    while (cursor < this.source.length) {
+      const index = this.source.indexOf(delimiter, cursor);
+      if (index === -1) return -1;
+      if (this.source[index - 1] !== char && this.source[index + count] !== char) return index;
+      cursor = index + count;
+    }
+    return -1;
   }
 
   private text(value: string, start: number, end: number): TextNode {
@@ -586,23 +582,5 @@ class InlineParser {
         column: base.start.column + end
       }
     };
-  }
-}
-
-function isHtmlInline(literal: string): boolean {
-  return /^<\/?[A-Za-z][A-Za-z0-9-]*(?:\s[^<>]*)?>$/.test(literal)
-    || /^<!--[\s\S]*-->$/.test(literal)
-    || /^<![A-Z]+[\s\S]*>$/i.test(literal)
-    || /^<\?[\s\S]*\?>$/.test(literal);
-}
-
-function codePointToString(codePoint: number): string | undefined {
-  if (!Number.isFinite(codePoint) || codePoint <= 0 || codePoint > 0x10ffff) {
-    return undefined;
-  }
-  try {
-    return String.fromCodePoint(codePoint);
-  } catch {
-    return undefined;
   }
 }

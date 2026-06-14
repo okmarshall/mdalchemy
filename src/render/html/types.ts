@@ -5,6 +5,7 @@ import type { ResolvedConfig } from "../../config/config-schema.js";
 
 export interface RenderContext {
   config: ResolvedConfig;
+  commonmarkCompatible: boolean;
   outline: DocumentOutline;
   headingIds: Map<HeadingNode, string>;
   diagnostics: Diagnostic[];

@@ -105,6 +105,31 @@ export function countIndentColumns(text: string): number {
   return columns;
 }
 
+export function expandTabs(text: string, startColumn = 0): string {
+  let columns = startColumn;
+  let expanded = "";
+
+  for (const char of text) {
+    if (char === "\t") {
+      const width = 4 - (columns % 4);
+      expanded += " ".repeat(width);
+      columns += width;
+      continue;
+    }
+
+    expanded += char;
+    columns += 1;
+  }
+
+  return expanded;
+}
+
+export function expandLeadingTabs(text: string): string {
+  const leading = /^[ \t]*/.exec(text)?.[0] ?? "";
+  if (!leading.includes("\t")) return text;
+  return `${expandTabs(leading)}${text.slice(leading.length)}`;
+}
+
 export function stripIndentColumns(text: string, columnsToStrip: number): string {
   let columns = 0;
   let index = 0;
@@ -117,7 +142,7 @@ export function stripIndentColumns(text: string, columnsToStrip: number): string
     } else if (char === "\t") {
       const width = 4 - (columns % 4);
       if (columns + width > columnsToStrip) {
-        break;
+        return `${" ".repeat(columns + width - columnsToStrip)}${text.slice(index + 1)}`;
       }
       columns += width;
       index += 1;

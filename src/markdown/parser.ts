@@ -2,6 +2,7 @@ import { DiagnosticBag } from "../core/diagnostics.js";
 import {
   countIndentColumns,
   createSourceText,
+  expandLeadingTabs,
   isBlankLine,
   rangeFromOffsets,
   stripIndentColumns,
@@ -46,12 +47,12 @@ import {
   matchFrontmatterFence,
   matchHtmlBlockStart,
   matchSetextHeading,
-  parseReferenceDefinition,
   type FenceStart,
   type HtmlBlockStart
 } from "./block-leaves.js";
 import { hasMarkdownExtension, type MarkdownExtension } from "./extensions.js";
 import { parseInlines } from "./inline-parser.js";
+import { readDestination, readTitle, skipSpaces, unescapeDestination } from "./inline-links.js";
 import { normalizeReferenceLabel } from "./references.js";
 import { normalizeTableCells, parseTableAlignment, splitTableRow } from "./table-parser.js";
 
@@ -69,6 +70,7 @@ interface WorkingLine {
   startOffset: number;
   endOffset: number;
   text: string;
+  lazy?: boolean | undefined;
 }
 
 export function parseMarkdown(markdown: string, options: MarkdownOptions = {}, path?: string): ParseResult {
@@ -179,6 +181,13 @@ class BlockParser {
         continue;
       }
 
+      if (countIndentColumns(line.text) >= 4) {
+        const parsed = this.parseIndentedCode(lines, index, end);
+        nodes.push(parsed.node);
+        index = parsed.next;
+        continue;
+      }
+
       const htmlStart = matchHtmlBlockStart(line.text);
       if (htmlStart) {
         const parsed = this.parseHtmlBlock(lines, index, end, htmlStart);
@@ -196,12 +205,11 @@ class BlockParser {
         }
       }
 
-      const reference = parseReferenceDefinition(line.text);
+      const reference = this.tryParseReferenceDefinition(lines, index, end);
       if (reference) {
-        const node = this.referenceDefinition(line, reference.label, reference.destination, reference.title);
-        nodes.push(node);
-        this.addReference(node);
-        index += 1;
+        nodes.push(reference.node);
+        this.addReference(reference.node);
+        index = reference.next;
         continue;
       }
 
@@ -212,13 +220,6 @@ class BlockParser {
           index = parsed.next;
           continue;
         }
-      }
-
-      if (countIndentColumns(line.text) >= 4) {
-        const parsed = this.parseIndentedCode(lines, index, end);
-        nodes.push(parsed.node);
-        index = parsed.next;
-        continue;
       }
 
       const parsed = this.parseParagraph(lines, index, end);
@@ -238,7 +239,7 @@ class BlockParser {
       if (!line || isBlankLine(line.text)) break;
 
       if (paragraphLines.length > 0) {
-        const setext = matchSetextHeading(line.text);
+        const setext = line.lazy ? undefined : matchSetextHeading(line.text);
         if (setext) {
           const raw = paragraphLines.map((paragraphLine) => paragraphLine.text.trim()).join("\n");
           const first = paragraphLines[0] ?? line;
@@ -258,7 +259,9 @@ class BlockParser {
 
     const first = paragraphLines[0] ?? lines[start]!;
     const last = paragraphLines[paragraphLines.length - 1] ?? first;
-    const raw = paragraphLines.map((line) => line.text.trim()).join("\n");
+    const raw = paragraphLines.map((line, lineIndex) => (
+      normalizeParagraphLine(line.text, lineIndex === paragraphLines.length - 1)
+    )).join("\n");
     const range = this.lineRange(first, last);
     const node: ParagraphNode = {
       type: "paragraph",
@@ -360,6 +363,35 @@ class BlockParser {
     };
   }
 
+  private tryParseReferenceDefinition(
+    lines: WorkingLine[],
+    start: number,
+    end: number
+  ): { node: LinkReferenceDefinitionNode; next: number } | undefined {
+    const first = lines[start];
+    if (!first || countIndentColumns(first.text) >= 4) return undefined;
+    const label = parseReferenceLabelFromLines(lines, start, end);
+    if (!label) return undefined;
+
+    const definitionLines = [label.remainder];
+    let index = label.remainderLine + 1;
+    while (index < end) {
+      const line = lines[index];
+      if (!line || isBlankLine(line.text)) break;
+      definitionLines.push(line.text);
+      index += 1;
+    }
+
+    const parsed = parseReferenceRemainder(definitionLines.join("\n"));
+    if (!parsed) return undefined;
+
+    const last = lines[label.remainderLine + parsed.linesConsumed - 1] ?? first;
+    return {
+      node: this.referenceDefinition(first, last, label.label, parsed.destination, parsed.title),
+      next: label.remainderLine + parsed.linesConsumed
+    };
+  }
+
   private parseFencedCode(
     lines: WorkingLine[],
     start: number,
@@ -384,7 +416,7 @@ class BlockParser {
       index += 1;
     }
 
-    const info = fence.info.trim();
+    const info = unescapeDestination(fence.info.trim());
     const language = info ? info.split(/\s+/)[0] : undefined;
     const node: CodeBlockNode = {
       type: "codeBlock",
@@ -408,7 +440,7 @@ class BlockParser {
       const line = lines[index];
       if (!line) break;
       if (!isBlankLine(line.text) && countIndentColumns(line.text) < 4) break;
-      content.push(isBlankLine(line.text) ? "" : stripIndentColumns(line.text, 4));
+      content.push(isBlankLine(line.text) ? stripBlankCodeLine(line.text) : stripIndentColumns(line.text, 4));
       last = line;
       index += 1;
     }
@@ -431,6 +463,7 @@ class BlockParser {
     const quoteLines: WorkingLine[] = [];
     let index = start;
     let last = first;
+    let canLazyContinue = false;
 
     while (index < end) {
       const line = lines[index];
@@ -439,20 +472,20 @@ class BlockParser {
       if (stripped !== undefined) {
         quoteLines.push({ ...line, text: stripped });
         last = line;
+        const deepest = stripNestedBlockQuotes(stripped);
+        canLazyContinue = !isBlankLine(deepest) && isLazyContinuationSource(deepest);
         index += 1;
         continue;
       }
 
       if (isBlankLine(line.text)) {
-        quoteLines.push({ ...line, text: "" });
-        last = line;
-        index += 1;
-        continue;
+        break;
       }
 
-      if (!isParagraphInterrupt(line.text)) {
-        quoteLines.push(line);
+      if (canLazyContinue && !isParagraphInterrupt(line.text)) {
+        quoteLines.push({ ...line, lazy: true });
         last = line;
+        canLazyContinue = isLazyContinuationSource(line.text);
         index += 1;
         continue;
       }
@@ -483,43 +516,68 @@ class BlockParser {
     while (index < end) {
       const markerLine = lines[index];
       if (!markerLine) break;
+      if (index > start && isThematicBreak(markerLine.text)) break;
       const marker = matchListMarker(markerLine.text);
       if (!marker || !sameList(firstMarker, marker)) break;
 
       const itemLines: WorkingLine[] = [];
       const taskMarker = this.hasExtension("gfm-task-list") ? matchTaskListMarker(marker.content) : undefined;
-      itemLines.push({ ...markerLine, text: taskMarker?.content ?? marker.content });
+      const markerContent = taskMarker?.content ?? marker.content;
+      itemLines.push({ ...markerLine, text: markerContent });
       index += 1;
       let itemLast = markerLine;
       let sawBlank = false;
+      const requiredIndent = marker.indent + marker.markerColumns + marker.padding;
+      let openFence = matchFenceStart(markerContent);
 
       while (index < end) {
         const line = lines[index];
         if (!line) break;
+
+        if (openFence) {
+          const itemText = countIndentColumns(line.text) >= requiredIndent
+            ? stripIndentColumns(line.text, requiredIndent)
+            : line.text;
+          itemLines.push({ ...line, text: itemText });
+          if (isFenceClose(itemText, openFence.char, openFence.length)) openFence = undefined;
+          itemLast = line;
+          index += 1;
+          continue;
+        }
 
       if (isBlankLine(line.text)) {
         const nextContent = findNextNonBlank(lines, index + 1, end);
         if (nextContent === -1) break;
         const nextLine = lines[nextContent];
         const nextMarker = nextLine ? matchListMarker(nextLine.text) : undefined;
-        if (nextMarker && nextMarker.indent <= marker.indent) break;
-        if (nextLine && countIndentColumns(nextLine.text) <= marker.indent) break;
+        if (nextMarker && nextMarker.indent < requiredIndent) {
+          sawBlank = true;
+          itemLast = line;
+          index = nextContent;
+          break;
+        }
+        if (itemLines.every((itemLine) => isBlankLine(itemLine.text))) break;
+        if (nextLine && countIndentColumns(nextLine.text) < requiredIndent) break;
 
+        const nextIndent = nextLine ? countIndentColumns(nextLine.text) : 0;
+        const hasNestedList = itemLines.some((itemLine) => matchListMarker(itemLine.text));
+        const blankLoosensItem = nextIndent <= requiredIndent || (nextIndent >= requiredIndent + 4 && !hasNestedList);
         itemLines.push({ ...line, text: "" });
-        sawBlank = true;
+        sawBlank = sawBlank || blankLoosensItem;
         itemLast = line;
         index += 1;
           continue;
         }
 
         const nextMarker = matchListMarker(line.text);
-        if (nextMarker && nextMarker.indent <= marker.indent && sameList(firstMarker, nextMarker)) {
+        if (nextMarker && nextMarker.indent < requiredIndent) {
           break;
         }
 
-        const requiredIndent = marker.indent + marker.markerColumns + marker.padding;
         if (countIndentColumns(line.text) >= requiredIndent) {
-          itemLines.push({ ...line, text: stripIndentColumns(line.text, requiredIndent) });
+          const itemText = stripIndentColumns(line.text, requiredIndent);
+          itemLines.push({ ...line, text: itemText });
+          openFence = matchFenceStart(itemText);
           itemLast = line;
           index += 1;
           continue;
@@ -527,6 +585,7 @@ class BlockParser {
 
         if (!isParagraphInterrupt(line.text)) {
           itemLines.push(line);
+          openFence = matchFenceStart(line.text);
           itemLast = line;
           index += 1;
           continue;
@@ -536,7 +595,7 @@ class BlockParser {
       }
 
       const children = this.parseBlocks(itemLines, 0, itemLines.length);
-      if (sawBlank || children.some((child) => child.type === "list" && !child.tight)) {
+      if (sawBlank) {
         loose = true;
       }
 
@@ -630,7 +689,8 @@ class BlockParser {
   }
 
   private referenceDefinition(
-    line: WorkingLine,
+    first: WorkingLine,
+    last: WorkingLine,
     label: string,
     destination: string,
     title: string | undefined
@@ -639,7 +699,7 @@ class BlockParser {
       type: "linkReferenceDefinition",
       label,
       destination,
-      range: this.lineRange(line, line)
+      range: this.lineRange(first, last)
     };
     if (title !== undefined) node.title = title;
     return node;
@@ -727,6 +787,169 @@ function toWorkingLine(line: SourceLine): WorkingLine {
     index: line.index,
     startOffset: line.startOffset,
     endOffset: line.endOffset,
-    text: line.text
+    text: expandLeadingTabs(line.text)
   };
+}
+
+function normalizeParagraphLine(text: string, isLastLine: boolean): string {
+  const withoutIndent = text.trimStart();
+  return isLastLine ? withoutIndent.trimEnd() : withoutIndent;
+}
+
+function stripBlankCodeLine(text: string): string {
+  return countIndentColumns(text) >= 4 ? stripIndentColumns(text, 4) : "";
+}
+
+function isLazyContinuationSource(text: string): boolean {
+  const nestedQuote = stripBlockQuote(text);
+  if (nestedQuote !== undefined) return isLazyContinuationSource(stripNestedBlockQuotes(text));
+
+  const listMarker = matchListMarker(text);
+  if (listMarker?.content) return isLazyContinuationSource(stripNestedBlockQuotes(listMarker.content));
+
+  return countIndentColumns(text) < 4 && !isParagraphInterrupt(text);
+}
+
+function stripNestedBlockQuotes(text: string): string {
+  let current = text;
+  while (true) {
+    const stripped = stripBlockQuote(current);
+    if (stripped === undefined) return current;
+    current = stripped;
+  }
+}
+
+function parseReferenceLabel(text: string): { label: string; end: number } | undefined {
+  const indent = /^ {0,3}/.exec(text)?.[0].length ?? 0;
+  if (text[indent] !== "[") return undefined;
+
+  let index = indent + 1;
+  while (index < text.length) {
+    const char = text[index];
+    if (char === "\\") {
+      index += 2;
+      continue;
+    }
+
+    if (char === "[") return undefined;
+
+    if (char === "]" && text[index + 1] === ":") {
+      const rawLabel = text.slice(indent + 1, index);
+      if (!rawLabel || normalizeReferenceLabel(rawLabel) === "") return undefined;
+      return {
+        label: unescapeDestination(rawLabel),
+        end: index + 2
+      };
+    }
+
+    index += 1;
+  }
+
+  return undefined;
+}
+
+function parseReferenceLabelFromLines(
+  lines: WorkingLine[],
+  start: number,
+  end: number
+): { label: string; remainder: string; remainderLine: number } | undefined {
+  const first = lines[start];
+  if (!first) return undefined;
+
+  const singleLine = parseReferenceLabel(first.text);
+  if (singleLine) {
+    return {
+      label: singleLine.label,
+      remainder: first.text.slice(singleLine.end),
+      remainderLine: start
+    };
+  }
+
+  const indent = /^ {0,3}/.exec(first.text)?.[0].length ?? 0;
+  if (first.text[indent] !== "[") return undefined;
+  const labelParts = [first.text.slice(indent + 1)];
+  let index = start + 1;
+
+  while (index < end) {
+    const line = lines[index];
+    if (!line || isBlankLine(line.text)) return undefined;
+    const close = findReferenceLabelClose(line.text);
+    if (close !== undefined) {
+      const rawLabel = [...labelParts, line.text.slice(0, close)].join("\n");
+      if (!rawLabel || normalizeReferenceLabel(rawLabel) === "" || /(^|[^\\])\[/.test(rawLabel)) return undefined;
+      return {
+        label: unescapeDestination(rawLabel),
+        remainder: line.text.slice(close + 2),
+        remainderLine: index
+      };
+    }
+    labelParts.push(line.text);
+    index += 1;
+  }
+
+  return undefined;
+}
+
+function findReferenceLabelClose(text: string): number | undefined {
+  let index = 0;
+  while (index < text.length) {
+    const char = text[index];
+    if (char === "\\") {
+      index += 2;
+      continue;
+    }
+    if (char === "]" && text[index + 1] === ":") return index;
+    if (char === "[") return undefined;
+    index += 1;
+  }
+  return undefined;
+}
+
+function parseReferenceRemainder(source: string):
+  | { destination: string; title?: string | undefined; linesConsumed: number }
+  | undefined {
+  const destinationStart = skipSpaces(source, 0);
+  const destination = readDestination(source, destinationStart);
+  if (!destination) return undefined;
+
+  const noTitleEnd = skipHorizontalSpaces(source, destination.end);
+  const noTitleResult = isLineEnd(source, noTitleEnd)
+    ? {
+        destination: destination.destination,
+        linesConsumed: countConsumedLines(source, noTitleEnd)
+      }
+    : undefined;
+  const hasTitleSeparator = /[ \t\r\n]/.test(source[destination.end] ?? "");
+  const afterDestination = skipSpaces(source, destination.end);
+  const title = hasTitleSeparator ? readTitle(source, afterDestination) : undefined;
+  if (title) {
+    const end = skipHorizontalSpaces(source, title.end);
+    if (!isLineEnd(source, end)) {
+      if (noTitleResult && countConsumedLines(source, afterDestination) > countConsumedLines(source, destination.end)) {
+        return noTitleResult;
+      }
+      return undefined;
+    }
+    return {
+      destination: destination.destination,
+      title: title.title,
+      linesConsumed: countConsumedLines(source, end)
+    };
+  }
+
+  return noTitleResult;
+}
+
+function skipHorizontalSpaces(source: string, from: number): number {
+  let index = from;
+  while (source[index] === " " || source[index] === "\t") index += 1;
+  return index;
+}
+
+function isLineEnd(source: string, index: number): boolean {
+  return index >= source.length || source[index] === "\n" || source[index] === "\r";
+}
+
+function countConsumedLines(source: string, endOffset: number): number {
+  return source.slice(0, endOffset).split("\n").length;
 }

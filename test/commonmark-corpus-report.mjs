@@ -16,7 +16,8 @@ const config = resolveConfig({
   html: {
     fragment: true,
     headingAnchors: false,
-    tableOfContents: false
+    tableOfContents: false,
+    safeUrls: false
   }
 });
 
@@ -24,7 +25,7 @@ const sections = new Map();
 const failures = [];
 
 for (const fixture of fixtures) {
-  const rendered = await renderMarkdown(fixture.markdown, { config });
+  const rendered = await renderMarkdown(fixture.markdown, { config, commonmarkCompatible: true });
   const expected = normalizeCommonMarkHtml(fixture.html);
   const actual = rendered.content;
   const passed = actual === expected;

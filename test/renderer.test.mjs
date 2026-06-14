@@ -191,5 +191,5 @@ test("highlights C# fenced code blocks", async () => {
   assert.match(rendered.content, /language-csharp/);
   assert.match(rendered.content, /mda-syntax-keyword">public/);
   assert.match(rendered.content, /mda-syntax-function">Render/);
-  assert.match(rendered.content, /mda-syntax-string">"ok"/);
+  assert.match(rendered.content, /mda-syntax-string">&quot;ok&quot;/);
 });

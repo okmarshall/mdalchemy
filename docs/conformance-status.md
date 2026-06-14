@@ -73,13 +73,9 @@ Document/rendering coverage:
 
 These are the important areas to close before claiming full CommonMark conformance:
 
-- Emphasis and strong emphasis use a simplified delimiter search, not the full CommonMark delimiter stack algorithm.
-- Entity support includes common named entities and numeric entities, but not the full HTML entity table.
-- Link destination and title parsing handles common forms but is not yet exhaustive.
-- HTML block detection covers common categories but needs direct comparison against every CommonMark HTML block example.
-- List item continuation, indentation, and looseness are good for common documents but still need CommonMark example-by-example hardening.
+- Emphasis and strong emphasis still use a hardened simplified delimiter search, not the full CommonMark delimiter stack algorithm.
+- Link parsing still needs CommonMark bracket-stack behavior for nested links, labels, images, and emphasis/link precedence.
 - Source ranges are useful for diagnostics but are approximate in nested virtual lines.
-- Tabs are handled for indentation helpers, but full tab behavior needs conformance tests.
 - GFM extension support covers pipe tables, task lists, strikethrough, footnotes, and literal autolinks, but full upstream GFM fixture coverage has not been vendored yet.
 - PDF and other output formats are not implemented.
 
@@ -93,22 +89,18 @@ official terminal newline so formatting style does not hide parser behavior.
 Current baseline:
 
 ```text
-CommonMark 0.31.2 corpus: 243/652 examples passed
+CommonMark 0.31.2 corpus: 589/652 examples passed
 ```
 
-Lowest or most important section pass rates to prioritize:
+Completed official CommonMark sections:
 
-- Tabs: 0/11.
-- Thematic breaks: 2/19.
-- Setext headings: 3/27.
-- Indented code blocks: 1/12.
-- Fenced code blocks: 5/29.
-- List items: 13/48.
-- Lists: 8/26.
-- Images: 2/22.
-- Emphasis and strong emphasis: 39/132.
-- Links: 53/90.
-- Hard line breaks: 4/15.
+- All block-level sections: tabs, thematic breaks, headings, code blocks, HTML blocks, link reference definitions, paragraphs, blank lines, block quotes, list items, and lists.
+- Inline support sections for backslash escapes, entity and numeric references, code spans, images, autolinks, raw HTML, hard line breaks, soft line breaks, and textual content.
+
+Remaining official CommonMark sections:
+
+- Emphasis and strong emphasis: 85/132.
+- Links: 74/90.
 
 ## Verification Available Now
 
@@ -138,9 +130,6 @@ Recommended next steps:
 
 1. Use `npm run test:commonmark` before and after every CommonMark parser hardening change.
 2. Replace simplified emphasis parsing with the full delimiter stack algorithm.
-3. Implement full tab expansion and indentation-sensitive container parsing.
-4. Expand entity support to the complete named entity table.
-5. Harden thematic break, setext heading, list, and blockquote continuation rules against the official examples.
-6. Harden link, image, destination, title, and reference parsing against the official examples.
-7. Promote `npm run test:commonmark:strict` into the normal CI/release gate once all 652 examples pass.
-8. Add full supported-GFM fixture packs after deciding which GFM extensions are part of the supported surface.
+3. Replace greedy link parsing with a CommonMark bracket stack so nested links/images and emphasis/link precedence resolve correctly.
+4. Promote `npm run test:commonmark:strict` into the normal CI/release gate once all 652 examples pass.
+5. Add full supported-GFM fixture packs after deciding which GFM extensions are part of the supported surface.

@@ -11,24 +11,64 @@ export function normalizeCodeSpan(raw: string): string {
 export function canOpenEmphasis(source: string, start: number, length: number, char: "*" | "_"): boolean {
   const before = source[start - 1] ?? "";
   const after = source[start + length] ?? "";
-  if (!after || /\s/.test(after)) return false;
-  if (char === "_" && /\w/.test(before) && /\w/.test(after)) return false;
-  return true;
+  const leftFlanking = isLeftFlanking(before, after);
+  const rightFlanking = isRightFlanking(before, after);
+  if (char === "*") return leftFlanking;
+  return leftFlanking && (!rightFlanking || isPunctuation(before));
 }
 
 export function findClosingDelimiter(source: string, delimiter: string, from: number): number {
   let cursor = from;
   while (cursor < source.length) {
-    const close = source.indexOf(delimiter, cursor);
-    if (close === -1) return -1;
-    const before = source[close - 1] ?? "";
-    const after = source[close + delimiter.length] ?? "";
-    if (!/\s/.test(before) && !(delimiter[0] === "_" && /\w/.test(before) && /\w/.test(after))) {
-      return close;
+    if (source[cursor] === "`") {
+      const tickCount = countRunAt(source, cursor, "`");
+      const close = findClosingRun(source, "`", tickCount, cursor + tickCount);
+      if (close !== -1) {
+        cursor = close + tickCount;
+        continue;
+      }
     }
-    cursor = close + 1;
+
+    if (!source.startsWith(delimiter, cursor)) {
+      cursor += 1;
+      continue;
+    }
+
+    if (canCloseEmphasis(source, cursor, delimiter.length, delimiter[0] as "*" | "_")) {
+      return cursor;
+    }
+    cursor += 1;
   }
   return -1;
+}
+
+function canCloseEmphasis(source: string, start: number, length: number, char: "*" | "_"): boolean {
+  const before = source[start - 1] ?? "";
+  const after = source[start + length] ?? "";
+  const leftFlanking = isLeftFlanking(before, after);
+  const rightFlanking = isRightFlanking(before, after);
+  if (char === "*") return rightFlanking;
+  return rightFlanking && (!leftFlanking || isPunctuation(after));
+}
+
+function isLeftFlanking(before: string, after: string): boolean {
+  return after !== ""
+    && !isWhitespace(after)
+    && (!isPunctuation(after) || isWhitespace(before) || isPunctuation(before));
+}
+
+function isRightFlanking(before: string, after: string): boolean {
+  return before !== ""
+    && !isWhitespace(before)
+    && (!isPunctuation(before) || isWhitespace(after) || isPunctuation(after));
+}
+
+function isWhitespace(value: string): boolean {
+  return value === "" || /\s/u.test(value);
+}
+
+function isPunctuation(value: string): boolean {
+  return value !== "" && /[\p{P}\p{S}]/u.test(value);
 }
 
 export function mergeAdjacentText(nodes: InlineNode[]): InlineNode[] {
@@ -43,4 +83,22 @@ export function mergeAdjacentText(nodes: InlineNode[]): InlineNode[] {
     }
   }
   return merged;
+}
+
+function countRunAt(source: string, index: number, char: string): number {
+  let cursor = index;
+  while (source[cursor] === char) cursor += 1;
+  return cursor - index;
+}
+
+function findClosingRun(source: string, char: string, count: number, from: number): number {
+  const delimiter = char.repeat(count);
+  let cursor = from;
+  while (cursor < source.length) {
+    const index = source.indexOf(delimiter, cursor);
+    if (index === -1) return -1;
+    if (source[index - 1] !== char && source[index + count] !== char) return index;
+    cursor = index + count;
+  }
+  return -1;
 }

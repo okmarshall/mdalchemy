@@ -487,7 +487,7 @@ reference</a>, a <a href="https://example.com/collapsed">collapsed reference</a>
 <p><img src="./images/inline.svg" alt="inline image alt" title="Inline image"></p>
 <p><img src="./images/reference.svg" alt="reference image alt" title="Reference image"></p>
 <p>Autolinks: <a href="https://example.com/autolink">https://example.com/autolink</a> and <a href="mailto:person@example.com">person@example.com</a>.
-Entities: &amp; &lt; &gt; " # A.
+Entities: &amp; &lt; &gt; &quot; # A.
 Escapes: *literal asterisks*, [literal brackets], `literal backticks`,
 and \literal backslashes\.
 Inline HTML: <span data-kind="inline">raw span</span> and <kbd>Ctrl</kbd>.</p>
@@ -554,14 +554,14 @@ and this text follows the hard break.</p>
 <li>Bullet item inside a quote.</li>
 <li>Second bullet item inside a quote.</li>
 </ul>
-<pre data-language="js"><code class="language-js"><span class="mda-syntax-keyword">const</span> quoted <span class="mda-syntax-operator">=</span> <span class="mda-syntax-string">"fenced code inside a block quote"</span><span class="mda-syntax-punctuation">;</span>
+<pre data-language="js"><code class="language-js"><span class="mda-syntax-keyword">const</span> quoted <span class="mda-syntax-operator">=</span> <span class="mda-syntax-string">&quot;fenced code inside a block quote&quot;</span><span class="mda-syntax-punctuation">;</span>
 <span class="mda-syntax-builtin">console</span><span class="mda-syntax-punctuation">.</span><span class="mda-syntax-function">log</span><span class="mda-syntax-punctuation">(</span>quoted<span class="mda-syntax-punctuation">)</span><span class="mda-syntax-punctuation">;</span></code></pre>
 <p>Lazy continuation text belongs to the previous block quote paragraph
 even though this source line has no quote marker.</p>
 </blockquote>
 <ul>
-<li>Tight bullet one.</li>
-<li>Tight bullet two with nested content.
+<li><p>Tight bullet one.</p></li>
+<li><p>Tight bullet two with nested content.</p>
 <ol>
 <li>Nested ordered one.</li>
 <li>Nested ordered two.
@@ -570,13 +570,11 @@ even though this source line has no quote marker.</p>
 <li>Deep bullet two.</li>
 </ul></li>
 </ol></li>
-<li>Tight bullet three.</li>
+<li><p>Tight bullet three.</p></li>
 </ul>
 <ol>
 <li><p>Loose ordered item one.</p>
 <p>This second paragraph makes the list loose.</p></li>
-</ol>
-<ol start="2">
 <li><p>Loose ordered item two.</p>
 <ul>
 <li><p>Child bullet paragraph.</p>
@@ -591,7 +589,7 @@ even though this source line has no quote marker.</p>
 2. This line should stay part of the paragraph if paragraph interruption rules
 are implemented exactly.</p>
 <pre><code>function indentedCode() {
-  return "four leading spaces";
+  return &quot;four leading spaces&quot;;
 }</code></pre>
 <pre data-language="ts"><code class="language-ts"><span class="mda-syntax-keyword">export</span> <span class="mda-syntax-keyword">function</span> <span class="mda-syntax-function">fencedCode</span><span class="mda-syntax-punctuation">(</span>value<span class="mda-syntax-operator">:</span> <span class="mda-syntax-keyword">string</span><span class="mda-syntax-punctuation">)</span><span class="mda-syntax-operator">:</span> <span class="mda-syntax-keyword">string</span> <span class="mda-syntax-punctuation">{</span>
   <span class="mda-syntax-keyword">return</span> value<span class="mda-syntax-punctuation">.</span><span class="mda-syntax-function">trim</span><span class="mda-syntax-punctuation">(</span><span class="mda-syntax-punctuation">)</span><span class="mda-syntax-punctuation">;</span>
@@ -600,11 +598,11 @@ are implemented exactly.</p>
 <span class="mda-syntax-punctuation">{</span>
     <span class="mda-syntax-keyword">public</span> <span class="mda-syntax-keyword">string</span> <span class="mda-syntax-function">Render</span><span class="mda-syntax-punctuation">(</span><span class="mda-syntax-keyword">string</span> markdown<span class="mda-syntax-punctuation">)</span>
     <span class="mda-syntax-punctuation">{</span>
-        <span class="mda-syntax-builtin">Console</span><span class="mda-syntax-punctuation">.</span><span class="mda-syntax-function">WriteLine</span><span class="mda-syntax-punctuation">(</span><span class="mda-syntax-string">"Rendering Markdown"</span><span class="mda-syntax-punctuation">)</span><span class="mda-syntax-punctuation">;</span>
+        <span class="mda-syntax-builtin">Console</span><span class="mda-syntax-punctuation">.</span><span class="mda-syntax-function">WriteLine</span><span class="mda-syntax-punctuation">(</span><span class="mda-syntax-string">&quot;Rendering Markdown&quot;</span><span class="mda-syntax-punctuation">)</span><span class="mda-syntax-punctuation">;</span>
         <span class="mda-syntax-keyword">return</span> markdown<span class="mda-syntax-punctuation">.</span><span class="mda-syntax-function">Trim</span><span class="mda-syntax-punctuation">(</span><span class="mda-syntax-punctuation">)</span><span class="mda-syntax-punctuation">;</span>
     <span class="mda-syntax-punctuation">}</span>
 <span class="mda-syntax-punctuation">}</span></code></pre>
-<pre data-language="html"><code class="language-html"><span class="mda-syntax-tag">&lt;div</span><span class="mda-syntax-attribute"> class</span><span class="mda-syntax-punctuation">=</span><span class="mda-syntax-string">"from-fence"</span><span class="mda-syntax-punctuation">&gt;</span>
+<pre data-language="html"><code class="language-html"><span class="mda-syntax-tag">&lt;div</span><span class="mda-syntax-attribute"> class</span><span class="mda-syntax-punctuation">=</span><span class="mda-syntax-string">&quot;from-fence&quot;</span><span class="mda-syntax-punctuation">&gt;</span>
   Fenced HTML is code, not raw HTML.
 <span class="mda-syntax-tag">&lt;/div</span><span class="mda-syntax-punctuation">&gt;</span></code></pre>
 <section class="raw-html-block">

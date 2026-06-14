@@ -24,10 +24,10 @@ function renderInline(node: InlineNode, context: RenderContext): string {
       return escapeText(node.value);
     case "softBreak":
       if (context.config.html.softBreak === "space") return " ";
-      if (context.config.html.softBreak === "br") return "<br>\n";
+      if (context.config.html.softBreak === "br") return renderBreak(context);
       return "\n";
     case "hardBreak":
-      return "<br>\n";
+      return renderBreak(context);
     case "codeSpan":
       return `<code>${escapeText(node.literal)}</code>`;
     case "emphasis":
@@ -51,7 +51,7 @@ function renderInline(node: InlineNode, context: RenderContext): string {
 
 function renderLink(destination: string, title: string | undefined, label: string, context: RenderContext): string {
   const href = context.config.html.safeUrls ? safeUrl(destination) : destination;
-  if (!href) {
+  if (href === undefined) {
     context.diagnostics.push({
       severity: "warning",
       code: "MDA_HTML_UNSAFE_URL",
@@ -60,12 +60,13 @@ function renderLink(destination: string, title: string | undefined, label: strin
     return label;
   }
   const titleAttr = title ? ` title="${escapeAttribute(title)}"` : "";
-  return `<a href="${escapeAttribute(href)}"${titleAttr}>${label}</a>`;
+  const normalizedHref = context.commonmarkCompatible ? normalizeCommonMarkUri(href) : href;
+  return `<a href="${escapeAttribute(normalizedHref)}"${titleAttr}>${label}</a>`;
 }
 
 function renderImage(destination: string, title: string | undefined, alt: string, context: RenderContext): string {
   const src = context.config.html.safeUrls ? safeUrl(destination) : destination;
-  if (!src) {
+  if (src === undefined) {
     context.diagnostics.push({
       severity: "warning",
       code: "MDA_HTML_UNSAFE_URL",
@@ -74,5 +75,24 @@ function renderImage(destination: string, title: string | undefined, alt: string
     return "";
   }
   const titleAttr = title ? ` title="${escapeAttribute(title)}"` : "";
-  return `<img src="${escapeAttribute(src)}" alt="${escapeAttribute(alt)}"${titleAttr}>`;
+  const normalizedSrc = context.commonmarkCompatible ? normalizeCommonMarkUri(src) : src;
+  const suffix = context.commonmarkCompatible ? " />" : ">";
+  return `<img src="${escapeAttribute(normalizedSrc)}" alt="${escapeAttribute(alt)}"${titleAttr}${suffix}`;
+}
+
+function renderBreak(context: RenderContext): string {
+  return context.commonmarkCompatible ? "<br />\n" : "<br>\n";
+}
+
+function normalizeCommonMarkUri(value: string): string {
+  const preservedEscapes: string[] = [];
+  const placeholderPrefix = "__MDA_URI_ESCAPE_";
+  const protectedValue = value.replace(/%[0-9A-Fa-f]{2}/g, (escape) => {
+    const index = preservedEscapes.push(escape) - 1;
+    return `${placeholderPrefix}${index}__`;
+  });
+  const encoded = encodeURI(protectedValue);
+  return encoded.replace(new RegExp(`${placeholderPrefix}(\\d+)__`, "g"), (_match, index: string) => (
+    preservedEscapes[Number.parseInt(index, 10)] ?? ""
+  ));
 }

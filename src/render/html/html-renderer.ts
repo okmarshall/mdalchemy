@@ -15,6 +15,7 @@ export interface RenderOptions {
   markdown?: MarkdownOptions;
   theme?: ResolvedTheme;
   cwd?: string;
+  commonmarkCompatible?: boolean;
 }
 
 export interface RenderResult {
@@ -39,6 +40,7 @@ export async function renderDocument(document: DocumentNode, options: RenderOpti
   const footnoteDefinitions = collectFootnoteDefinitions(document.children);
   const context: RenderContext = {
     config,
+    commonmarkCompatible: options.commonmarkCompatible ?? false,
     outline,
     headingIds,
     diagnostics,

@@ -78,7 +78,7 @@ Status labels:
 | Source ranges | `[Done]` | `src/core/source.ts`, `test/parser.test.mjs` | Parser nodes carry source ranges for current parsing; precision hardening remains Phase 5 work. |
 | Conformance fixture runner | `[Done]` | `test/conformance.test.mjs`, `test/fixtures/conformance` | Strict seed packs remain the fast regression guardrail. |
 | Full CommonMark 0.31.2 fixture corpus | `[Done]` | `test/fixtures/conformance/commonmark-0.31.2.json`, `test/commonmark-corpus-report.mjs`, `npm run test:commonmark` | Official 652-example corpus is vendored and reports pass rates by section. |
-| Full CommonMark 0.31.2 conformance pass | `[Partial]` | `npm run test:commonmark` | Current baseline is 243/652 examples passing; `npm run test:commonmark:strict` is the future release gate. |
+| Full CommonMark 0.31.2 conformance pass | `[Partial]` | `npm run test:commonmark` | Current baseline is 589/652 examples passing; remaining official gaps are emphasis delimiter-stack behavior and nested-link bracket-stack precedence. |
 
 ### Extensions
 
@@ -152,7 +152,7 @@ Status labels:
 | Visual/browser verification | `[Done]` | `docs/testing-pipeline.md` | Repeatable desktop and narrow-viewport browser checklist is documented for layout-sensitive changes. |
 | Conformance fixture runner | `[Done]` | `test/conformance.test.mjs`, `test/fixtures/conformance` | Seed packs cover representative CommonMark and supported GFM/frontmatter cases. |
 | Full CommonMark conformance corpus | `[Done]` | `test/fixtures/conformance/commonmark-0.31.2.json`, `npm run test:commonmark` | Official corpus is vendored and section-level reporting is available. |
-| Full CommonMark strict pass | `[Partial]` | `npm run test:commonmark` | Current baseline is 243/652 examples passing; close section gaps before enabling strict mode in normal CI. |
+| Full CommonMark strict pass | `[Partial]` | `npm run test:commonmark` | Current baseline is 589/652 examples passing; close emphasis/link gaps before enabling strict mode in normal CI. |
 | Full GFM conformance corpus | `[Planned]` | Conformance docs | Vendor full upstream GFM fixtures after deciding which GFM extensions are in scope. |
 | CI workflow | `[Planned]` | Roadmap only | Add after scripts stabilize. |
 | User README | `[Done]` | `README.md` | README includes current implementation, usage commands, option summary, examples, and planning document links. |

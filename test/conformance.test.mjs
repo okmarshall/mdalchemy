@@ -22,10 +22,14 @@ for (const fixturePath of fixturePacks) {
           html: {
             fragment: true,
             headingAnchors: false,
-            tableOfContents: false
+            tableOfContents: false,
+            safeUrls: false
           }
         });
-        const rendered = await renderMarkdown(fixture.markdown, { config });
+        const rendered = await renderMarkdown(fixture.markdown, {
+          config,
+          commonmarkCompatible: pack.commonmarkCompatible ?? false
+        });
         assert.equal(rendered.content, fixture.expected);
       });
     }
@@ -37,5 +41,8 @@ async function readFixturePack(path) {
   assert.equal(typeof raw.name, "string");
   assert.equal(raw.profile, "commonmark");
   assert.equal(Array.isArray(raw.fixtures), true);
+  if (raw.commonmarkCompatible !== undefined) {
+    assert.equal(typeof raw.commonmarkCompatible, "boolean");
+  }
   return raw;
 }

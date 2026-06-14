@@ -130,3 +130,50 @@ test("leaves pipe tables as paragraphs without the GFM table extension", () => {
 
   assert.equal(document.children[0].type, "paragraph");
 });
+
+test("parses opted-in GFM extensions and frontmatter", () => {
+  const markdown = `---
+title: Extension Fixture
+---
+
+- [x] Finished item
+- [ ] Pending item with ~~obsolete wording~~
+
+Visit https://example.com/docs and contact docs@example.com.
+
+Here is a note.[^note]
+
+[^note]: Footnote **body** with a [link](https://example.com).
+`;
+  const { document } = parseMarkdown(markdown, {
+    extensions: [
+      "frontmatter",
+      "gfm-task-list",
+      "gfm-strikethrough",
+      "gfm-footnote",
+      "gfm-literal-autolink"
+    ]
+  });
+
+  assert.equal(document.children[0].type, "frontmatter");
+  assert.match(document.children[0].raw, /title: Extension Fixture/);
+
+  const list = document.children[1];
+  assert.equal(list.type, "list");
+  assert.deepEqual(list.children.map((item) => item.task?.checked), [true, false]);
+  assert.equal(list.children[1].children[0].type, "paragraph");
+  assert.equal(list.children[1].children[0].children.some((node) => node.type === "strikethrough"), true);
+
+  const literalAutolinkParagraph = document.children[2];
+  assert.equal(literalAutolinkParagraph.type, "paragraph");
+  assert.equal(literalAutolinkParagraph.children.filter((node) => node.type === "autoLink").length, 2);
+
+  const footnoteReferenceParagraph = document.children[3];
+  assert.equal(footnoteReferenceParagraph.type, "paragraph");
+  assert.equal(footnoteReferenceParagraph.children.some((node) => node.type === "footnoteReference"), true);
+
+  const footnoteDefinition = document.children[4];
+  assert.equal(footnoteDefinition.type, "footnoteDefinition");
+  assert.equal(footnoteDefinition.label, "note");
+  assert.equal(footnoteDefinition.children[0].type, "paragraph");
+});

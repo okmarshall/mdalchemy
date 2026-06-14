@@ -22,7 +22,7 @@ The package should expose at least these baseline scripts:
     "test:unit": "npm run build && node --test test/parser.test.mjs test/renderer.test.mjs test/cli.test.mjs",
     "test:fixtures": "npm run build && node --test test/example-fixture.test.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "render:example": "npm run build && node dist/cli/main.js examples/complex-spec.md -o examples/complex-spec.html --toc --gfm"
+    "render:example": "npm run build && node dist/cli/main.js examples/complex-spec.md -o examples/complex-spec.html --toc --gfm --frontmatter"
   }
 }
 ```
@@ -178,7 +178,7 @@ Build and render through the compiled entrypoint:
 
 ```sh
 npm run build
-node dist/cli/main.js examples/complex-spec.md -o tmp/rendered/complex-spec.html --strict --gfm
+node dist/cli/main.js examples/complex-spec.md -o tmp/rendered/complex-spec.html --strict --gfm --frontmatter
 ```
 
 Expected result:
@@ -192,7 +192,7 @@ Expected result:
 For fragment-specific tests, render to stdout:
 
 ```sh
-node dist/cli/main.js examples/complex-spec.md --stdout --fragment --gfm > tmp/rendered/complex-spec.fragment.html
+node dist/cli/main.js examples/complex-spec.md --stdout --fragment --gfm --frontmatter > tmp/rendered/complex-spec.fragment.html
 ```
 
 Fragment output should omit the standalone HTML shell and theme CSS so parser

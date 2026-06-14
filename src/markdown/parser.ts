@@ -13,6 +13,8 @@ import type {
   BlockQuoteNode,
   CodeBlockNode,
   DocumentNode,
+  FootnoteDefinitionNode,
+  FrontmatterNode,
   HeadingNode,
   HtmlBlockNode,
   LinkReferenceDefinition,
@@ -75,7 +77,10 @@ class BlockParser {
 
   parse(): DocumentNode {
     const lines = this.source.lines.map(toWorkingLine);
-    const children = this.parseBlocks(lines, 0, lines.length);
+    const frontmatter = this.tryParseFrontmatter(lines);
+    const children = frontmatter
+      ? [frontmatter.node, ...this.parseBlocks(lines, frontmatter.next, lines.length)]
+      : this.parseBlocks(lines, 0, lines.length);
     this.refreshInlineNodes(children);
     const range = rangeFromOffsets(this.source, 0, this.source.text.length);
     return {
@@ -85,6 +90,33 @@ class BlockParser {
       references: this.references,
       diagnostics: this.diagnostics.diagnostics
     };
+  }
+
+  private tryParseFrontmatter(lines: WorkingLine[]): { node: FrontmatterNode; next: number } | undefined {
+    if (!this.hasExtension("frontmatter")) return undefined;
+    const first = lines[0];
+    if (!first || first.text.trim() !== "---") return undefined;
+
+    let index = 1;
+    while (index < lines.length) {
+      const line = lines[index];
+      if (!line) break;
+      if (line.text.trim() === "---") {
+        const raw = lines.slice(1, index).map((frontmatterLine) => frontmatterLine.text).join("\n");
+        return {
+          node: {
+            type: "frontmatter",
+            raw,
+            format: "yaml",
+            range: this.lineRange(first, line)
+          },
+          next: index + 1
+        };
+      }
+      index += 1;
+    }
+
+    return undefined;
   }
 
   private parseBlocks(lines: WorkingLine[], start: number, end: number): BlockNode[] {
@@ -144,6 +176,15 @@ class BlockParser {
         continue;
       }
 
+      if (this.hasExtension("gfm-footnote")) {
+        const parsed = this.tryParseFootnoteDefinition(lines, index, end);
+        if (parsed) {
+          nodes.push(parsed.node);
+          index = parsed.next;
+          continue;
+        }
+      }
+
       const reference = parseReferenceDefinition(line.text);
       if (reference) {
         const node = this.referenceDefinition(line, reference.label, reference.destination, reference.title);
@@ -197,6 +238,7 @@ class BlockParser {
         }
 
         if (isParagraphInterrupt(line.text)) break;
+        if (this.hasExtension("gfm-footnote") && matchFootnoteDefinitionStart(line.text)) break;
       }
 
       paragraphLines.push(line);
@@ -210,7 +252,7 @@ class BlockParser {
     const node: ParagraphNode = {
       type: "paragraph",
       raw,
-      children: parseInlines(raw, { references: this.references, baseRange: range }),
+      children: parseInlines(raw, this.inlineOptions(range)),
       range
     };
     return { node, next: index };
@@ -256,6 +298,52 @@ class BlockParser {
         header,
         rows,
         range: this.lineRange(headerLine, last)
+      },
+      next: index
+    };
+  }
+
+  private tryParseFootnoteDefinition(
+    lines: WorkingLine[],
+    start: number,
+    end: number
+  ): { node: FootnoteDefinitionNode; next: number } | undefined {
+    const first = lines[start];
+    if (!first) return undefined;
+    const footnote = matchFootnoteDefinitionStart(first.text);
+    if (!footnote) return undefined;
+
+    const contentLines: WorkingLine[] = [{ ...first, text: footnote.content }];
+    let index = start + 1;
+    let last = first;
+
+    while (index < end) {
+      const line = lines[index];
+      if (!line) break;
+
+      if (isBlankLine(line.text)) {
+        const nextContent = findNextNonBlank(lines, index + 1, end);
+        if (nextContent === -1) break;
+        const nextLine = lines[nextContent];
+        if (!nextLine || countIndentColumns(nextLine.text) < 4) break;
+        contentLines.push({ ...line, text: "" });
+        last = line;
+        index += 1;
+        continue;
+      }
+
+      if (countIndentColumns(line.text) < 4) break;
+      contentLines.push({ ...line, text: stripIndentColumns(line.text, 4) });
+      last = line;
+      index += 1;
+    }
+
+    return {
+      node: {
+        type: "footnoteDefinition",
+        label: footnote.label,
+        children: this.parseBlocks(contentLines, 0, contentLines.length),
+        range: this.lineRange(first, last)
       },
       next: index
     };
@@ -388,7 +476,8 @@ class BlockParser {
       if (!marker || !sameList(firstMarker, marker)) break;
 
       const itemLines: WorkingLine[] = [];
-      itemLines.push({ ...markerLine, text: marker.content });
+      const taskMarker = this.hasExtension("gfm-task-list") ? matchTaskListMarker(marker.content) : undefined;
+      itemLines.push({ ...markerLine, text: taskMarker?.content ?? marker.content });
       index += 1;
       let itemLast = markerLine;
       let sawBlank = false;
@@ -403,7 +492,7 @@ class BlockParser {
         const nextLine = lines[nextContent];
         const nextMarker = nextLine ? matchListMarker(nextLine.text) : undefined;
         if (nextMarker && nextMarker.indent <= marker.indent) break;
-        if (nextLine && countIndentColumns(nextLine.text) <= marker.indent && isParagraphInterrupt(nextLine.text)) break;
+        if (nextLine && countIndentColumns(nextLine.text) <= marker.indent) break;
 
         itemLines.push({ ...line, text: "" });
         sawBlank = true;
@@ -447,6 +536,7 @@ class BlockParser {
         children,
         range: this.lineRange(markerLine, itemLast)
       };
+      if (taskMarker) item.task = { checked: taskMarker.checked };
       items.push(item);
       last = itemLast;
     }
@@ -516,7 +606,7 @@ class BlockParser {
       type: "heading",
       level,
       raw,
-      children: parseInlines(raw, { references: this.references, baseRange: range }),
+      children: parseInlines(raw, this.inlineOptions(range)),
       range
     };
   }
@@ -549,7 +639,7 @@ class BlockParser {
     return {
       type: "tableCell",
       raw,
-      children: parseInlines(raw, { references: this.references, baseRange: range }),
+      children: parseInlines(raw, this.inlineOptions(range)),
       alignment,
       header,
       range
@@ -574,10 +664,11 @@ class BlockParser {
       switch (block.type) {
         case "paragraph":
         case "heading":
-          block.children = parseInlines(block.raw, { references: this.references, baseRange: block.range });
+          block.children = parseInlines(block.raw, this.inlineOptions(block.range));
           break;
         case "blockquote":
         case "listItem":
+        case "footnoteDefinition":
           this.refreshInlineNodes(block.children);
           break;
         case "list":
@@ -585,15 +676,16 @@ class BlockParser {
           break;
         case "table":
           for (const cell of block.header) {
-            cell.children = parseInlines(cell.raw, { references: this.references, baseRange: cell.range });
+            cell.children = parseInlines(cell.raw, this.inlineOptions(cell.range));
           }
           for (const row of block.rows) {
             for (const cell of row) {
-              cell.children = parseInlines(cell.raw, { references: this.references, baseRange: cell.range });
+              cell.children = parseInlines(cell.raw, this.inlineOptions(cell.range));
             }
           }
           break;
         case "codeBlock":
+        case "frontmatter":
         case "htmlBlock":
         case "linkReferenceDefinition":
         case "thematicBreak":
@@ -608,6 +700,14 @@ class BlockParser {
 
   private hasExtension(extension: string): boolean {
     return this.options.extensions?.includes(extension) ?? false;
+  }
+
+  private inlineOptions(baseRange: SourceRange) {
+    return {
+      references: this.references,
+      baseRange,
+      extensions: this.options.extensions
+    };
   }
 }
 
@@ -692,6 +792,24 @@ function matchListMarker(text: string): ListMarker | undefined {
     markerColumns,
     padding,
     content
+  };
+}
+
+function matchTaskListMarker(text: string): { checked: boolean; content: string } | undefined {
+  const match = /^\[([ xX])\](?:[ \t]+|$)(.*)$/.exec(text);
+  if (!match?.[1]) return undefined;
+  return {
+    checked: match[1].toLowerCase() === "x",
+    content: match[2] ?? ""
+  };
+}
+
+function matchFootnoteDefinitionStart(text: string): { label: string; content: string } | undefined {
+  const match = /^ {0,3}\[\^([^\]\s]+)\]:[ \t]*(.*)$/.exec(text);
+  if (!match?.[1]) return undefined;
+  return {
+    label: match[1].trim(),
+    content: match[2] ?? ""
   };
 }
 

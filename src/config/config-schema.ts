@@ -17,6 +17,21 @@ export interface MarkdownConfig {
   extensions?: string[] | undefined;
 }
 
+export const gfmMarkdownExtensions = [
+  "gfm-table",
+  "gfm-task-list",
+  "gfm-strikethrough",
+  "gfm-footnote",
+  "gfm-literal-autolink"
+] as const;
+
+export const supportedMarkdownExtensions = [
+  ...gfmMarkdownExtensions,
+  "frontmatter"
+] as const;
+
+export type MarkdownExtension = typeof supportedMarkdownExtensions[number];
+
 export interface HtmlConfig {
   lang?: string | undefined;
   rawHtml?: "allow" | "escape" | "strip" | undefined;

@@ -206,20 +206,20 @@ Derived features are not separate Markdown syntax. They are computed from the pa
 - Section wrappers for headings and following content.
 - Heading anchors.
 - Reading-friendly code block captions if future syntax or config provides them.
-- Document metadata from config or future frontmatter extension.
+- Document metadata from config or the `frontmatter` extension.
 
 ### Extension Candidates
 
 These are explicitly outside the CommonMark core unless added behind an extension flag.
 
 - GitHub Flavored Markdown tables. Implemented as `gfm-table`.
-- Task list items.
-- Strikethrough.
-- Autolink literal extension.
+- Task list items. Implemented as `gfm-task-list`.
+- Strikethrough. Implemented as `gfm-strikethrough`.
+- Autolink literal extension. Implemented as `gfm-literal-autolink`.
 - Disallowed raw HTML filtering.
-- Footnotes.
+- Footnotes. Implemented as `gfm-footnote`.
 - Definition lists.
-- Frontmatter.
+- Frontmatter. Implemented as `frontmatter`.
 - Admonitions.
 - Math blocks and inline math.
 - Mermaid diagrams.

@@ -2,6 +2,7 @@ import type {
   AutoLinkNode,
   CodeSpanNode,
   EmphasisNode,
+  FootnoteReferenceNode,
   HardBreakNode,
   HtmlInlineNode,
   ImageNode,
@@ -11,6 +12,7 @@ import type {
   SoftBreakNode,
   SourceRange,
   StrongNode,
+  StrikethroughNode,
   TextNode
 } from "./ast.js";
 import { textContent } from "./ast.js";
@@ -32,10 +34,11 @@ const namedEntities: Record<string, string> = {
 export interface InlineParserOptions {
   references?: ReferenceMap;
   baseRange?: SourceRange;
+  extensions?: string[] | undefined;
 }
 
 export function parseInlines(source: string, options: InlineParserOptions = {}): InlineNode[] {
-  const parser = new InlineParser(source, options.references ?? new Map(), options.baseRange);
+  const parser = new InlineParser(source, options.references ?? new Map(), options.baseRange, options.extensions ?? []);
   return parser.parse();
 }
 
@@ -46,7 +49,8 @@ class InlineParser {
   constructor(
     private readonly source: string,
     private readonly references: ReferenceMap,
-    private readonly baseRange?: SourceRange
+    private readonly baseRange: SourceRange | undefined,
+    private readonly extensions: string[]
   ) {}
 
   parse(): InlineNode[] {
@@ -56,10 +60,13 @@ class InlineParser {
       if (char === "\\" && this.parseEscape()) continue;
       if (char === "`" && this.parseCodeSpan()) continue;
       if (char === "!" && this.source[this.index + 1] === "[" && this.parseLinkOrImage(true)) continue;
+      if (char === "[" && this.hasExtension("gfm-footnote") && this.parseFootnoteReference()) continue;
       if (char === "[" && this.parseLinkOrImage(false)) continue;
       if (char === "<" && this.parseAutolinkOrHtml()) continue;
       if (char === "&" && this.parseEntity()) continue;
+      if (char === "~" && this.hasExtension("gfm-strikethrough") && this.parseStrikethrough()) continue;
       if ((char === "*" || char === "_") && this.parseEmphasis(char)) continue;
+      if (this.hasExtension("gfm-literal-autolink") && this.parseLiteralAutolink()) continue;
       if (char === "\n") {
         this.parseLineBreak();
         continue;
@@ -111,6 +118,21 @@ class InlineParser {
     return true;
   }
 
+  private parseFootnoteReference(): boolean {
+    const start = this.index;
+    const match = /^\[\^([^\]\s]+)\]/.exec(this.source.slice(start));
+    if (!match?.[1]) return false;
+
+    this.index += match[0].length;
+    const node: FootnoteReferenceNode = {
+      type: "footnoteReference",
+      label: match[1],
+      range: this.range(start, this.index)
+    };
+    this.nodes.push(node);
+    return true;
+  }
+
   private parseLinkOrImage(isImage: boolean): boolean {
     const start = this.index;
     const labelStart = isImage ? start + 2 : start + 1;
@@ -118,7 +140,7 @@ class InlineParser {
     if (labelEnd === -1) return false;
 
     const labelSource = this.source.slice(labelStart, labelEnd);
-    const children = parseInlines(labelSource, { references: this.references, baseRange: this.range(labelStart, labelEnd) });
+    const children = this.parseChildInlines(labelSource, labelStart, labelEnd);
     let cursor = labelEnd + 1;
 
     const inline = this.parseInlineDestination(cursor);
@@ -287,10 +309,7 @@ class InlineParser {
     if (close === -1) return false;
 
     const innerSource = this.source.slice(start + delimiterLength, close);
-    const children = parseInlines(innerSource, {
-      references: this.references,
-      baseRange: this.range(start + delimiterLength, close)
-    });
+    const children = this.parseChildInlines(innerSource, start + delimiterLength, close);
     this.index = close + delimiterLength;
 
     if (delimiterLength === 3) {
@@ -327,6 +346,60 @@ class InlineParser {
     return true;
   }
 
+  private parseStrikethrough(): boolean {
+    const start = this.index;
+    if (!this.source.startsWith("~~", start)) return false;
+    const close = this.source.indexOf("~~", start + 2);
+    if (close === -1 || close === start + 2) return false;
+
+    const innerSource = this.source.slice(start + 2, close);
+    const node: StrikethroughNode = {
+      type: "strikethrough",
+      children: this.parseChildInlines(innerSource, start + 2, close),
+      range: this.range(start, close + 2)
+    };
+    this.index = close + 2;
+    this.nodes.push(node);
+    return true;
+  }
+
+  private parseLiteralAutolink(): boolean {
+    const start = this.index;
+    if (!isLiteralAutolinkBoundary(this.source, start)) return false;
+
+    const rest = this.source.slice(start);
+    const uriMatch = /^(?:https?:\/\/[^\s<]+|www\.[^\s<]+)/i.exec(rest);
+    if (uriMatch?.[0]) {
+      const label = trimLiteralAutolinkCandidate(uriMatch[0]);
+      if (!label) return false;
+      this.index = start + label.length;
+      const node: AutoLinkNode = {
+        type: "autoLink",
+        destination: /^www\./i.test(label) ? `http://${label}` : label,
+        label,
+        kind: "uri",
+        range: this.range(start, this.index)
+      };
+      this.nodes.push(node);
+      return true;
+    }
+
+    const emailMatch = /^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+/.exec(rest);
+    if (!emailMatch?.[0]) return false;
+    const label = trimLiteralAutolinkCandidate(emailMatch[0]);
+    if (!label) return false;
+    this.index = start + label.length;
+    const node: AutoLinkNode = {
+      type: "autoLink",
+      destination: `mailto:${label}`,
+      label,
+      kind: "email",
+      range: this.range(start, this.index)
+    };
+    this.nodes.push(node);
+    return true;
+  }
+
   private parseLineBreak(): void {
     const start = this.index;
     this.index += 1;
@@ -357,7 +430,8 @@ class InlineParser {
     const start = this.index;
     while (this.index < this.source.length) {
       const char = this.source[this.index] ?? "";
-      if ("\\`![<&*_ \n".includes(char)) {
+      if (this.hasExtension("gfm-literal-autolink") && this.literalAutolinkCanParseAt(this.index)) break;
+      if ("\\`![<&*_~ \n".includes(char)) {
         if (char === " " || (char !== "\n" && !this.specialCanParseAt(this.index))) {
           this.index += 1;
           continue;
@@ -386,7 +460,27 @@ class InlineParser {
     if (char === "<") return this.source.indexOf(">", index + 1) !== -1;
     if (char === "&") return /^&(#x[0-9A-Fa-f]+|#[0-9]+|[A-Za-z][A-Za-z0-9]+);/.test(this.source.slice(index));
     if (char === "*" || char === "_") return true;
+    if (char === "~") return this.hasExtension("gfm-strikethrough") && this.source.startsWith("~~", index);
     return false;
+  }
+
+  private parseChildInlines(source: string, start: number, end: number): InlineNode[] {
+    return parseInlines(source, {
+      references: this.references,
+      baseRange: this.range(start, end),
+      extensions: this.extensions
+    });
+  }
+
+  private literalAutolinkCanParseAt(index: number): boolean {
+    if (!isLiteralAutolinkBoundary(this.source, index)) return false;
+    const rest = this.source.slice(index);
+    return /^(?:https?:\/\/|www\.)/i.test(rest)
+      || /^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+/.test(rest);
+  }
+
+  private hasExtension(extension: string): boolean {
+    return this.extensions.includes(extension);
   }
 
   private consumeRun(char: string): number {
@@ -577,6 +671,34 @@ function skipSpaces(source: string, from: number): number {
   return index;
 }
 
+function isLiteralAutolinkBoundary(source: string, index: number): boolean {
+  const previous = source[index - 1] ?? "";
+  return !previous || !/[A-Za-z0-9@._~-]/.test(previous);
+}
+
+function trimLiteralAutolinkCandidate(candidate: string): string {
+  let end = candidate.length;
+
+  while (end > 0 && /[.,;:!?]/.test(candidate[end - 1] ?? "")) {
+    end -= 1;
+  }
+
+  while (end > 0 && candidate[end - 1] === ")" && hasMoreClosingParens(candidate.slice(0, end))) {
+    end -= 1;
+  }
+
+  return candidate.slice(0, end);
+}
+
+function hasMoreClosingParens(value: string): boolean {
+  let balance = 0;
+  for (const char of value) {
+    if (char === "(") balance += 1;
+    if (char === ")") balance -= 1;
+  }
+  return balance < 0;
+}
+
 function unescapeDestination(value: string): string {
   return value.replace(/\\([\\`*{}\[\]()#+\-.!_>~|])/g, "$1");
 }
@@ -635,4 +757,3 @@ function mergeAdjacentText(nodes: InlineNode[]): InlineNode[] {
   }
   return merged;
 }
-

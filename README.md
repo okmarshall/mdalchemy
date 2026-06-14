@@ -15,7 +15,8 @@ The repository now contains a working TypeScript CLI and library:
 - Built-in syntax highlighting for JS/TS, C#, JSON, HTML/XML, CSS, shell, and Markdown fences.
 - JSON config loading with CLI overrides, unknown-key warnings, type validation, and strict-mode diagnostics.
 - Safe mode for raw HTML and unsafe URLs.
-- GFM pipe-table parsing through `--gfm` or `markdown.extensions`, with scroll-safe HTML output for wide tables.
+- GFM pipe tables, task lists, strikethrough, footnotes, and literal autolinks through `--gfm` or `markdown.extensions`, with scroll-safe HTML output for wide tables.
+- Optional leading YAML-style frontmatter parsing through `--frontmatter` or `markdown.extensions`.
 - Theme token validation for custom themes.
 - Heading anchors and table of contents generation.
 - Node built-in test runner coverage.
@@ -41,10 +42,16 @@ Render a Markdown file to standalone HTML:
 node dist/cli/main.js input.md -o output.html
 ```
 
-Enable the currently supported GitHub Flavored Markdown extension for pipe tables:
+Enable the supported GitHub Flavored Markdown extension bundle:
 
 ```sh
 node dist/cli/main.js input.md -o output.html --gfm
+```
+
+Parse leading frontmatter:
+
+```sh
+node dist/cli/main.js input.md -o output.html --frontmatter
 ```
 
 Render a fragment to stdout:
@@ -70,8 +77,17 @@ Useful options:
 | `--config <path>` | Load a specific config file. |
 | `--safe` | Escape raw HTML and reject unsafe URLs. |
 | `--strict` | Treat warnings as errors. |
-| `--gfm` | Enable supported GFM extensions, currently pipe tables. |
+| `--gfm` | Enable supported GFM extensions: pipe tables, task lists, strikethrough, footnotes, and literal autolinks. |
+| `--frontmatter` | Parse a leading YAML-style frontmatter block and omit it from visible HTML. |
 | `--toc` / `--no-toc` | Force table of contents on or off. |
+
+Theme helpers:
+
+```sh
+node dist/cli/main.js theme list
+node dist/cli/main.js theme inspect serif
+node dist/cli/main.js theme inspect examples/themes/warm-report.json
+```
 
 ## Development
 
@@ -91,7 +107,7 @@ npm run render:example
 Try the example custom theme:
 
 ```sh
-node dist/cli/main.js examples/complex-spec.md -o examples/complex-spec.warm.html --theme examples/themes/warm-report.json --toc --gfm
+node dist/cli/main.js examples/complex-spec.md -o examples/complex-spec.warm.html --theme examples/themes/warm-report.json --toc --gfm --frontmatter
 ```
 
 ## Planning Documents
@@ -115,12 +131,19 @@ node dist/cli/main.js examples/complex-spec.md -o examples/complex-spec.warm.htm
 
 The test suite verifies that the current renderer output matches the checked HTML artifact.
 
-Tables use the GitHub Flavored Markdown pipe-table extension, so enable them with `--gfm` or this config. Rendered tables are wrapped in a keyboard-focusable overflow region so long technical rows do not push the document off the page.
+GitHub Flavored Markdown extensions can be enabled with `--gfm` or this config. Rendered tables are wrapped in a keyboard-focusable overflow region so long technical rows do not push the document off the page. Frontmatter is separate from the GFM bundle and stays opt-in.
 
 ```json
 {
   "markdown": {
-    "extensions": ["gfm-table"]
+    "extensions": [
+      "gfm-table",
+      "gfm-task-list",
+      "gfm-strikethrough",
+      "gfm-footnote",
+      "gfm-literal-autolink",
+      "frontmatter"
+    ]
   }
 }
 ```

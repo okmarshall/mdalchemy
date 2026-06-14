@@ -140,6 +140,48 @@ test("renderMarkdown respects markdown extensions from config", async () => {
   assert.match(rendered.content, /<table>/);
 });
 
+test("renders opted-in GFM extensions and omits frontmatter", async () => {
+  const markdown = `---
+title: Hidden Metadata
+---
+
+- [x] Finished task
+- [ ] Pending task with ~~old text~~
+
+Literal links: www.example.com and person@example.com.
+
+Footnote reference.[^demo]
+
+[^demo]: Footnote body with **strong** text.
+`;
+  const config = resolveConfig({
+    markdown: {
+      extensions: [
+        "frontmatter",
+        "gfm-task-list",
+        "gfm-strikethrough",
+        "gfm-footnote",
+        "gfm-literal-autolink"
+      ]
+    },
+    html: {
+      fragment: true
+    }
+  });
+  const rendered = await renderMarkdown(markdown, { config });
+
+  assert.doesNotMatch(rendered.content, /Hidden Metadata/);
+  assert.match(rendered.content, /class="mda-task-list"/);
+  assert.match(rendered.content, /type="checkbox" disabled checked/);
+  assert.match(rendered.content, /type="checkbox" disabled aria-label="Incomplete task"/);
+  assert.match(rendered.content, /<del>old text<\/del>/);
+  assert.match(rendered.content, /href="http:\/\/www.example.com"/);
+  assert.match(rendered.content, /href="mailto:person@example.com"/);
+  assert.match(rendered.content, /class="mda-footnotes"/);
+  assert.match(rendered.content, /role="doc-endnotes"/);
+  assert.match(rendered.content, /Footnote body with <strong>strong<\/strong> text/);
+});
+
 test("highlights C# fenced code blocks", async () => {
   const markdown = "```csharp\npublic sealed class Demo\n{\n    public string Render() => \"ok\";\n}\n```\n";
   const { document } = parseMarkdown(markdown);

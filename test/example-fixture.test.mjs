@@ -9,7 +9,14 @@ test("complex example renders to the checked html artifact", async () => {
   const expected = await readFile("examples/complex-spec.html", "utf8");
   const config = resolveConfig({
     markdown: {
-      extensions: ["gfm-table"]
+      extensions: [
+        "gfm-table",
+        "gfm-task-list",
+        "gfm-strikethrough",
+        "gfm-footnote",
+        "gfm-literal-autolink",
+        "frontmatter"
+      ]
     },
     html: {
       tableOfContents: true

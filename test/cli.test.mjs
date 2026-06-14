@@ -48,6 +48,48 @@ test("cli enables GFM table rendering with --gfm", async () => {
   assert.match(html, /<td style="text-align: right">two<\/td>/);
 });
 
+test("cli enables supported GFM extensions and frontmatter parsing", async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), "mdalchemy-"));
+  const input = path.join(dir, "extensions.md");
+  const output = path.join(dir, "extensions.html");
+  await writeFile(input, `---
+title: Hidden Metadata
+---
+
+- [x] Finished task
+- [ ] Pending task with ~~old text~~
+
+Literal link: https://example.com/docs.
+
+Footnote reference.[^demo]
+
+[^demo]: Footnote body.
+`, "utf8");
+
+  await execFileAsync("node", ["dist/cli/main.js", input, "-o", output, "--gfm", "--frontmatter"]);
+  const html = await readFile(output, "utf8");
+
+  assert.doesNotMatch(html, /Hidden Metadata/);
+  assert.match(html, /class="mda-task-list"/);
+  assert.match(html, /type="checkbox" disabled checked/);
+  assert.match(html, /<del>old text<\/del>/);
+  assert.match(html, /href="https:\/\/example.com\/docs"/);
+  assert.match(html, /class="mda-footnotes"/);
+});
+
+test("cli lists and inspects built-in themes", async () => {
+  const list = await runCli(["theme", "list"]);
+  assert.equal(list.exitCode, 0);
+  assert.match(list.stdout, /serif \(default\)/);
+  assert.match(list.stdout, /technical/);
+
+  const inspect = await runCli(["theme", "inspect", "serif"]);
+  assert.equal(inspect.exitCode, 0);
+  const details = JSON.parse(inspect.stdout);
+  assert.equal(details.name, "serif");
+  assert.equal(details.tokens["layout.maxWidth"], "960px");
+});
+
 test("cli writes fragment output to stdout", async () => {
   const dir = await mkdtemp(path.join(tmpdir(), "mdalchemy-"));
   const input = path.join(dir, "fragment.md");

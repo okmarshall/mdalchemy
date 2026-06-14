@@ -500,8 +500,9 @@ export type MarkdownExtension =
   | "gfm-table"
   | "gfm-task-list"
   | "gfm-strikethrough"
-  | "frontmatter"
-  | "footnotes";
+  | "gfm-footnote"
+  | "gfm-literal-autolink"
+  | "frontmatter";
 ```
 
 Extension code should not weaken CommonMark tests. The conformance suite should run in at least two modes:

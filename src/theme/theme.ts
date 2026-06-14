@@ -394,6 +394,44 @@ li + li {
   margin-top: var(--mda-space-list);
 }
 
+del {
+  color: var(--mda-color-muted);
+  text-decoration-color: var(--mda-color-accent);
+  text-decoration-thickness: 0.12em;
+  text-decoration-skip-ink: auto;
+}
+
+.mda-task-list {
+  padding-left: 0;
+  list-style: none;
+}
+
+.mda-task-list-item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.65rem;
+  align-items: start;
+}
+
+.mda-task-list-checkbox {
+  width: 1rem;
+  height: 1rem;
+  margin: 0.42em 0 0;
+  accent-color: var(--mda-color-accent);
+}
+
+.mda-task-list-content {
+  min-width: 0;
+}
+
+.mda-task-list-content > :first-child {
+  margin-top: 0;
+}
+
+.mda-task-list-content > :last-child {
+  margin-bottom: 0;
+}
+
 pre {
   overflow-x: auto;
   position: relative;
@@ -575,6 +613,47 @@ tr:last-child td {
 
 .mda-toc ol {
   margin: 0.35rem 0 0;
+}
+
+.mda-footnote-ref {
+  display: inline-block;
+  min-width: 1.35em;
+  margin-left: 0.12em;
+  padding: 0.05em 0.28em;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--mda-color-accentSoft), transparent 15%);
+  color: var(--mda-color-accent);
+  font-size: 0.72em;
+  font-weight: 700;
+  line-height: 1.25;
+  text-align: center;
+  text-decoration: none;
+}
+
+.mda-footnotes {
+  margin-top: 3rem;
+  color: var(--mda-color-muted);
+  font-size: var(--mda-font-size-small);
+}
+
+.mda-footnotes hr {
+  margin-bottom: 1rem;
+}
+
+.mda-footnotes ol {
+  padding-left: 1.35rem;
+}
+
+.mda-footnotes li:target {
+  background: color-mix(in srgb, var(--mda-color-accentSoft), transparent 60%);
+}
+
+.mda-footnote-backrefs {
+  margin-top: 0.5rem;
+}
+
+.mda-footnote-backref {
+  font-size: 0.85em;
 }
 
 .mda-heading-anchor {

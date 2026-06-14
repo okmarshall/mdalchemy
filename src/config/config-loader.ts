@@ -1,7 +1,12 @@
 import { access, readFile } from "node:fs/promises";
 import path from "node:path";
 import type { Diagnostic } from "../core/diagnostics.js";
-import { defaultConfig, type MdalchemyConfig, type ResolvedConfig } from "./config-schema.js";
+import {
+  defaultConfig,
+  supportedMarkdownExtensions,
+  type MdalchemyConfig,
+  type ResolvedConfig
+} from "./config-schema.js";
 
 export interface ConfigLoadOptions {
   cwd?: string | undefined;
@@ -98,7 +103,16 @@ export function resolveConfig(
 
   if (options.overrides) {
     if (options.overrides.output) resolved.output = { ...resolved.output, ...options.overrides.output };
-    if (options.overrides.markdown) resolved.markdown = { ...resolved.markdown, ...options.overrides.markdown };
+    if (options.overrides.markdown) {
+      const nextMarkdown = { ...resolved.markdown, ...options.overrides.markdown };
+      if (options.overrides.markdown.extensions) {
+        nextMarkdown.extensions = uniqueStrings([
+          ...resolved.markdown.extensions,
+          ...options.overrides.markdown.extensions
+        ]);
+      }
+      resolved.markdown = nextMarkdown;
+    }
     if (options.overrides.html) resolved.html = { ...resolved.html, ...options.overrides.html };
     if (options.overrides.theme !== undefined) resolved.theme = options.overrides.theme;
     if (options.overrides.strict !== undefined) resolved.strict = options.overrides.strict;
@@ -152,7 +166,7 @@ function validateConfig(config: ResolvedConfig): Diagnostic[] {
       message: `Unsupported markdown profile "${config.markdown.profile}".`
     });
   }
-  const supportedExtensions = new Set(["gfm-table"]);
+  const supportedExtensions = new Set<string>(supportedMarkdownExtensions);
   const unsupportedExtensions = config.markdown.extensions.filter((extension) => !supportedExtensions.has(extension));
   if (unsupportedExtensions.length > 0) {
     diagnostics.push({
@@ -297,6 +311,10 @@ function invalidType(pathName: string, expected: string): Diagnostic {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function uniqueStrings(values: string[]): string[] {
+  return [...new Set(values)];
 }
 
 function stringOr(value: unknown, fallback: string): string {

@@ -2,8 +2,10 @@ import { buildOutline, type DocumentOutline, type OutlineItem } from "../../docu
 import type {
   BlockNode,
   DocumentNode,
+  FootnoteDefinitionNode,
   HeadingNode,
   InlineNode,
+  ListItemNode,
   ListNode,
   ParagraphNode,
   TableCellNode,
@@ -36,6 +38,9 @@ interface RenderContext {
   outline: DocumentOutline;
   headingIds: Map<HeadingNode, string>;
   diagnostics: Diagnostic[];
+  footnoteDefinitions: Map<string, FootnoteDefinitionNode>;
+  footnoteNumbers: Map<string, number>;
+  footnoteReferenceIds: Map<string, string[]>;
 }
 
 export async function renderMarkdown(markdown: string, options: RenderOptions = {}): Promise<RenderResult> {
@@ -49,11 +54,21 @@ export async function renderDocument(document: DocumentNode, options: RenderOpti
   const outline = buildOutline(document, config.html.title || undefined);
   const headingIds = new Map(outline.headings.map((heading) => [heading.node, heading.id]));
   const diagnostics = [...document.diagnostics, ...theme.diagnostics];
-  const context: RenderContext = { config, outline, headingIds, diagnostics };
+  const footnoteDefinitions = collectFootnoteDefinitions(document.children);
+  const context: RenderContext = {
+    config,
+    outline,
+    headingIds,
+    diagnostics,
+    footnoteDefinitions,
+    footnoteNumbers: new Map(),
+    footnoteReferenceIds: new Map()
+  };
   const fragment = renderBlocks(document.children, context);
+  const withFootnotes = appendFootnotes(fragment, context);
   const withToc = shouldRenderToc(config, outline)
-    ? `${renderToc(outline.tree, config.html.tocDepth)}\n${fragment}`
-    : fragment;
+    ? `${renderToc(outline.tree, config.html.tocDepth)}\n${withFootnotes}`
+    : withFootnotes;
   const content = config.output.standalone && !config.html.fragment
     ? renderStandalone(withToc, config, theme, outline.title)
     : withToc;
@@ -91,7 +106,11 @@ ${content}
 
 function renderBlocks(blocks: BlockNode[], context: RenderContext, parentList?: ListNode): string {
   return blocks
-    .filter((block) => block.type !== "linkReferenceDefinition")
+    .filter((block) => (
+      block.type !== "linkReferenceDefinition"
+      && block.type !== "footnoteDefinition"
+      && block.type !== "frontmatter"
+    ))
     .map((block) => renderBlock(block, context, parentList))
     .filter(Boolean)
     .join("\n");
@@ -113,12 +132,14 @@ function renderBlock(block: BlockNode, context: RenderContext, parentList?: List
     case "table":
       return renderTable(block, context);
     case "listItem":
-      return `<li>${renderBlocks(block.children, context, parentList)}</li>`;
+      return renderListItem(block, context, parentList);
     case "codeBlock":
       return renderCodeBlock(block);
     case "htmlBlock":
       return renderRawHtml(block.literal, context);
     case "linkReferenceDefinition":
+    case "footnoteDefinition":
+    case "frontmatter":
       return "";
   }
 }
@@ -149,11 +170,17 @@ function renderHeading(heading: HeadingNode, context: RenderContext): string {
 function renderList(list: ListNode, context: RenderContext): string {
   const tag = list.ordered ? "ol" : "ul";
   const start = list.ordered && list.start && list.start !== 1 ? ` start="${list.start}"` : "";
-  const items = list.children.map((item) => {
-    const content = renderBlocks(item.children, context, list);
-    return `<li>${content}</li>`;
-  }).join("\n");
-  return `<${tag}${start}>\n${items}\n</${tag}>`;
+  const taskClass = list.children.some((item) => item.task) ? " class=\"mda-task-list\"" : "";
+  const items = list.children.map((item) => renderListItem(item, context, list)).join("\n");
+  return `<${tag}${start}${taskClass}>\n${items}\n</${tag}>`;
+}
+
+function renderListItem(item: ListItemNode, context: RenderContext, parentList?: ListNode): string {
+  const content = renderBlocks(item.children, context, parentList);
+  if (!item.task) return `<li>${content}</li>`;
+  const checked = item.task.checked ? " checked" : "";
+  const label = item.task.checked ? "Completed task" : "Incomplete task";
+  return `<li class="mda-task-list-item"><input class="mda-task-list-checkbox" type="checkbox" disabled${checked} aria-label="${label}"><div class="mda-task-list-content">${content}</div></li>`;
 }
 
 function renderCodeBlock(block: Extract<BlockNode, { type: "codeBlock" }>): string {
@@ -186,15 +213,97 @@ function renderInline(node: InlineNode, context: RenderContext): string {
       return `<em>${renderInlines(node.children, context)}</em>`;
     case "strong":
       return `<strong>${renderInlines(node.children, context)}</strong>`;
+    case "strikethrough":
+      return `<del>${renderInlines(node.children, context)}</del>`;
     case "link":
       return renderLink(node.destination, node.title, renderInlines(node.children, context), context);
     case "image":
       return renderImage(node.destination, node.title, node.alt, context);
     case "autoLink":
       return renderLink(node.destination, undefined, escapeText(node.label), context);
+    case "footnoteReference":
+      return renderFootnoteReference(node.label, context);
     case "htmlInline":
       return renderRawHtml(node.literal, context);
   }
+}
+
+function renderFootnoteReference(label: string, context: RenderContext): string {
+  const normalized = normalizeFootnoteLabel(label);
+  if (!context.footnoteDefinitions.has(normalized)) {
+    return escapeText(`[^${label}]`);
+  }
+
+  let number = context.footnoteNumbers.get(normalized);
+  if (!number) {
+    number = context.footnoteNumbers.size + 1;
+    context.footnoteNumbers.set(normalized, number);
+  }
+
+  const referenceIds = context.footnoteReferenceIds.get(normalized) ?? [];
+  const referenceId = `fnref-${number}${referenceIds.length > 0 ? `-${referenceIds.length + 1}` : ""}`;
+  referenceIds.push(referenceId);
+  context.footnoteReferenceIds.set(normalized, referenceIds);
+
+  return `<sup id="${escapeAttribute(referenceId)}"><a class="mda-footnote-ref" href="#fn-${number}" role="doc-noteref">${number}</a></sup>`;
+}
+
+function appendFootnotes(content: string, context: RenderContext): string {
+  if (context.footnoteNumbers.size === 0) return content;
+
+  const items = [...context.footnoteNumbers.entries()]
+    .sort(([, left], [, right]) => left - right)
+    .map(([normalized, number]) => {
+      const definition = context.footnoteDefinitions.get(normalized);
+      if (!definition) return "";
+      const body = renderBlocks(definition.children, context);
+      const backrefs = (context.footnoteReferenceIds.get(normalized) ?? [])
+        .map((referenceId) => (
+          `<a class="mda-footnote-backref" href="#${escapeAttribute(referenceId)}" aria-label="Back to footnote reference ${number}">Back</a>`
+        ))
+        .join(" ");
+      const backrefBlock = backrefs ? `<p class="mda-footnote-backrefs">${backrefs}</p>` : "";
+      return `<li id="fn-${number}">\n${indent([body, backrefBlock].filter(Boolean).join("\n"), 2)}\n</li>`;
+    })
+    .filter(Boolean)
+    .join("\n");
+
+  if (!items) return content;
+  return `${content}\n<section class="mda-footnotes" role="doc-endnotes">\n<hr>\n<ol>\n${items}\n</ol>\n</section>`;
+}
+
+function collectFootnoteDefinitions(blocks: BlockNode[], definitions = new Map<string, FootnoteDefinitionNode>()): Map<string, FootnoteDefinitionNode> {
+  for (const block of blocks) {
+    switch (block.type) {
+      case "footnoteDefinition": {
+        const normalized = normalizeFootnoteLabel(block.label);
+        if (!definitions.has(normalized)) definitions.set(normalized, block);
+        collectFootnoteDefinitions(block.children, definitions);
+        break;
+      }
+      case "blockquote":
+      case "listItem":
+        collectFootnoteDefinitions(block.children, definitions);
+        break;
+      case "list":
+        for (const item of block.children) collectFootnoteDefinitions(item.children, definitions);
+        break;
+      case "paragraph":
+      case "heading":
+      case "thematicBreak":
+      case "table":
+      case "codeBlock":
+      case "htmlBlock":
+      case "linkReferenceDefinition":
+      case "frontmatter":
+        break;
+    }
+  }
+  return definitions;
+}
+
+function normalizeFootnoteLabel(label: string): string {
+  return label.trim().replace(/\s+/g, " ").toLowerCase();
 }
 
 function renderLink(destination: string, title: string | undefined, label: string, context: RenderContext): string {

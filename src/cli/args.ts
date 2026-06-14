@@ -1,5 +1,5 @@
 import { parseArgs } from "node:util";
-import type { ResolvedConfig } from "../config/config-schema.js";
+import { gfmMarkdownExtensions, type ResolvedConfig } from "../config/config-schema.js";
 
 export interface CliArgs {
   input: string | undefined;
@@ -12,6 +12,7 @@ export interface CliArgs {
   safe: boolean;
   fragment: boolean;
   gfm: boolean;
+  frontmatter: boolean;
   title: string | undefined;
   toc: boolean | undefined;
   help: boolean;
@@ -33,6 +34,7 @@ export function parseCliArgs(argv: string[]): CliArgs {
       safe: { type: "boolean" },
       fragment: { type: "boolean" },
       gfm: { type: "boolean" },
+      frontmatter: { type: "boolean" },
       title: { type: "string" },
       toc: { type: "boolean" },
       "no-toc": { type: "boolean" },
@@ -58,6 +60,7 @@ export function parseCliArgs(argv: string[]): CliArgs {
     safe: Boolean(parsed.values.safe),
     fragment: Boolean(parsed.values.fragment),
     gfm: Boolean(parsed.values.gfm),
+    frontmatter: Boolean(parsed.values.frontmatter),
     title: parsed.values.title,
     toc: parsed.values.toc === true ? true : parsed.values["no-toc"] === true ? false : undefined,
     help: Boolean(parsed.values.help),
@@ -78,13 +81,20 @@ export function cliOverrides(args: CliArgs): Partial<ResolvedConfig> {
   };
   if (args.theme) overrides.theme = args.theme;
   if (args.format) overrides.output = { format: args.format, standalone: true, createDirs: false };
-  if (args.gfm) overrides.markdown = { profile: "commonmark", extensions: ["gfm-table"] };
+  const markdownExtensions: string[] = [];
+  if (args.gfm) markdownExtensions.push(...gfmMarkdownExtensions);
+  if (args.frontmatter) markdownExtensions.push("frontmatter");
+  if (markdownExtensions.length > 0) {
+    overrides.markdown = { profile: "commonmark", extensions: [...new Set(markdownExtensions)] };
+  }
   if (Object.keys(html).length > 0) overrides.html = html as ResolvedConfig["html"];
   return overrides;
 }
 
 export const helpText = `Usage:
   mdalchemy <input> [options]
+  mdalchemy theme list
+  mdalchemy theme inspect <name-or-path>
 
 Options:
   -o, --output <path>       Output file path
@@ -95,6 +105,7 @@ Options:
       --safe                Escape raw HTML and reject unsafe URLs
       --strict              Treat warnings as errors
       --gfm                 Enable supported GitHub Flavored Markdown extensions
+      --frontmatter         Parse leading YAML-style frontmatter
       --fragment            Render an HTML fragment
       --title <title>       Override document title
       --toc                 Force table of contents on

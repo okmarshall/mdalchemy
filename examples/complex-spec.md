@@ -1,3 +1,9 @@
+---
+title: CommonMark Complex Fixture
+audience: mdalchemy maintainers
+fixture: extension coverage
+---
+
 # CommonMark Complex Fixture
 
 This fixture is intentionally dense. It should be useful as a parser and
@@ -27,6 +33,15 @@ GFM table extension:
 | Tables | Working | `gfm-table` |
 | Alignment | Centered | Right aligned |
 | Escaped pipe | A \| B | Inline `a | b` code |
+
+GFM extension coverage:
+
+- [x] Render checked task list items.
+- [ ] Render unchecked task list items with ~~obsolete wording~~ left visible as deleted text.
+- [ ] Keep task item prose readable when it includes a literal link such as https://example.com/release-notes.
+
+Literal autolinks include www.example.org and docs@example.org without angle
+brackets. A footnote reference should become an endnote.[^extension-note]
 
 Wide table edge case:
 
@@ -143,3 +158,7 @@ Paragraph after raw HTML should resume Markdown parsing with **strong text**.
 [collapsed reference]: https://example.com/collapsed
 [shortcut reference]: https://example.com/shortcut
 [image-ref]: ./images/reference.svg "Reference image"
+
+[^extension-note]: Footnotes are rendered after the main content, with a back link
+    to the reference. They can contain **inline formatting** and regular
+    Markdown links such as [the example site](https://example.com).

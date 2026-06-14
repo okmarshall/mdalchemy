@@ -7,7 +7,14 @@
   },
   "markdown": {
     "profile": "commonmark",
-    "extensions": ["gfm-table"]
+    "extensions": [
+      "gfm-table",
+      "gfm-task-list",
+      "gfm-strikethrough",
+      "gfm-footnote",
+      "gfm-literal-autolink",
+      "frontmatter"
+    ]
   },
   "html": {
     "lang": "en",

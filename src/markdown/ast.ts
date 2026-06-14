@@ -33,7 +33,9 @@ export type BlockNode =
   | TableNode
   | CodeBlockNode
   | HtmlBlockNode
-  | LinkReferenceDefinitionNode;
+  | LinkReferenceDefinitionNode
+  | FootnoteDefinitionNode
+  | FrontmatterNode;
 
 export interface ParagraphNode extends BaseNode {
   type: "paragraph";
@@ -71,6 +73,9 @@ export interface ListItemNode extends BaseNode {
   type: "listItem";
   marker: string;
   padding: number;
+  task?: {
+    checked: boolean;
+  } | undefined;
   children: BlockNode[];
 }
 
@@ -113,6 +118,18 @@ export interface LinkReferenceDefinitionNode extends BaseNode {
   title?: string | undefined;
 }
 
+export interface FootnoteDefinitionNode extends BaseNode {
+  type: "footnoteDefinition";
+  label: string;
+  children: BlockNode[];
+}
+
+export interface FrontmatterNode extends BaseNode {
+  type: "frontmatter";
+  raw: string;
+  format: "yaml";
+}
+
 export type InlineNode =
   | TextNode
   | SoftBreakNode
@@ -120,9 +137,11 @@ export type InlineNode =
   | CodeSpanNode
   | EmphasisNode
   | StrongNode
+  | StrikethroughNode
   | LinkNode
   | ImageNode
   | AutoLinkNode
+  | FootnoteReferenceNode
   | HtmlInlineNode;
 
 export interface TextNode extends BaseNode {
@@ -153,6 +172,11 @@ export interface StrongNode extends BaseNode {
   children: InlineNode[];
 }
 
+export interface StrikethroughNode extends BaseNode {
+  type: "strikethrough";
+  children: InlineNode[];
+}
+
 export interface LinkNode extends BaseNode {
   type: "link";
   destination: string;
@@ -175,6 +199,11 @@ export interface AutoLinkNode extends BaseNode {
   destination: string;
   label: string;
   kind: "uri" | "email";
+}
+
+export interface FootnoteReferenceNode extends BaseNode {
+  type: "footnoteReference";
+  label: string;
 }
 
 export interface HtmlInlineNode extends BaseNode {
@@ -208,11 +237,13 @@ export function textContent(nodes: InlineNode[]): string {
         break;
       case "emphasis":
       case "strong":
+      case "strikethrough":
       case "link":
       case "image":
         output += textContent(node.children);
         break;
       case "autoLink":
+      case "footnoteReference":
         output += node.label;
         break;
       case "htmlInline":

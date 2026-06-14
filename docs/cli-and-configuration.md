@@ -37,6 +37,7 @@ Options:
 --strict                  Treat warnings as errors.
 --safe                    Enable safe rendering preset.
 --gfm                     Enable supported GitHub Flavored Markdown extensions.
+--frontmatter             Parse leading YAML-style frontmatter.
 --fragment                Render HTML fragment instead of standalone document.
 --title <title>           Override document title.
 --toc                     Force table of contents on.
@@ -46,12 +47,20 @@ Options:
 -v, --version             Show version.
 ```
 
+Theme commands:
+
+```text
+mdalchemy theme list
+mdalchemy theme inspect <name-or-path>
+```
+
+`theme list` prints the built-in theme names. `theme inspect` resolves a built-in
+theme or theme JSON file and prints the resolved token set as JSON.
+
 Future commands:
 
 ```text
 mdalchemy init
-mdalchemy theme list
-mdalchemy theme inspect <name-or-path>
 mdalchemy debug ast <input>
 mdalchemy debug outline <input>
 mdalchemy check <input>
@@ -206,7 +215,19 @@ interface MarkdownConfig {
 }
 ```
 
-For v1, `extensions` defaults to an empty list. The implemented extension is `gfm-table`; unsupported extension names fail config validation.
+For v1, `extensions` defaults to an empty list. Implemented extension names are:
+
+```text
+gfm-table
+gfm-task-list
+gfm-strikethrough
+gfm-footnote
+gfm-literal-autolink
+frontmatter
+```
+
+`--gfm` enables the GFM extensions as an additive override. `--frontmatter`
+enables only `frontmatter`. Unsupported extension names fail config validation.
 
 ### `html`
 
@@ -271,6 +292,8 @@ Short help:
 ```text
 Usage:
   mdalchemy <input> [options]
+  mdalchemy theme list
+  mdalchemy theme inspect <name-or-path>
 
 Options:
   -o, --output <path>       Output file path
@@ -281,6 +304,7 @@ Options:
       --safe                Escape raw HTML and reject unsafe URLs
       --strict              Treat warnings as errors
       --gfm                 Enable supported GitHub Flavored Markdown extensions
+      --frontmatter         Parse leading YAML-style frontmatter
       --fragment            Render an HTML fragment
       --title <title>       Override document title
       --toc                 Force table of contents on

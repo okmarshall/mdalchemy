@@ -22,6 +22,9 @@ Block coverage:
 - Raw HTML blocks for common block tags, comments, declarations, processing instructions, CDATA, and script-like tags.
 - Link reference definitions.
 - GFM pipe tables when the `gfm-table` extension is enabled.
+- GFM task list items when the `gfm-task-list` extension is enabled.
+- GFM footnote definitions when the `gfm-footnote` extension is enabled.
+- Leading YAML-style frontmatter when the `frontmatter` extension is enabled.
 
 Inline coverage:
 
@@ -38,6 +41,9 @@ Inline coverage:
 - Full, collapsed, and shortcut reference links.
 - Images.
 - URI and email autolinks.
+- GFM strikethrough when the `gfm-strikethrough` extension is enabled.
+- GFM literal autolinks when the `gfm-literal-autolink` extension is enabled.
+- GFM footnote references when the `gfm-footnote` extension is enabled.
 - Raw HTML inline tags.
 
 Document/rendering coverage:
@@ -52,6 +58,8 @@ Document/rendering coverage:
 - Raw HTML policies: `allow`, `escape`, and `strip`.
 - Safe URL filtering for HTML links and images.
 - Semantic, scroll-safe HTML table rendering for GFM pipe tables.
+- Accessible disabled-checkbox rendering for GFM task list items.
+- Endnote rendering for referenced GFM footnotes.
 - Lightweight syntax highlighting for JS/TS, C#, JSON, HTML/XML, CSS, shell, and Markdown code fences.
 - Built-in theme CSS.
 - User theme loading through config or CLI theme path.
@@ -70,7 +78,7 @@ These are the important areas to close before claiming full CommonMark conforman
 - List item continuation, indentation, and looseness are good for common documents but still need CommonMark example-by-example hardening.
 - Source ranges are useful for diagnostics but are approximate in nested virtual lines.
 - Tabs are handled for indentation helpers, but full tab behavior needs conformance tests.
-- GFM extension support is currently limited to pipe tables.
+- GFM extension support covers pipe tables, task lists, strikethrough, footnotes, and literal autolinks, but it has not been checked against an official GFM fixture suite.
 - PDF and other output formats are not implemented.
 
 ## Verification Available Now
@@ -101,4 +109,4 @@ Recommended next steps:
 4. Replace simplified emphasis parsing with the full delimiter stack algorithm.
 5. Expand entity support to the complete named entity table.
 6. Harden list and blockquote continuation against the official examples.
-7. Keep additional GFM extensions behind explicit extension flags.
+7. Keep extension behavior behind explicit extension flags and add official GFM fixtures if the supported extension surface grows.

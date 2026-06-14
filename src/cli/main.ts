@@ -5,12 +5,16 @@ import { readFile } from "node:fs/promises";
 import { formatDiagnostic } from "../core/diagnostics.js";
 import { loadConfig } from "../config/config-loader.js";
 import { parseMarkdown } from "../markdown/parser.js";
-import { resolveTheme } from "../theme/theme.js";
+import { builtInThemes, resolveTheme } from "../theme/theme.js";
 import { renderDocument } from "../render/html/html-renderer.js";
 import { defaultOutputPath, inferFormat, readMarkdownFile, writeOutputFile } from "../io/files.js";
 import { cliOverrides, helpText, parseCliArgs } from "./args.js";
 
 async function main(argv: string[]): Promise<number> {
+  if (argv[0] === "theme") {
+    return handleThemeCommand(argv.slice(1));
+  }
+
   const args = parseCliArgs(argv);
 
   if (args.help) {
@@ -96,6 +100,55 @@ async function main(argv: string[]): Promise<number> {
   return 0;
 }
 
+async function handleThemeCommand(argv: string[]): Promise<number> {
+  const command = argv[0];
+  if (!command || command === "help" || command === "--help" || command === "-h") {
+    console.log(themeHelpText);
+    return command ? 0 : 2;
+  }
+
+  if (command === "list") {
+    console.log("Built-in themes:");
+    for (const name of Object.keys(builtInThemes)) {
+      console.log(`- ${name}${name === "serif" ? " (default)" : ""}`);
+    }
+    return 0;
+  }
+
+  if (command === "inspect") {
+    const themeInput = argv[1];
+    if (!themeInput) {
+      console.error("mdalchemy: missing theme name or path\n");
+      console.error(themeHelpText);
+      return 2;
+    }
+
+    const theme = await resolveTheme(themeInput, process.cwd());
+    for (const diagnostic of theme.diagnostics) {
+      if (diagnostic.severity === "error" || diagnostic.severity === "warning") {
+        console.error(formatDiagnostic(diagnostic));
+      }
+    }
+    if (theme.diagnostics.some((diagnostic) => diagnostic.severity === "error")) {
+      return 4;
+    }
+
+    console.log(JSON.stringify({
+      name: theme.name,
+      tokens: theme.tokens
+    }, null, 2));
+    return 0;
+  }
+
+  console.error(`mdalchemy: unknown theme command "${command}"\n`);
+  console.error(themeHelpText);
+  return 2;
+}
+
+const themeHelpText = `Usage:
+  mdalchemy theme list
+  mdalchemy theme inspect <name-or-path>`;
+
 async function readVersion(): Promise<string> {
   const here = path.dirname(fileURLToPath(import.meta.url));
   const packagePath = path.resolve(here, "../../package.json");
@@ -109,4 +162,3 @@ main(process.argv.slice(2)).then((code) => {
   console.error(error instanceof Error ? error.message : String(error));
   process.exitCode = 1;
 });
-

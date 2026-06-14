@@ -48,7 +48,7 @@ Status labels:
 | PDF output | `[Planned]` | Architecture notes only | Choose browser-print or layout-tree strategy after HTML stabilizes. |
 | Other export formats | `[Deferred]` | Requirements mention future formats | Revisit after PDF direction is chosen. |
 | Watch mode | `[Deferred]` | CLI docs describe future behavior | Implement after normal render pipeline is stable. |
-| Theme subcommands | `[Planned]` | CLI docs mention `theme list` and `theme inspect` | Add command routing before documenting as current usage. |
+| Theme subcommands | `[Done]` | `src/cli/main.ts`, `test/cli.test.mjs` | Keep output stable as more theme tooling is added. |
 | Diagnostics and exit codes | `[Done]` | `src/core/diagnostics.ts`, `src/cli/main.ts`, `test/cli.test.mjs` | Keep exit codes stable as new diagnostics are added. |
 
 ### Markdown Parser
@@ -82,14 +82,14 @@ Status labels:
 
 | Feature | Status | Evidence | Next action |
 | --- | --- | --- | --- |
-| Extension flag plumbing | `[Done]` | `markdown.extensions`, `--gfm` | Keep extensions opt-in. |
+| Extension flag plumbing | `[Done]` | `markdown.extensions`, `--gfm`, `--frontmatter` | Keep extensions opt-in. |
 | GFM pipe tables | `[Done]` | `test/parser.test.mjs`, `test/renderer.test.mjs` | Add more escaped-pipe and alignment fixtures as needed. |
 | Scroll-safe table rendering | `[Done]` | `src/render/html/html-renderer.ts`, `src/theme/theme.ts` | Keep browser checks when table CSS changes. |
-| Task lists | `[Planned]` | Requirements extension list | Implement behind a separate extension flag. |
-| Strikethrough | `[Planned]` | Requirements extension list | Implement behind a separate extension flag. |
-| Footnotes | `[Planned]` | Requirements extension list | Decide syntax and renderer behavior first. |
-| Frontmatter | `[Planned]` | Requirements extension list | Keep metadata separate from CommonMark core parsing. |
-| Literal autolinks | `[Planned]` | Requirements extension list | Implement as GFM extension behavior, not CommonMark core. |
+| Task lists | `[Done]` | `src/markdown/parser.ts`, `src/render/html/html-renderer.ts`, `test/parser.test.mjs`, `test/renderer.test.mjs` | Add edge cases for nested task lists if bugs appear. |
+| Strikethrough | `[Done]` | `src/markdown/inline-parser.ts`, `src/render/html/html-renderer.ts`, `test/parser.test.mjs`, `test/renderer.test.mjs` | Add delimiter edge cases if the GFM fixture suite is added. |
+| Footnotes | `[Done]` | `src/markdown/parser.ts`, `src/render/html/html-renderer.ts`, `test/parser.test.mjs`, `test/renderer.test.mjs` | Add repeated-reference and nested-footnote regression tests as needed. |
+| Frontmatter | `[Done]` | `src/markdown/parser.ts`, `test/parser.test.mjs`, `test/renderer.test.mjs` | Keep metadata separate from CommonMark core parsing. |
+| Literal autolinks | `[Done]` | `src/markdown/inline-parser.ts`, `test/parser.test.mjs`, `test/renderer.test.mjs` | Expand URL boundary cases as regressions appear. |
 
 ### Rendering And Document Features
 
@@ -145,7 +145,7 @@ Status labels:
 | --- | --- | --- | --- |
 | Typecheck script | `[Done]` | `npm run typecheck` | Keep required before release. |
 | Unit tests | `[Done]` | `test/*.test.mjs` | Continue adding focused tests for parser regressions. |
-| CLI integration tests | `[Done]` | `test/cli.test.mjs` | Covers file output, GFM, stdout fragments, safe mode, invalid config, strict mode, and usage errors. |
+| CLI integration tests | `[Done]` | `test/cli.test.mjs` | Covers file output, GFM, frontmatter, theme subcommands, stdout fragments, safe mode, invalid config, strict mode, and usage errors. |
 | Complex fixture | `[Done]` | `examples/complex-spec.md`, `examples/complex-spec.html` | Keep synthetic and non-sensitive. |
 | Visual/browser verification | `[Done]` | `docs/testing-pipeline.md` | Repeatable desktop and narrow-viewport browser checklist is documented for layout-sensitive changes. |
 | CommonMark conformance suite | `[Planned]` | Testing docs only | Add fixture runner and pass/fail reporting. |

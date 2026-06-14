@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CommonMark Complex Fixture</title>
+  <style>
+:root {
+  --mda-color-background: #fbfcfd;
+  --mda-color-surface: #eef3f8;
+  --mda-color-text: #18212b;
+  --mda-color-muted: #586674;
+  --mda-color-accent: #0f6b6e;
+  --mda-color-accentText: #ffffff;
+  --mda-color-border: #c9d6e2;
+  --mda-color-codeBackground: #101820;
+  --mda-color-codeText: #e7edf3;
+  --mda-font-body: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif;
+  --mda-font-heading: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif;
+  --mda-font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, Liberation Mono, monospace;
+  --mda-font-size-base: 16px;
+  --mda-font-size-small: 0.9rem;
+  --mda-font-size-code: 0.92em;
+  --mda-lineHeight-body: 1.68;
+  --mda-lineHeight-heading: 1.2;
+  --mda-layout-maxWidth: 920px;
+  --mda-layout-pagePadding: clamp(24px, 5vw, 64px);
+  --mda-layout-radius: 8px;
+  --mda-layout-borderWidth: 1px;
+  --mda-space-block: 1.2rem;
+  --mda-space-paragraph: 1rem;
+  --mda-space-headingBefore: 2rem;
+  --mda-space-headingAfter: 0.75rem;
+  --mda-space-list: 0.4rem;
+  --mda-space-code: 1rem;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--mda-color-background);
+  color: var(--mda-color-text);
+  font-family: var(--mda-font-body);
+  font-size: var(--mda-font-size-base);
+  line-height: var(--mda-lineHeight-body);
+}
+
+.mda-document {
+  width: min(100%, var(--mda-layout-maxWidth));
+  margin: 0 auto;
+  padding: var(--mda-layout-pagePadding);
+}
+
+.mda-content {
+  max-width: 100%;
+}
+
+.mda-content > * + * {
+  margin-top: var(--mda-space-block);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: var(--mda-color-text);
+  font-family: var(--mda-font-heading);
+  line-height: var(--mda-lineHeight-heading);
+  margin: var(--mda-space-headingBefore) 0 var(--mda-space-headingAfter);
+}
+
+h1 {
+  font-size: clamp(2rem, 6vw, 3.4rem);
+}
+
+h2 {
+  font-size: 1.8rem;
+}
+
+h3 {
+  font-size: 1.35rem;
+}
+
+p {
+  margin: var(--mda-space-paragraph) 0;
+}
+
+a {
+  color: var(--mda-color-accent);
+  text-decoration-thickness: 0.08em;
+  text-underline-offset: 0.18em;
+}
+
+blockquote {
+  margin: 1.5rem 0;
+  padding: 0.1rem 1rem;
+  border-left: 4px solid var(--mda-color-accent);
+  color: var(--mda-color-muted);
+  background: color-mix(in srgb, var(--mda-color-surface), transparent 38%);
+}
+
+ul,
+ol {
+  padding-left: 1.5rem;
+}
+
+li + li {
+  margin-top: var(--mda-space-list);
+}
+
+pre {
+  overflow-x: auto;
+  margin: 1.25rem 0;
+  padding: var(--mda-space-code);
+  border-radius: var(--mda-layout-radius);
+  background: var(--mda-color-codeBackground);
+  color: var(--mda-color-codeText);
+}
+
+code {
+  font-family: var(--mda-font-mono);
+  font-size: var(--mda-font-size-code);
+}
+
+:not(pre) > code {
+  padding: 0.12em 0.32em;
+  border-radius: 0.28em;
+  background: var(--mda-color-codeBackground);
+  color: var(--mda-color-codeText);
+}
+
+hr {
+  border: 0;
+  border-top: var(--mda-layout-borderWidth) solid var(--mda-color-border);
+  margin: 2rem 0;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+.mda-toc {
+  margin: 0 0 2rem;
+  padding: 1rem;
+  border: var(--mda-layout-borderWidth) solid var(--mda-color-border);
+  border-radius: var(--mda-layout-radius);
+  background: var(--mda-color-surface);
+}
+
+.mda-toc ol {
+  margin: 0.35rem 0 0;
+}
+
+.mda-heading-anchor {
+  opacity: 0;
+  margin-left: -0.85em;
+  padding-right: 0.25em;
+  text-decoration: none;
+}
+
+h1:hover .mda-heading-anchor,
+h2:hover .mda-heading-anchor,
+h3:hover .mda-heading-anchor,
+h4:hover .mda-heading-anchor,
+h5:hover .mda-heading-anchor,
+h6:hover .mda-heading-anchor {
+  opacity: 0.6;
+}
+
+@media print {
+  body {
+    background: white;
+  }
+
+  .mda-document {
+    width: auto;
+    padding: 0;
+  }
+
+  pre,
+  blockquote {
+    break-inside: avoid;
+  }
+}
+  </style>
+</head>
+<body>
+  <article class="mda-document">
+    <main class="mda-content">
+<nav class="mda-toc" aria-label="Table of contents">
+  <ol>
+    <li><a href="#commonmark-complex-fixture">CommonMark Complex Fixture</a></li>
+    <li><a href="#setext-level-one">Setext Level One</a>
+      <ol>
+        <li><a href="#setext-level-two">Setext Level Two</a></li>
+        <li><a href="#atx-heading-with-closing-hashes">ATX Heading With Closing Hashes</a>
+          <ol>
+            <li><a href="#heading-with-code-and-reference">Heading With code And Reference</a></li>
+          </ol></li>
+      </ol></li>
+  </ol>
+</nav>
+<h1 id="commonmark-complex-fixture"><a class="mda-heading-anchor" href="#commonmark-complex-fixture" aria-hidden="true">#</a>CommonMark Complex Fixture</h1>
+<p>This fixture is intentionally dense. It should be useful as a parser and
+renderer smoke test, not as polished prose.</p>
+<p>Inline basics include <em>emphasis</em>, <strong>strong emphasis</strong>, <em><strong>strong and emphasis</strong></em>,
+<code>inline code</code>, and <code>code with a ` backtick</code>. Links include an <a href="https://example.com/path?alpha=1&amp;beta=2" title="Example title">inline
+link</a>, a <a href="https://example.com/docs" title="Docs title">full
+reference</a>, a <a href="https://example.com/collapsed">collapsed reference</a>, and a <a href="https://example.com/shortcut">shortcut reference</a>.
+Images include <img src="./images/inline.png" alt="inline image alt" title="Inline image"> and
+<img src="./images/reference.png" alt="reference image alt" title="Reference image">.</p>
+<p>Autolinks: <a href="https://example.com/autolink">https://example.com/autolink</a> and <a href="mailto:person@example.com">person@example.com</a>.
+Entities: &amp; &lt; &gt; " # A.
+Escapes: *literal asterisks*, [literal brackets], `literal backticks`,
+and \literal backslashes\.
+Inline HTML: <span data-kind="inline">raw span</span> and <kbd>Ctrl</kbd>.</p>
+<p>This line ends with a soft break
+and continues in the same paragraph.
+This line ends with a hard break<br>
+and this text follows the hard break.</p>
+<h1 id="setext-level-one"><a class="mda-heading-anchor" href="#setext-level-one" aria-hidden="true">#</a>Setext Level One</h1>
+<h2 id="setext-level-two"><a class="mda-heading-anchor" href="#setext-level-two" aria-hidden="true">#</a>Setext Level Two</h2>
+<h2 id="atx-heading-with-closing-hashes"><a class="mda-heading-anchor" href="#atx-heading-with-closing-hashes" aria-hidden="true">#</a>ATX Heading With Closing Hashes</h2>
+<h3 id="heading-with-code-and-reference"><a class="mda-heading-anchor" href="#heading-with-code-and-reference" aria-hidden="true">#</a>Heading With <code>code</code> And <a href="https://example.com/docs" title="Docs title">Reference</a></h3>
+<p>####### Seven hashes are paragraph text, not a heading.</p>
+<hr>
+<hr>
+<hr>
+<blockquote>
+<p>A simple block quote paragraph with <em>inline emphasis</em> and a <a href="https://example.com/docs" title="Docs title">link</a>.</p>
+<blockquote>
+<p>A nested block quote.</p>
+<ol>
+<li>Nested ordered item one.</li>
+<li>Nested ordered item two.
+<ul>
+<li>Nested bullet inside the ordered item.</li>
+<li>Another nested bullet with <code>code</code>.</li>
+</ul></li>
+</ol>
+</blockquote>
+<ul>
+<li>Bullet item inside a quote.</li>
+<li>Second bullet item inside a quote.</li>
+</ul>
+<pre data-language="js"><code class="language-js">const quoted = "fenced code inside a block quote";
+console.log(quoted);</code></pre>
+<p>Lazy continuation text belongs to the previous block quote paragraph
+even though this source line has no quote marker.</p>
+</blockquote>
+<ul>
+<li>Tight bullet one.</li>
+<li>Tight bullet two with nested content.
+<ol>
+<li>Nested ordered one.</li>
+<li>Nested ordered two.
+<ul>
+<li>Deep bullet one.</li>
+<li>Deep bullet two.</li>
+</ul></li>
+</ol></li>
+<li>Tight bullet three.</li>
+</ul>
+<ol>
+<li><p>Loose ordered item one.</p>
+<p>This second paragraph makes the list loose.</p></li>
+</ol>
+<ol start="2">
+<li><p>Loose ordered item two.</p>
+<ul>
+<li><p>Child bullet paragraph.</p>
+<p>Child continuation paragraph.</p></li>
+</ul></li>
+</ol>
+<ol start="9">
+<li><p>Ordered list starting at nine.</p></li>
+<li><p>Ordered list continuing at ten.</p>
+<p>Paragraph before an ordered-looking line.
+2. This line should stay part of the paragraph if paragraph interruption rules
+are implemented exactly.</p>
+<p>function indentedCode() {
+return "four leading spaces";
+}</p></li>
+</ol>
+<pre data-language="ts"><code class="language-ts">export function fencedCode(value: string): string {
+  return value.trim();
+}</code></pre>
+<pre data-language="html"><code class="language-html">&lt;div class="from-fence"&gt;
+  Fenced HTML is code, not raw HTML.
+&lt;/div&gt;</code></pre>
+<section class="raw-html-block">
+<p>Raw HTML block content with <strong>HTML strong</strong>.</p>
+</section>
+<!-- Raw HTML comment block. -->
+<p>Paragraph after raw HTML should resume Markdown parsing with <strong>strong text</strong>.</p>
+    </main>
+  </article>
+</body>
+</html>

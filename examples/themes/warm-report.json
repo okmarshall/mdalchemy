@@ -1,0 +1,17 @@
+{
+  "name": "warm-report",
+  "extends": "serif",
+  "tokens": {
+    "color.background": "#fffaf3",
+    "color.surface": "#f4eadc",
+    "color.text": "#241f1a",
+    "color.muted": "#6d6258",
+    "color.accent": "#7a3f18",
+    "color.border": "#d8c7b4",
+    "font.body": "Georgia, Cambria, Times New Roman, serif",
+    "font.heading": "ui-serif, Georgia, Cambria, Times New Roman, serif",
+    "font.mono": "ui-monospace, SFMono-Regular, Menlo, Consolas, Liberation Mono, monospace",
+    "layout.maxWidth": "760px",
+    "space.block": "1.15rem"
+  }
+}

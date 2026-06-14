@@ -1,0 +1,37 @@
+{
+  "name": "mdalchemy",
+  "version": "0.1.0",
+  "description": "A modern TypeScript CLI for turning Markdown into beautiful human-readable HTML.",
+  "type": "module",
+  "bin": {
+    "mdalchemy": "./dist/cli/main.js"
+  },
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "docs",
+    "examples",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "npm run build && node --test test/*.test.mjs",
+    "test:unit": "npm run build && node --test test/parser.test.mjs test/renderer.test.mjs test/cli.test.mjs",
+    "test:fixtures": "npm run build && node --test test/example-fixture.test.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "render:example": "npm run build && node dist/cli/main.js examples/complex-spec.md -o examples/complex-spec.html --theme technical --toc"
+  },
+  "keywords": [
+    "markdown",
+    "html",
+    "typescript",
+    "cli"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.8.0"
+  }
+}

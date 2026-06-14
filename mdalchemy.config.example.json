@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "output": {
+    "format": "html",
+    "standalone": true,
+    "createDirs": false
+  },
+  "markdown": {
+    "profile": "commonmark",
+    "extensions": []
+  },
+  "html": {
+    "lang": "en",
+    "rawHtml": "allow",
+    "safeUrls": true,
+    "headingAnchors": true,
+    "sections": false,
+    "tableOfContents": "auto",
+    "tocDepth": 3,
+    "softBreak": "newline"
+  },
+  "theme": "./examples/themes/warm-report.json"
+}

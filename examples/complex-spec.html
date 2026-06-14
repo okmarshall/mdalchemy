@@ -185,6 +185,8 @@ pre[data-language]::before {
   background: color-mix(in srgb, var(--mda-color-surface), var(--mda-color-accentSoft) 18%);
   color: var(--mda-color-accent);
   border: var(--mda-layout-borderWidth) solid color-mix(in srgb, var(--mda-color-border), transparent 35%);
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .mda-syntax-keyword {
@@ -249,8 +251,26 @@ img {
   box-shadow: 0 14px 34px var(--mda-color-shadow);
 }
 
+.mda-table-scroll {
+  width: 100%;
+  max-width: 100%;
+  margin: 1.5rem 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  border: var(--mda-layout-borderWidth) solid var(--mda-color-border);
+  border-radius: var(--mda-layout-radius);
+  background: var(--mda-color-document);
+  -webkit-overflow-scrolling: touch;
+}
+
+.mda-table-scroll:focus {
+  outline: 3px solid color-mix(in srgb, var(--mda-color-accent), transparent 45%);
+  outline-offset: 3px;
+}
+
 table {
   width: 100%;
+  min-width: 100%;
   margin: 1.5rem 0;
   border-collapse: collapse;
   overflow: hidden;
@@ -258,12 +278,30 @@ table {
   border-radius: var(--mda-layout-radius);
 }
 
+.mda-table-scroll table {
+  width: max-content;
+  min-width: 100%;
+  max-width: none;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+}
+
 th,
 td {
+  min-width: 7rem;
+  max-width: min(34rem, 75vw);
   padding: 0.65rem 0.8rem;
   border-bottom: var(--mda-layout-borderWidth) solid var(--mda-color-border);
   text-align: left;
   vertical-align: top;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+th code,
+td code {
+  white-space: normal;
 }
 
 th {
@@ -318,8 +356,18 @@ h6:hover .mda-heading-anchor {
   }
 
   pre,
-  blockquote {
+  blockquote,
+  .mda-table-scroll {
     break-inside: avoid;
+  }
+
+  .mda-table-scroll {
+    overflow: visible;
+  }
+
+  .mda-table-scroll table {
+    width: 100%;
+    max-width: 100%;
   }
 }
 
@@ -365,6 +413,7 @@ Escapes: *literal asterisks*, [literal brackets], `literal backticks`,
 and \literal backslashes\.
 Inline HTML: <span data-kind="inline">raw span</span> and <kbd>Ctrl</kbd>.</p>
 <p>GFM table extension:</p>
+<div class="mda-table-scroll" role="region" aria-label="Scrollable table" tabindex="0">
 <table>
 <thead>
 <tr><th style="text-align: left">Feature</th><th style="text-align: center">Status</th><th style="text-align: right">Notes</th></tr>
@@ -375,6 +424,20 @@ Inline HTML: <span data-kind="inline">raw span</span> and <kbd>Ctrl</kbd>.</p>
 <tr><td style="text-align: left">Escaped pipe</td><td style="text-align: center">A | B</td><td style="text-align: right">Inline <code>a | b</code> code</td></tr>
 </tbody>
 </table>
+</div>
+<p>Wide table edge case:</p>
+<div class="mda-table-scroll" role="region" aria-label="Scrollable table" tabindex="0">
+<table>
+<thead>
+<tr><th>Test</th><th>What it verifies</th></tr>
+</thead>
+<tbody>
+<tr><td><code>SyntheticReportRenderer_HandlesRidiculouslyLongIdentifierWithoutPageOverflow</code></td><td><code>VeryLongConfigurationFlagNameForLayoutTesting</code> is present -&gt; the table scrolls inside its container</td></tr>
+<tr><td><code>ExamplePipeline_FallsBackToReadableSummaryWhenTelemetryTokenIsMissing</code></td><td>No <code>ImaginaryTelemetryToken</code>, no <code>DemoChecksumMarker</code> -&gt; the rendered document keeps its page width</td></tr>
+<tr><td><code>FictionalScenario_SkipsOptionalProbeWhenDemoFeatureSwitchIsDisabled</code></td><td><code>DemoFeatureSwitch=false</code>, no <code>PlaceholderProbeName</code> -&gt; inline code remains readable in a narrow viewport</td></tr>
+</tbody>
+</table>
+</div>
 <p>This line ends with a soft break
 and continues in the same paragraph.
 This line ends with a hard break<br>

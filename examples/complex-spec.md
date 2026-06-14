@@ -28,6 +28,14 @@ GFM table extension:
 | Alignment | Centered | Right aligned |
 | Escaped pipe | A \| B | Inline `a | b` code |
 
+Wide table edge case:
+
+| Test | What it verifies |
+| --- | --- |
+| `SyntheticReportRenderer_HandlesRidiculouslyLongIdentifierWithoutPageOverflow` | `VeryLongConfigurationFlagNameForLayoutTesting` is present -> the table scrolls inside its container |
+| `ExamplePipeline_FallsBackToReadableSummaryWhenTelemetryTokenIsMissing` | No `ImaginaryTelemetryToken`, no `DemoChecksumMarker` -> the rendered document keeps its page width |
+| `FictionalScenario_SkipsOptionalProbeWhenDemoFeatureSwitchIsDisabled` | `DemoFeatureSwitch=false`, no `PlaceholderProbeName` -> inline code remains readable in a narrow viewport |
+
 This line ends with a soft break
 and continues in the same paragraph.
 This line ends with a hard break\

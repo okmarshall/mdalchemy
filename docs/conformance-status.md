@@ -51,7 +51,7 @@ Document/rendering coverage:
 - HTML fragment output.
 - Raw HTML policies: `allow`, `escape`, and `strip`.
 - Safe URL filtering for HTML links and images.
-- Semantic HTML table rendering for GFM pipe tables.
+- Semantic, scroll-safe HTML table rendering for GFM pipe tables.
 - Lightweight syntax highlighting for JS/TS, C#, JSON, HTML/XML, CSS, shell, and Markdown code fences.
 - Built-in theme CSS.
 - User theme loading through config or CLI theme path.

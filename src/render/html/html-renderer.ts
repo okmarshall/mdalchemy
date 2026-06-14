@@ -129,7 +129,7 @@ function renderTable(table: TableNode, context: RenderContext): string {
     `<tr>${row.map((cell) => renderTableCell(cell, context, "td")).join("")}</tr>`
   )).join("\n");
   const body = rows ? `\n<tbody>\n${rows}\n</tbody>` : "";
-  return `<table>\n<thead>\n<tr>${header}</tr>\n</thead>${body}\n</table>`;
+  return `<div class="mda-table-scroll" role="region" aria-label="Scrollable table" tabindex="0">\n<table>\n<thead>\n<tr>${header}</tr>\n</thead>${body}\n</table>\n</div>`;
 }
 
 function renderTableCell(cell: TableCellNode, context: RenderContext, tag: "th" | "td"): string {

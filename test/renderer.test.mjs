@@ -66,11 +66,27 @@ test("renders GFM tables with header, body, and alignment", async () => {
   const config = resolveConfig({}, { overrides: { html: { fragment: true } } });
   const rendered = await renderDocument(document, { config });
 
+  assert.match(rendered.content, /<div class="mda-table-scroll" role="region" aria-label="Scrollable table" tabindex="0">/);
   assert.match(rendered.content, /<table>/);
   assert.match(rendered.content, /<thead>/);
   assert.match(rendered.content, /<tbody>/);
   assert.match(rendered.content, /<th style="text-align: left">Name<\/th>/);
   assert.match(rendered.content, /<td style="text-align: right"><strong>1<\/strong><\/td>/);
+});
+
+test("wraps rendered tables in a horizontal overflow region", async () => {
+  const markdown = `| Test | What it verifies |
+| --- | --- |
+| \`SyntheticReportRenderer_HandlesRidiculouslyLongIdentifierWithoutPageOverflow\` | \`VeryLongConfigurationFlagNameForLayoutTesting\` is present so the table scrolls inside its container. |
+`;
+  const { document } = parseMarkdown(markdown, { extensions: ["gfm-table"] });
+  const config = resolveConfig({}, { overrides: { html: { fragment: true } } });
+  const rendered = await renderDocument(document, { config });
+
+  assert.match(rendered.content, /class="mda-table-scroll"/);
+  assert.match(rendered.content, /aria-label="Scrollable table"/);
+  assert.match(rendered.content, /tabindex="0"/);
+  assert.match(rendered.content, /SyntheticReportRenderer_HandlesRidiculouslyLongIdentifierWithoutPageOverflow/);
 });
 
 test("renderMarkdown respects markdown extensions from config", async () => {

@@ -15,7 +15,7 @@ The repository now contains a working TypeScript CLI and library:
 - Built-in syntax highlighting for JS/TS, C#, JSON, HTML/XML, CSS, shell, and Markdown fences.
 - JSON config loading with CLI overrides.
 - Safe mode for raw HTML and unsafe URLs.
-- GFM pipe-table parsing through `--gfm` or `markdown.extensions`.
+- GFM pipe-table parsing through `--gfm` or `markdown.extensions`, with scroll-safe HTML output for wide tables.
 - Heading anchors and table of contents generation.
 - Node built-in test runner coverage.
 - Complex Markdown smoke fixture plus checked HTML output.
@@ -59,7 +59,7 @@ node dist/cli/main.js examples/complex-spec.md -o examples/complex-spec.warm.htm
 - [Parser Design](docs/parser-design.md) gives the detailed plan for the custom Markdown parser, including block parsing, inline parsing, CommonMark conformance, and edge cases.
 - [Rendering And Theming](docs/rendering-and-theming.md) explains how Markdown becomes beautiful output without tying the whole project to HTML.
 - [CLI And Configuration](docs/cli-and-configuration.md) defines commands, flags, config discovery, theme configuration, diagnostics, and filesystem behavior.
-- [Implementation Roadmap](docs/implementation-roadmap.md) breaks the project into phases with tasks, deliverables, risk controls, and definitions of done.
+- [Implementation Roadmap](docs/implementation-roadmap.md) tracks implemented, partial, planned, and deferred features alongside phased delivery plans.
 - [Testing Pipeline](docs/testing-pipeline.md) explains how to build, test, render fixtures, and compare output.
 - [Conformance Status](docs/conformance-status.md) tracks current CommonMark-oriented coverage and known gaps.
 
@@ -73,7 +73,7 @@ node dist/cli/main.js examples/complex-spec.md -o examples/complex-spec.warm.htm
 
 The test suite verifies that the current renderer output matches the checked HTML artifact.
 
-Tables use the GitHub Flavored Markdown pipe-table extension, so enable them with `--gfm` or this config:
+Tables use the GitHub Flavored Markdown pipe-table extension, so enable them with `--gfm` or this config. Rendered tables are wrapped in a keyboard-focusable overflow region so long technical rows do not push the document off the page.
 
 ```json
 {

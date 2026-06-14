@@ -368,6 +368,8 @@ pre[data-language]::before {
   background: color-mix(in srgb, var(--mda-color-surface), var(--mda-color-accentSoft) 18%);
   color: var(--mda-color-accent);
   border: var(--mda-layout-borderWidth) solid color-mix(in srgb, var(--mda-color-border), transparent 35%);
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .mda-syntax-keyword {
@@ -432,8 +434,26 @@ img {
   box-shadow: 0 14px 34px var(--mda-color-shadow);
 }
 
+.mda-table-scroll {
+  width: 100%;
+  max-width: 100%;
+  margin: 1.5rem 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  border: var(--mda-layout-borderWidth) solid var(--mda-color-border);
+  border-radius: var(--mda-layout-radius);
+  background: var(--mda-color-document);
+  -webkit-overflow-scrolling: touch;
+}
+
+.mda-table-scroll:focus {
+  outline: 3px solid color-mix(in srgb, var(--mda-color-accent), transparent 45%);
+  outline-offset: 3px;
+}
+
 table {
   width: 100%;
+  min-width: 100%;
   margin: 1.5rem 0;
   border-collapse: collapse;
   overflow: hidden;
@@ -441,12 +461,30 @@ table {
   border-radius: var(--mda-layout-radius);
 }
 
+.mda-table-scroll table {
+  width: max-content;
+  min-width: 100%;
+  max-width: none;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+}
+
 th,
 td {
+  min-width: 7rem;
+  max-width: min(34rem, 75vw);
   padding: 0.65rem 0.8rem;
   border-bottom: var(--mda-layout-borderWidth) solid var(--mda-color-border);
   text-align: left;
   vertical-align: top;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+th code,
+td code {
+  white-space: normal;
 }
 
 th {
@@ -501,8 +539,18 @@ h6:hover .mda-heading-anchor {
   }
 
   pre,
-  blockquote {
+  blockquote,
+  .mda-table-scroll {
     break-inside: avoid;
+  }
+
+  .mda-table-scroll {
+    overflow: visible;
+  }
+
+  .mda-table-scroll table {
+    width: 100%;
+    max-width: 100%;
   }
 }
 

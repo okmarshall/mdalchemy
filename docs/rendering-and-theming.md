@@ -56,7 +56,7 @@ Standalone HTML should look like:
 </html>
 ```
 
-The exact class names should be stable and documented.
+The exact class names should be stable and documented. Rendered Markdown tables should use `mda-table-scroll` as an overflow boundary so wide technical tables stay readable without widening the whole document surface.
 
 ## HTML Node Mapping
 
@@ -70,7 +70,7 @@ The exact class names should be stable and documented.
 | `list` ordered | `<ol>` |
 | `list` unordered | `<ul>` |
 | `listItem` | `<li>` |
-| `table` | `<table>` with `<thead>` and `<tbody>` |
+| `table` | `<div class="mda-table-scroll"><table>` with `<thead>` and `<tbody>` |
 | `codeBlock` | `<pre><code>` |
 | `htmlBlock` | raw, escaped, or stripped by policy |
 | `text` | escaped text |

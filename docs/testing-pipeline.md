@@ -1,12 +1,8 @@
 # Testing Pipeline
 
-This document defines the expected local testing pipeline for mdalchemy as the
-TypeScript implementation lands. Some commands below depend on the Phase 0
-project foundation: `package.json`, `tsconfig.json`, `src/`, and test files.
-
-When those files exist, the package scripts are the source of truth. The
-pipeline should stay scriptable so a maintainer can run the same checks locally
-and in CI.
+This document defines the local testing pipeline for the current TypeScript
+implementation. The package scripts are the source of truth, and the pipeline
+should stay scriptable so a maintainer can run the same checks locally and in CI.
 
 ## Prerequisites
 
@@ -26,7 +22,7 @@ The package should expose at least these baseline scripts:
     "test:unit": "npm run build && node --test test/parser.test.mjs test/renderer.test.mjs test/cli.test.mjs",
     "test:fixtures": "npm run build && node --test test/example-fixture.test.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "render:example": "npm run build && node dist/cli/main.js examples/complex-spec.md -o examples/complex-spec.html --theme technical --toc --gfm"
+    "render:example": "npm run build && node dist/cli/main.js examples/complex-spec.md -o examples/complex-spec.html --toc --gfm"
   }
 }
 ```

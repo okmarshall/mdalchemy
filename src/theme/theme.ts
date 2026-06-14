@@ -18,15 +18,31 @@ export interface ResolvedTheme {
 }
 
 const baseTokens: Record<string, string> = {
-  "color.background": "#ffffff",
+  "color.background": "#eef2ef",
+  "color.document": "#fffefa",
   "color.surface": "#f6f8fa",
-  "color.text": "#1f2328",
-  "color.muted": "#656d76",
-  "color.accent": "#0969da",
+  "color.text": "#1d2428",
+  "color.muted": "#657177",
+  "color.accent": "#9b3d2e",
+  "color.accentSoft": "#e8c8bd",
+  "color.secondary": "#2f6f73",
   "color.accentText": "#ffffff",
-  "color.border": "#d0d7de",
-  "color.codeBackground": "#f6f8fa",
-  "color.codeText": "#24292f",
+  "color.border": "#cbd8d0",
+  "color.shadow": "rgba(31, 43, 45, 0.14)",
+  "color.codeBackground": "#111b22",
+  "color.codeText": "#e8eef0",
+  "color.codeBorder": "#31424d",
+  "syntax.keyword": "#ff9e64",
+  "syntax.string": "#9ece6a",
+  "syntax.number": "#c7a9ff",
+  "syntax.comment": "#80919b",
+  "syntax.function": "#7dcfff",
+  "syntax.property": "#ffd166",
+  "syntax.builtin": "#6be4d8",
+  "syntax.operator": "#f7768e",
+  "syntax.punctuation": "#a8b7c2",
+  "syntax.tag": "#7dcfff",
+  "syntax.attribute": "#ffd166",
   "font.body": "ui-serif, Georgia, Cambria, Times New Roman, serif",
   "font.heading": "ui-serif, Georgia, Cambria, Times New Roman, serif",
   "font.mono": "ui-monospace, SFMono-Regular, Menlo, Consolas, Liberation Mono, monospace",
@@ -52,12 +68,19 @@ export const builtInThemes: Record<string, ThemeDefinition> = {
     name: "serif",
     tokens: {
       ...baseTokens,
-      "color.background": "#fffdf9",
-      "color.surface": "#f7f1e8",
-      "color.text": "#211c18",
-      "color.muted": "#6f655c",
-      "color.accent": "#7a3f18",
-      "color.border": "#ded2c4"
+      "color.background": "#edf2ef",
+      "color.document": "#fffefa",
+      "color.surface": "#f4f0e8",
+      "color.text": "#1e2528",
+      "color.muted": "#637177",
+      "color.accent": "#9b3d2e",
+      "color.accentSoft": "#e8c8bd",
+      "color.secondary": "#2f6f73",
+      "color.border": "#cbd8d0",
+      "color.shadow": "rgba(33, 46, 48, 0.16)",
+      "color.codeBackground": "#111b22",
+      "color.codeText": "#edf4f5",
+      "color.codeBorder": "#31424d"
     }
   },
   sans: {
@@ -67,9 +90,13 @@ export const builtInThemes: Record<string, ThemeDefinition> = {
       "font.body": "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif",
       "font.heading": "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif",
       "font.size.base": "17px",
-      "color.background": "#ffffff",
-      "color.surface": "#f3f5f7",
-      "color.accent": "#005f73"
+      "color.background": "#eef3f5",
+      "color.document": "#ffffff",
+      "color.surface": "#f2f6f7",
+      "color.accent": "#0f6b6e",
+      "color.secondary": "#8f3d2f",
+      "color.border": "#ccd8db",
+      "color.shadow": "rgba(20, 38, 45, 0.12)"
     }
   },
   technical: {
@@ -80,14 +107,19 @@ export const builtInThemes: Record<string, ThemeDefinition> = {
       "font.heading": "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif",
       "font.size.base": "16px",
       "layout.maxWidth": "920px",
-      "color.background": "#fbfcfd",
-      "color.surface": "#eef3f8",
+      "color.background": "#eef3f5",
+      "color.document": "#fbfcfd",
+      "color.surface": "#e8f0f3",
       "color.text": "#18212b",
       "color.muted": "#586674",
       "color.accent": "#0f6b6e",
+      "color.accentSoft": "#b8dedc",
+      "color.secondary": "#9b3d2e",
       "color.border": "#c9d6e2",
+      "color.shadow": "rgba(18, 31, 45, 0.14)",
       "color.codeBackground": "#101820",
-      "color.codeText": "#e7edf3"
+      "color.codeText": "#e7edf3",
+      "color.codeBorder": "#2d4350"
     }
   }
 };
@@ -213,12 +245,17 @@ body {
   font-family: var(--mda-font-body);
   font-size: var(--mda-font-size-base);
   line-height: var(--mda-lineHeight-body);
+  min-height: 100vh;
 }
 
 .mda-document {
   width: min(100%, var(--mda-layout-maxWidth));
-  margin: 0 auto;
+  margin: clamp(18px, 4vw, 56px) auto;
   padding: var(--mda-layout-pagePadding);
+  background: var(--mda-color-document);
+  border: var(--mda-layout-borderWidth) solid color-mix(in srgb, var(--mda-color-border), transparent 28%);
+  border-radius: calc(var(--mda-layout-radius) * 1.6);
+  box-shadow: 0 24px 70px var(--mda-color-shadow);
 }
 
 .mda-content {
@@ -239,14 +276,18 @@ h6 {
   font-family: var(--mda-font-heading);
   line-height: var(--mda-lineHeight-heading);
   margin: var(--mda-space-headingBefore) 0 var(--mda-space-headingAfter);
+  letter-spacing: 0;
 }
 
 h1 {
   font-size: clamp(2rem, 6vw, 3.4rem);
+  padding-bottom: 0.35em;
+  border-bottom: 3px solid var(--mda-color-accentSoft);
 }
 
 h2 {
   font-size: 1.8rem;
+  color: var(--mda-color-secondary);
 }
 
 h3 {
@@ -263,12 +304,17 @@ a {
   text-underline-offset: 0.18em;
 }
 
+a:hover {
+  color: var(--mda-color-secondary);
+}
+
 blockquote {
   margin: 1.5rem 0;
-  padding: 0.1rem 1rem;
-  border-left: 4px solid var(--mda-color-accent);
+  padding: 0.45rem 1.1rem;
+  border-left: 5px solid var(--mda-color-accent);
+  border-radius: 0 var(--mda-layout-radius) var(--mda-layout-radius) 0;
   color: var(--mda-color-muted);
-  background: color-mix(in srgb, var(--mda-color-surface), transparent 38%);
+  background: color-mix(in srgb, var(--mda-color-surface), transparent 20%);
 }
 
 ul,
@@ -282,11 +328,14 @@ li + li {
 
 pre {
   overflow-x: auto;
+  position: relative;
   margin: 1.25rem 0;
-  padding: var(--mda-space-code);
+  padding: calc(var(--mda-space-code) + 0.25rem) var(--mda-space-code) var(--mda-space-code);
   border-radius: var(--mda-layout-radius);
+  border: var(--mda-layout-borderWidth) solid var(--mda-color-codeBorder);
   background: var(--mda-color-codeBackground);
   color: var(--mda-color-codeText);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 12px 28px var(--mda-color-shadow);
 }
 
 code {
@@ -294,11 +343,77 @@ code {
   font-size: var(--mda-font-size-code);
 }
 
+pre code {
+  display: block;
+  min-width: max-content;
+  padding-right: 3.5rem;
+}
+
+pre[data-language]::before {
+  content: attr(data-language);
+  position: absolute;
+  top: 0.65rem;
+  right: 0.8rem;
+  color: var(--mda-syntax-comment);
+  font-family: var(--mda-font-mono);
+  font-size: 0.72rem;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 :not(pre) > code {
   padding: 0.12em 0.32em;
   border-radius: 0.28em;
-  background: var(--mda-color-codeBackground);
-  color: var(--mda-color-codeText);
+  background: color-mix(in srgb, var(--mda-color-surface), var(--mda-color-accentSoft) 18%);
+  color: var(--mda-color-accent);
+  border: var(--mda-layout-borderWidth) solid color-mix(in srgb, var(--mda-color-border), transparent 35%);
+}
+
+.mda-syntax-keyword {
+  color: var(--mda-syntax-keyword);
+  font-weight: 650;
+}
+
+.mda-syntax-string {
+  color: var(--mda-syntax-string);
+}
+
+.mda-syntax-number {
+  color: var(--mda-syntax-number);
+}
+
+.mda-syntax-comment {
+  color: var(--mda-syntax-comment);
+  font-style: italic;
+}
+
+.mda-syntax-function {
+  color: var(--mda-syntax-function);
+}
+
+.mda-syntax-property {
+  color: var(--mda-syntax-property);
+}
+
+.mda-syntax-builtin {
+  color: var(--mda-syntax-builtin);
+}
+
+.mda-syntax-operator {
+  color: var(--mda-syntax-operator);
+}
+
+.mda-syntax-punctuation {
+  color: var(--mda-syntax-punctuation);
+}
+
+.mda-syntax-tag {
+  color: var(--mda-syntax-tag);
+}
+
+.mda-syntax-attribute {
+  color: var(--mda-syntax-attribute);
 }
 
 hr {
@@ -308,8 +423,13 @@ hr {
 }
 
 img {
+  display: block;
   max-width: 100%;
   height: auto;
+  margin: 1rem auto;
+  border-radius: var(--mda-layout-radius);
+  border: var(--mda-layout-borderWidth) solid color-mix(in srgb, var(--mda-color-border), transparent 25%);
+  box-shadow: 0 14px 34px var(--mda-color-shadow);
 }
 
 table {
@@ -330,7 +450,7 @@ td {
 }
 
 th {
-  background: var(--mda-color-surface);
+  background: color-mix(in srgb, var(--mda-color-surface), var(--mda-color-accentSoft) 22%);
   color: var(--mda-color-text);
   font-weight: 700;
 }
@@ -344,7 +464,7 @@ tr:last-child td {
   padding: 1rem;
   border: var(--mda-layout-borderWidth) solid var(--mda-color-border);
   border-radius: var(--mda-layout-radius);
-  background: var(--mda-color-surface);
+  background: color-mix(in srgb, var(--mda-color-surface), transparent 10%);
 }
 
 .mda-toc ol {
@@ -374,12 +494,24 @@ h6:hover .mda-heading-anchor {
 
   .mda-document {
     width: auto;
+    margin: 0;
     padding: 0;
+    border: 0;
+    box-shadow: none;
   }
 
   pre,
   blockquote {
     break-inside: avoid;
+  }
+}
+
+@media (max-width: 720px) {
+  .mda-document {
+    margin: 0;
+    border-width: 0;
+    border-radius: 0;
+    box-shadow: none;
   }
 }`;
 }

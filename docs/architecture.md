@@ -30,95 +30,40 @@ Markdown file
 
 The pipeline should remain explicit in code. Each phase should have clear inputs and outputs so individual pieces can be tested.
 
-## Proposed Source Layout
+## Current Source Layout
 
 ```text
 src/
   cli/
-    main.ts
     args.ts
-    commands/
-      render.ts
-    errors.ts
+    main.ts
   config/
     config-loader.ts
     config-schema.ts
-    defaults.ts
-    merge.ts
   core/
     diagnostics.ts
-    source.ts
-    positions.ts
     result.ts
-  markdown/
-    ast.ts
-    parser.ts
-    blocks/
-      block-parser.ts
-      block-types.ts
-      container-stack.ts
-      line.ts
-      rules/
-        blockquote.ts
-        fenced-code.ts
-        heading-atx.ts
-        heading-setext.ts
-        html-block.ts
-        indented-code.ts
-        link-reference.ts
-        list.ts
-        paragraph.ts
-        thematic-break.ts
-    inlines/
-      inline-parser.ts
-      delimiter-stack.ts
-      entities.ts
-      rules/
-        autolink.ts
-        code-span.ts
-        emphasis.ts
-        escape.ts
-        html-inline.ts
-        image.ts
-        line-break.ts
-        link.ts
-        text.ts
-    references.ts
-    normalize.ts
+    source.ts
   document/
     outline.ts
-    sections.ts
-    slug.ts
-    transforms.ts
+  io/
+    files.ts
+  markdown/
+    ast.ts
+    inline-parser.ts
+    parser.ts
+    references.ts
   render/
-    renderer.ts
-    render-context.ts
     html/
-      html-renderer.ts
       escape.ts
-      safe-url.ts
-      template.ts
-      toc.ts
-    text/
-      text-renderer.ts
+      html-renderer.ts
+      syntax-highlight.ts
   theme/
     theme.ts
-    builtins/
-      serif.ts
-      sans.ts
-      technical.ts
-    resolve-theme.ts
-    theme-css.ts
-    validate-theme.ts
-  io/
-    read-source.ts
-    write-output.ts
-    paths.ts
-  testing/
-    fixtures.ts
+  index.ts
 ```
 
-This can be adjusted during implementation, but the names describe the desired boundaries.
+This layout is intentionally compact for the current implementation. The package-boundary descriptions below still describe the desired direction as the parser, renderer, and theme system grow.
 
 ## Package Boundaries
 
@@ -605,4 +550,3 @@ For learning and output quality, option 1 is likely best after HTML stabilizes. 
 - The CLI owns process behavior.
 
 When a change crosses boundaries, that is a sign to add a typed interface rather than import across layers casually.
-

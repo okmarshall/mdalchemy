@@ -6,24 +6,40 @@
   <title>CommonMark Complex Fixture</title>
   <style>
 :root {
-  --mda-color-background: #fbfcfd;
-  --mda-color-surface: #eef3f8;
-  --mda-color-text: #18212b;
-  --mda-color-muted: #586674;
-  --mda-color-accent: #0f6b6e;
+  --mda-color-background: #edf2ef;
+  --mda-color-document: #fffefa;
+  --mda-color-surface: #f4f0e8;
+  --mda-color-text: #1e2528;
+  --mda-color-muted: #637177;
+  --mda-color-accent: #9b3d2e;
+  --mda-color-accentSoft: #e8c8bd;
+  --mda-color-secondary: #2f6f73;
   --mda-color-accentText: #ffffff;
-  --mda-color-border: #c9d6e2;
-  --mda-color-codeBackground: #101820;
-  --mda-color-codeText: #e7edf3;
-  --mda-font-body: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif;
-  --mda-font-heading: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif;
+  --mda-color-border: #cbd8d0;
+  --mda-color-shadow: rgba(33, 46, 48, 0.16);
+  --mda-color-codeBackground: #111b22;
+  --mda-color-codeText: #edf4f5;
+  --mda-color-codeBorder: #31424d;
+  --mda-syntax-keyword: #ff9e64;
+  --mda-syntax-string: #9ece6a;
+  --mda-syntax-number: #c7a9ff;
+  --mda-syntax-comment: #80919b;
+  --mda-syntax-function: #7dcfff;
+  --mda-syntax-property: #ffd166;
+  --mda-syntax-builtin: #6be4d8;
+  --mda-syntax-operator: #f7768e;
+  --mda-syntax-punctuation: #a8b7c2;
+  --mda-syntax-tag: #7dcfff;
+  --mda-syntax-attribute: #ffd166;
+  --mda-font-body: ui-serif, Georgia, Cambria, Times New Roman, serif;
+  --mda-font-heading: ui-serif, Georgia, Cambria, Times New Roman, serif;
   --mda-font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, Liberation Mono, monospace;
-  --mda-font-size-base: 16px;
+  --mda-font-size-base: 18px;
   --mda-font-size-small: 0.9rem;
   --mda-font-size-code: 0.92em;
   --mda-lineHeight-body: 1.68;
   --mda-lineHeight-heading: 1.2;
-  --mda-layout-maxWidth: 920px;
+  --mda-layout-maxWidth: 780px;
   --mda-layout-pagePadding: clamp(24px, 5vw, 64px);
   --mda-layout-radius: 8px;
   --mda-layout-borderWidth: 1px;
@@ -46,12 +62,17 @@ body {
   font-family: var(--mda-font-body);
   font-size: var(--mda-font-size-base);
   line-height: var(--mda-lineHeight-body);
+  min-height: 100vh;
 }
 
 .mda-document {
   width: min(100%, var(--mda-layout-maxWidth));
-  margin: 0 auto;
+  margin: clamp(18px, 4vw, 56px) auto;
   padding: var(--mda-layout-pagePadding);
+  background: var(--mda-color-document);
+  border: var(--mda-layout-borderWidth) solid color-mix(in srgb, var(--mda-color-border), transparent 28%);
+  border-radius: calc(var(--mda-layout-radius) * 1.6);
+  box-shadow: 0 24px 70px var(--mda-color-shadow);
 }
 
 .mda-content {
@@ -72,14 +93,18 @@ h6 {
   font-family: var(--mda-font-heading);
   line-height: var(--mda-lineHeight-heading);
   margin: var(--mda-space-headingBefore) 0 var(--mda-space-headingAfter);
+  letter-spacing: 0;
 }
 
 h1 {
   font-size: clamp(2rem, 6vw, 3.4rem);
+  padding-bottom: 0.35em;
+  border-bottom: 3px solid var(--mda-color-accentSoft);
 }
 
 h2 {
   font-size: 1.8rem;
+  color: var(--mda-color-secondary);
 }
 
 h3 {
@@ -96,12 +121,17 @@ a {
   text-underline-offset: 0.18em;
 }
 
+a:hover {
+  color: var(--mda-color-secondary);
+}
+
 blockquote {
   margin: 1.5rem 0;
-  padding: 0.1rem 1rem;
-  border-left: 4px solid var(--mda-color-accent);
+  padding: 0.45rem 1.1rem;
+  border-left: 5px solid var(--mda-color-accent);
+  border-radius: 0 var(--mda-layout-radius) var(--mda-layout-radius) 0;
   color: var(--mda-color-muted);
-  background: color-mix(in srgb, var(--mda-color-surface), transparent 38%);
+  background: color-mix(in srgb, var(--mda-color-surface), transparent 20%);
 }
 
 ul,
@@ -115,11 +145,14 @@ li + li {
 
 pre {
   overflow-x: auto;
+  position: relative;
   margin: 1.25rem 0;
-  padding: var(--mda-space-code);
+  padding: calc(var(--mda-space-code) + 0.25rem) var(--mda-space-code) var(--mda-space-code);
   border-radius: var(--mda-layout-radius);
+  border: var(--mda-layout-borderWidth) solid var(--mda-color-codeBorder);
   background: var(--mda-color-codeBackground);
   color: var(--mda-color-codeText);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 12px 28px var(--mda-color-shadow);
 }
 
 code {
@@ -127,11 +160,77 @@ code {
   font-size: var(--mda-font-size-code);
 }
 
+pre code {
+  display: block;
+  min-width: max-content;
+  padding-right: 3.5rem;
+}
+
+pre[data-language]::before {
+  content: attr(data-language);
+  position: absolute;
+  top: 0.65rem;
+  right: 0.8rem;
+  color: var(--mda-syntax-comment);
+  font-family: var(--mda-font-mono);
+  font-size: 0.72rem;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 :not(pre) > code {
   padding: 0.12em 0.32em;
   border-radius: 0.28em;
-  background: var(--mda-color-codeBackground);
-  color: var(--mda-color-codeText);
+  background: color-mix(in srgb, var(--mda-color-surface), var(--mda-color-accentSoft) 18%);
+  color: var(--mda-color-accent);
+  border: var(--mda-layout-borderWidth) solid color-mix(in srgb, var(--mda-color-border), transparent 35%);
+}
+
+.mda-syntax-keyword {
+  color: var(--mda-syntax-keyword);
+  font-weight: 650;
+}
+
+.mda-syntax-string {
+  color: var(--mda-syntax-string);
+}
+
+.mda-syntax-number {
+  color: var(--mda-syntax-number);
+}
+
+.mda-syntax-comment {
+  color: var(--mda-syntax-comment);
+  font-style: italic;
+}
+
+.mda-syntax-function {
+  color: var(--mda-syntax-function);
+}
+
+.mda-syntax-property {
+  color: var(--mda-syntax-property);
+}
+
+.mda-syntax-builtin {
+  color: var(--mda-syntax-builtin);
+}
+
+.mda-syntax-operator {
+  color: var(--mda-syntax-operator);
+}
+
+.mda-syntax-punctuation {
+  color: var(--mda-syntax-punctuation);
+}
+
+.mda-syntax-tag {
+  color: var(--mda-syntax-tag);
+}
+
+.mda-syntax-attribute {
+  color: var(--mda-syntax-attribute);
 }
 
 hr {
@@ -141,8 +240,13 @@ hr {
 }
 
 img {
+  display: block;
   max-width: 100%;
   height: auto;
+  margin: 1rem auto;
+  border-radius: var(--mda-layout-radius);
+  border: var(--mda-layout-borderWidth) solid color-mix(in srgb, var(--mda-color-border), transparent 25%);
+  box-shadow: 0 14px 34px var(--mda-color-shadow);
 }
 
 table {
@@ -163,7 +267,7 @@ td {
 }
 
 th {
-  background: var(--mda-color-surface);
+  background: color-mix(in srgb, var(--mda-color-surface), var(--mda-color-accentSoft) 22%);
   color: var(--mda-color-text);
   font-weight: 700;
 }
@@ -177,7 +281,7 @@ tr:last-child td {
   padding: 1rem;
   border: var(--mda-layout-borderWidth) solid var(--mda-color-border);
   border-radius: var(--mda-layout-radius);
-  background: var(--mda-color-surface);
+  background: color-mix(in srgb, var(--mda-color-surface), transparent 10%);
 }
 
 .mda-toc ol {
@@ -207,12 +311,24 @@ h6:hover .mda-heading-anchor {
 
   .mda-document {
     width: auto;
+    margin: 0;
     padding: 0;
+    border: 0;
+    box-shadow: none;
   }
 
   pre,
   blockquote {
     break-inside: avoid;
+  }
+}
+
+@media (max-width: 720px) {
+  .mda-document {
+    margin: 0;
+    border-width: 0;
+    border-radius: 0;
+    box-shadow: none;
   }
 }
   </style>
@@ -239,9 +355,10 @@ renderer smoke test, not as polished prose.</p>
 <p>Inline basics include <em>emphasis</em>, <strong>strong emphasis</strong>, <em><strong>strong and emphasis</strong></em>,
 <code>inline code</code>, and <code>code with a ` backtick</code>. Links include an <a href="https://example.com/path?alpha=1&amp;beta=2" title="Example title">inline
 link</a>, a <a href="https://example.com/docs" title="Docs title">full
-reference</a>, a <a href="https://example.com/collapsed">collapsed reference</a>, and a <a href="https://example.com/shortcut">shortcut reference</a>.
-Images include <img src="./images/inline.png" alt="inline image alt" title="Inline image"> and
-<img src="./images/reference.png" alt="reference image alt" title="Reference image">.</p>
+reference</a>, a <a href="https://example.com/collapsed">collapsed reference</a>, and a <a href="https://example.com/shortcut">shortcut reference</a>.</p>
+<p>Images:</p>
+<p><img src="./images/inline.svg" alt="inline image alt" title="Inline image"></p>
+<p><img src="./images/reference.svg" alt="reference image alt" title="Reference image"></p>
 <p>Autolinks: <a href="https://example.com/autolink">https://example.com/autolink</a> and <a href="mailto:person@example.com">person@example.com</a>.
 Entities: &amp; &lt; &gt; " # A.
 Escapes: *literal asterisks*, [literal brackets], `literal backticks`,
@@ -287,8 +404,8 @@ and this text follows the hard break.</p>
 <li>Bullet item inside a quote.</li>
 <li>Second bullet item inside a quote.</li>
 </ul>
-<pre data-language="js"><code class="language-js">const quoted = "fenced code inside a block quote";
-console.log(quoted);</code></pre>
+<pre data-language="js"><code class="language-js"><span class="mda-syntax-keyword">const</span> quoted <span class="mda-syntax-operator">=</span> <span class="mda-syntax-string">"fenced code inside a block quote"</span><span class="mda-syntax-punctuation">;</span>
+<span class="mda-syntax-builtin">console</span><span class="mda-syntax-punctuation">.</span><span class="mda-syntax-function">log</span><span class="mda-syntax-punctuation">(</span>quoted<span class="mda-syntax-punctuation">)</span><span class="mda-syntax-punctuation">;</span></code></pre>
 <p>Lazy continuation text belongs to the previous block quote paragraph
 even though this source line has no quote marker.</p>
 </blockquote>
@@ -326,12 +443,20 @@ are implemented exactly.</p>
 return "four leading spaces";
 }</p></li>
 </ol>
-<pre data-language="ts"><code class="language-ts">export function fencedCode(value: string): string {
-  return value.trim();
-}</code></pre>
-<pre data-language="html"><code class="language-html">&lt;div class="from-fence"&gt;
+<pre data-language="ts"><code class="language-ts"><span class="mda-syntax-keyword">export</span> <span class="mda-syntax-keyword">function</span> <span class="mda-syntax-function">fencedCode</span><span class="mda-syntax-punctuation">(</span>value<span class="mda-syntax-operator">:</span> <span class="mda-syntax-keyword">string</span><span class="mda-syntax-punctuation">)</span><span class="mda-syntax-operator">:</span> <span class="mda-syntax-keyword">string</span> <span class="mda-syntax-punctuation">{</span>
+  <span class="mda-syntax-keyword">return</span> value<span class="mda-syntax-punctuation">.</span><span class="mda-syntax-function">trim</span><span class="mda-syntax-punctuation">(</span><span class="mda-syntax-punctuation">)</span><span class="mda-syntax-punctuation">;</span>
+<span class="mda-syntax-punctuation">}</span></code></pre>
+<pre data-language="csharp"><code class="language-csharp"><span class="mda-syntax-keyword">public</span> <span class="mda-syntax-keyword">sealed</span> <span class="mda-syntax-keyword">class</span> MarkdownRenderer
+<span class="mda-syntax-punctuation">{</span>
+    <span class="mda-syntax-keyword">public</span> <span class="mda-syntax-keyword">string</span> <span class="mda-syntax-function">Render</span><span class="mda-syntax-punctuation">(</span><span class="mda-syntax-keyword">string</span> markdown<span class="mda-syntax-punctuation">)</span>
+    <span class="mda-syntax-punctuation">{</span>
+        <span class="mda-syntax-builtin">Console</span><span class="mda-syntax-punctuation">.</span><span class="mda-syntax-function">WriteLine</span><span class="mda-syntax-punctuation">(</span><span class="mda-syntax-string">"Rendering Markdown"</span><span class="mda-syntax-punctuation">)</span><span class="mda-syntax-punctuation">;</span>
+        <span class="mda-syntax-keyword">return</span> markdown<span class="mda-syntax-punctuation">.</span><span class="mda-syntax-function">Trim</span><span class="mda-syntax-punctuation">(</span><span class="mda-syntax-punctuation">)</span><span class="mda-syntax-punctuation">;</span>
+    <span class="mda-syntax-punctuation">}</span>
+<span class="mda-syntax-punctuation">}</span></code></pre>
+<pre data-language="html"><code class="language-html"><span class="mda-syntax-tag">&lt;div</span><span class="mda-syntax-attribute"> class</span><span class="mda-syntax-punctuation">=</span><span class="mda-syntax-string">"from-fence"</span><span class="mda-syntax-punctuation">&gt;</span>
   Fenced HTML is code, not raw HTML.
-&lt;/div&gt;</code></pre>
+<span class="mda-syntax-tag">&lt;/div</span><span class="mda-syntax-punctuation">&gt;</span></code></pre>
 <section class="raw-html-block">
 <p>Raw HTML block content with <strong>HTML strong</strong>.</p>
 </section>

@@ -13,6 +13,7 @@ import { parseMarkdown, type MarkdownOptions } from "../../markdown/parser.js";
 import { defaultConfig, type ResolvedConfig } from "../../config/config-schema.js";
 import { resolveTheme, type ResolvedTheme } from "../../theme/theme.js";
 import { escapeAttribute, escapeText, safeUrl } from "./escape.js";
+import { highlightCode } from "./syntax-highlight.js";
 import type { Diagnostic } from "../../core/diagnostics.js";
 
 export interface RenderOptions {
@@ -158,7 +159,7 @@ function renderList(list: ListNode, context: RenderContext): string {
 function renderCodeBlock(block: Extract<BlockNode, { type: "codeBlock" }>): string {
   const languageClass = block.language ? ` class="language-${escapeAttribute(block.language)}"` : "";
   const languageLabel = block.language ? ` data-language="${escapeAttribute(block.language)}"` : "";
-  return `<pre${languageLabel}><code${languageClass}>${escapeText(block.literal)}</code></pre>`;
+  return `<pre${languageLabel}><code${languageClass}>${highlightCode(block.literal, block.language)}</code></pre>`;
 }
 
 function renderInlineChildren(block: ParagraphNode | HeadingNode, context: RenderContext): string {

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="420" viewBox="0 0 960 420" role="img" aria-labelledby="title desc">
+  <title id="title">Reference image fixture</title>
+  <desc id="desc">A stylized code panel with highlighted rows.</desc>
+  <rect width="960" height="420" rx="32" fill="#111b22"/>
+  <rect x="86" y="74" width="788" height="272" rx="22" fill="#17242d" stroke="#31424d" stroke-width="3"/>
+  <rect x="134" y="126" width="170" height="18" rx="9" fill="#ff9e64"/>
+  <rect x="330" y="126" width="240" height="18" rx="9" fill="#7dcfff"/>
+  <rect x="134" y="174" width="420" height="18" rx="9" fill="#9ece6a"/>
+  <rect x="134" y="222" width="260" height="18" rx="9" fill="#ffd166"/>
+  <rect x="418" y="222" width="132" height="18" rx="9" fill="#f7768e"/>
+  <rect x="134" y="270" width="580" height="18" rx="9" fill="#80919b"/>
+  <circle cx="774" cy="138" r="28" fill="#6be4d8"/>
+  <circle cx="774" cy="210" r="28" fill="#c7a9ff"/>
+  <circle cx="774" cy="282" r="28" fill="#ff9e64"/>
+</svg>

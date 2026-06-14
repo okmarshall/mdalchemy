@@ -223,7 +223,7 @@ These are explicitly outside the CommonMark core unless added behind an extensio
 - Admonitions.
 - Math blocks and inline math.
 - Mermaid diagrams.
-- Syntax highlighting.
+- Additional syntax highlighting engines or language packs.
 
 ## Quality Requirements
 

@@ -7,8 +7,12 @@ Inline basics include *emphasis*, **strong emphasis**, ***strong and emphasis***
 `inline code`, and `` code with a ` backtick ``. Links include an [inline
 link](https://example.com/path?alpha=1&beta=2 "Example title"), a [full
 reference][docs], a [collapsed reference][], and a [shortcut reference].
-Images include ![inline image alt](./images/inline.png "Inline image") and
-![reference image alt][image-ref].
+
+Images:
+
+![inline image alt](./images/inline.svg "Inline image")
+
+![reference image alt][image-ref]
 
 Autolinks: <https://example.com/autolink> and <person@example.com>.
 Entities: &amp; &lt; &gt; &quot; &#35; &#x41;.
@@ -102,6 +106,17 @@ export function fencedCode(value: string): string {
 }
 ```
 
+```csharp
+public sealed class MarkdownRenderer
+{
+    public string Render(string markdown)
+    {
+        Console.WriteLine("Rendering Markdown");
+        return markdown.Trim();
+    }
+}
+```
+
 ~~~html
 <div class="from-fence">
   Fenced HTML is code, not raw HTML.
@@ -119,4 +134,4 @@ Paragraph after raw HTML should resume Markdown parsing with **strong text**.
 [docs]: https://example.com/docs "Docs title"
 [collapsed reference]: https://example.com/collapsed
 [shortcut reference]: https://example.com/shortcut
-[image-ref]: ./images/reference.png "Reference image"
+[image-ref]: ./images/reference.svg "Reference image"

@@ -281,11 +281,17 @@ Usage:
 
 Options:
   -o, --output <path>       Output file path
+      --format <format>     Output format, currently html
       --theme <name|path>   Theme name or theme file
       --config <path>       Config file
       --stdout              Write to stdout
       --safe                Escape raw HTML and reject unsafe URLs
       --strict              Treat warnings as errors
+      --gfm                 Enable supported GitHub Flavored Markdown extensions
+      --fragment            Render an HTML fragment
+      --title <title>       Override document title
+      --toc                 Force table of contents on
+      --no-toc              Disable table of contents
   -h, --help                Show help
   -v, --version             Show version
 ```

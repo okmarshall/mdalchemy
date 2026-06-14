@@ -86,3 +86,15 @@ test("renderMarkdown respects markdown extensions from config", async () => {
 
   assert.match(rendered.content, /<table>/);
 });
+
+test("highlights C# fenced code blocks", async () => {
+  const markdown = "```csharp\npublic sealed class Demo\n{\n    public string Render() => \"ok\";\n}\n```\n";
+  const { document } = parseMarkdown(markdown);
+  const config = resolveConfig({}, { overrides: { html: { fragment: true } } });
+  const rendered = await renderDocument(document, { config });
+
+  assert.match(rendered.content, /language-csharp/);
+  assert.match(rendered.content, /mda-syntax-keyword">public/);
+  assert.match(rendered.content, /mda-syntax-function">Render/);
+  assert.match(rendered.content, /mda-syntax-string">"ok"/);
+});

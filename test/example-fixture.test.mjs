@@ -11,7 +11,6 @@ test("complex example renders to the checked html artifact", async () => {
     markdown: {
       extensions: ["gfm-table"]
     },
-    theme: "technical",
     html: {
       tableOfContents: true
     }

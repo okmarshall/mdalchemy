@@ -252,15 +252,19 @@ Theme tokens should be named by purpose.
 
 ```text
 color.background
+color.document
 color.surface
 color.text
 color.muted
 color.accent
+color.accentSoft
+color.secondary
 color.accentText
 color.border
+color.shadow
 color.codeBackground
 color.codeText
-color.mark
+color.codeBorder
 ```
 
 ### Font Tokens
@@ -297,16 +301,23 @@ space.list
 space.code
 ```
 
-### Code Tokens
+### Syntax Tokens
 
 ```text
-code.theme
-code.wrap
-code.showLanguage
-code.border
+syntax.keyword
+syntax.string
+syntax.number
+syntax.comment
+syntax.function
+syntax.property
+syntax.builtin
+syntax.operator
+syntax.punctuation
+syntax.tag
+syntax.attribute
 ```
 
-`code.theme` should initially only select a simple built-in color treatment. Full syntax highlighting can come later.
+The HTML renderer includes lightweight syntax highlighting for JS/TS, C#, JSON, HTML/XML, CSS, shell, and Markdown fences. These syntax tokens control the generated token span colors.
 
 ## CSS Variable Mapping
 
@@ -315,8 +326,9 @@ Each token maps to a CSS variable:
 ```css
 :root {
   --mda-color-background: #ffffff;
+  --mda-color-document: #fffefa;
   --mda-color-text: #202124;
-  --mda-layout-max-width: 760px;
+  --mda-layout-maxWidth: 760px;
 }
 ```
 
@@ -324,9 +336,9 @@ CSS classes use variables:
 
 ```css
 .mda-document {
-  max-width: var(--mda-layout-max-width);
+  max-width: var(--mda-layout-maxWidth);
   color: var(--mda-color-text);
-  background: var(--mda-color-background);
+  background: var(--mda-color-document);
 }
 ```
 
@@ -342,14 +354,16 @@ Purpose:
 - Essays.
 - Reports.
 - LLM-generated prose.
+- Default output.
 
 Characteristics:
 
 - Serif body font.
 - Moderate line length.
-- Warm but not decorative color palette.
+- Soft page background with a bright document surface.
+- Mixed accent palette for warmth, structure, and links.
 - Strong heading hierarchy.
-- Quiet code treatment.
+- Dark code blocks with built-in syntax highlighting.
 
 ### `sans`
 

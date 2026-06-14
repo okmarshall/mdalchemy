@@ -252,7 +252,7 @@ Output:
 Renderer:
 
 - HTML should emit `<pre><code class="language-ts">`.
-- No syntax highlighting in core v1.
+- The HTML renderer applies lightweight built-in syntax highlighting for recognized fence languages. This remains renderer behavior, not Markdown syntax.
 
 ### HTML Blocks
 
@@ -726,4 +726,3 @@ mdalchemy debug outline input.md
 ```
 
 These are not required for v1, but they will speed parser development dramatically.
-

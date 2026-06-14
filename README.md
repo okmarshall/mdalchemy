@@ -1,6 +1,6 @@
 # mdalchemy
 
-mdalchemy is planned as a modern TypeScript CLI that converts Markdown files into polished, human-readable documents. The first production target is beautiful standalone HTML, but the architecture is intentionally document-oriented so future renderers can produce PDF or other formats without replacing the parser.
+mdalchemy is a modern TypeScript CLI that converts Markdown files into polished, human-readable documents. The first production target is beautiful standalone HTML, but the architecture is intentionally document-oriented so future renderers can produce PDF or other formats without replacing the parser.
 
 The project is a learning-focused implementation. It should build its own Markdown parser, keep dependencies minimal, and make each stage of the pipeline understandable: input, parsing, document model, rendering, theming, and CLI orchestration.
 
@@ -11,7 +11,8 @@ The repository now contains a working TypeScript CLI and library:
 - Custom Markdown parser with block and inline phases.
 - Renderer-neutral AST.
 - HTML standalone and fragment rendering.
-- Built-in `serif`, `sans`, and `technical` themes.
+- Built-in `serif`, `sans`, and `technical` themes. The default is `serif`.
+- Built-in syntax highlighting for JS/TS, C#, JSON, HTML/XML, CSS, shell, and Markdown fences.
 - JSON config loading with CLI overrides.
 - Safe mode for raw HTML and unsafe URLs.
 - GFM pipe-table parsing through `--gfm` or `markdown.extensions`.
@@ -42,7 +43,7 @@ Render your own file:
 
 ```sh
 npm run build
-node dist/cli/main.js input.md -o output.html --theme technical --toc --gfm
+node dist/cli/main.js input.md -o output.html --toc --gfm
 ```
 
 Try the example custom theme:
@@ -66,6 +67,7 @@ node dist/cli/main.js examples/complex-spec.md -o examples/complex-spec.warm.htm
 
 - [examples/complex-spec.md](examples/complex-spec.md) is a broad Markdown fixture.
 - [examples/complex-spec.html](examples/complex-spec.html) is the generated HTML artifact.
+- [examples/images](examples/images) contains local image fixtures used by the generated example.
 - [examples/themes/warm-report.json](examples/themes/warm-report.json) is a custom theme example.
 - [mdalchemy.config.example.json](mdalchemy.config.example.json) shows the supported config shape.
 

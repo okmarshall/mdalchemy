@@ -66,6 +66,7 @@ Document/rendering coverage:
 - Theme token validation for unknown tokens, unsafe CSS fragments, color-like tokens, length-like tokens, and font stack emptiness.
 - Config validation for unknown keys, section shapes, field types, supported Markdown extensions, raw HTML policy, TOC depth, and profile/format support.
 - CLI strict mode, which treats warnings as errors.
+- JSON-driven conformance fixture runner for CommonMark 0.31.2 seed fixtures and supported GFM/frontmatter seed fixtures.
 
 ## Known Gaps
 
@@ -78,7 +79,7 @@ These are the important areas to close before claiming full CommonMark conforman
 - List item continuation, indentation, and looseness are good for common documents but still need CommonMark example-by-example hardening.
 - Source ranges are useful for diagnostics but are approximate in nested virtual lines.
 - Tabs are handled for indentation helpers, but full tab behavior needs conformance tests.
-- GFM extension support covers pipe tables, task lists, strikethrough, footnotes, and literal autolinks, but it has not been checked against an official GFM fixture suite.
+- GFM extension support covers pipe tables, task lists, strikethrough, footnotes, and literal autolinks, but full upstream GFM fixture coverage has not been vendored yet.
 - PDF and other output formats are not implemented.
 
 ## Verification Available Now
@@ -88,6 +89,7 @@ Run:
 ```sh
 npm run typecheck
 npm test
+npm run test:conformance
 npm run render:example
 ```
 
@@ -98,14 +100,15 @@ The test suite includes:
 - Config loader validation coverage.
 - CLI integration coverage, including stdout fragments, safe mode, strict mode, invalid config, and usage errors.
 - A complex fixture test that verifies `examples/complex-spec.md` renders exactly to `examples/complex-spec.html`.
+- A conformance fixture runner with seed fixture packs in `test/fixtures/conformance`.
 
 ## Next Conformance Work
 
 Recommended next steps:
 
-1. Vendor or download CommonMark 0.31.2 examples into a fixture file.
-2. Add an HTML fragment conformance runner.
-3. Report pass/fail counts by CommonMark section.
+1. Vendor or download the full CommonMark 0.31.2 examples into fixture packs.
+2. Add full supported-GFM fixture packs.
+3. Report pass/fail counts by CommonMark/GFM section.
 4. Replace simplified emphasis parsing with the full delimiter stack algorithm.
 5. Expand entity support to the complete named entity table.
 6. Harden list and blockquote continuation against the official examples.

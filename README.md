@@ -96,6 +96,7 @@ Run the checks:
 ```sh
 npm run typecheck
 npm test
+npm run test:conformance
 ```
 
 Render the complex fixture:

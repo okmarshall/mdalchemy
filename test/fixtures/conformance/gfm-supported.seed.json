@@ -1,0 +1,39 @@
+{
+  "name": "Supported GFM extension seed fixtures",
+  "profile": "commonmark",
+  "extensions": [
+    "gfm-table",
+    "gfm-task-list",
+    "gfm-strikethrough",
+    "gfm-footnote",
+    "gfm-literal-autolink",
+    "frontmatter"
+  ],
+  "fixtures": [
+    {
+      "name": "pipe table",
+      "markdown": "| Name | Count |\n| :--- | ---: |\n| Alpha | `1` |\n",
+      "expected": "<div class=\"mda-table-scroll\" role=\"region\" aria-label=\"Scrollable table\" tabindex=\"0\">\n<table>\n<thead>\n<tr><th style=\"text-align: left\">Name</th><th style=\"text-align: right\">Count</th></tr>\n</thead>\n<tbody>\n<tr><td style=\"text-align: left\">Alpha</td><td style=\"text-align: right\"><code>1</code></td></tr>\n</tbody>\n</table>\n</div>"
+    },
+    {
+      "name": "task list and strikethrough",
+      "markdown": "- [x] Done\n- [ ] ~~Pending~~\n",
+      "expected": "<ul class=\"mda-task-list\">\n<li class=\"mda-task-list-item\"><input class=\"mda-task-list-checkbox\" type=\"checkbox\" disabled checked aria-label=\"Completed task\"><div class=\"mda-task-list-content\">Done</div></li>\n<li class=\"mda-task-list-item\"><input class=\"mda-task-list-checkbox\" type=\"checkbox\" disabled aria-label=\"Incomplete task\"><div class=\"mda-task-list-content\"><del>Pending</del></div></li>\n</ul>"
+    },
+    {
+      "name": "literal autolinks",
+      "markdown": "Visit www.example.com or email docs@example.com.\n",
+      "expected": "<p>Visit <a href=\"http://www.example.com\">www.example.com</a> or email <a href=\"mailto:docs@example.com\">docs@example.com</a>.</p>"
+    },
+    {
+      "name": "frontmatter omitted",
+      "markdown": "---\ntitle: Hidden\n---\n\nVisible body.\n",
+      "expected": "<p>Visible body.</p>"
+    },
+    {
+      "name": "footnotes",
+      "markdown": "Footnote reference.[^a]\n\n[^a]: Footnote **body**.\n",
+      "expected": "<p>Footnote reference.<sup id=\"fnref-1\"><a class=\"mda-footnote-ref\" href=\"#fn-1\" role=\"doc-noteref\">1</a></sup></p>\n<section class=\"mda-footnotes\" role=\"doc-endnotes\">\n<hr>\n<ol>\n<li id=\"fn-1\">\n  <p>Footnote <strong>body</strong>.</p>\n  <p class=\"mda-footnote-backrefs\"><a class=\"mda-footnote-backref\" href=\"#fnref-1\" aria-label=\"Back to footnote reference 1\">Back</a></p>\n</li>\n</ol>\n</section>"
+    }
+  ]
+}

@@ -76,7 +76,8 @@ Status labels:
 | URI and email autolinks | `[Done]` | `examples/complex-spec.md` | Add official examples. |
 | Raw HTML inline | `[Done]` | `test/parser.test.mjs`, `examples/complex-spec.md` | Common inline tags are parsed as raw HTML inline nodes. |
 | Source ranges | `[Done]` | `src/core/source.ts`, `test/parser.test.mjs` | Parser nodes carry source ranges for current parsing; precision hardening remains Phase 5 work. |
-| CommonMark conformance runner | `[Planned]` | Testing docs describe desired runner | Vendor CommonMark 0.31.2 examples and report pass rates by section. |
+| Conformance fixture runner | `[Done]` | `test/conformance.test.mjs`, `test/fixtures/conformance` | Expand seed packs into full upstream CommonMark/GFM fixture coverage. |
+| Full CommonMark 0.31.2 fixture corpus | `[Planned]` | Conformance docs | Vendor the full upstream examples and report pass rates by section. |
 
 ### Extensions
 
@@ -148,7 +149,8 @@ Status labels:
 | CLI integration tests | `[Done]` | `test/cli.test.mjs` | Covers file output, GFM, frontmatter, theme subcommands, stdout fragments, safe mode, invalid config, strict mode, and usage errors. |
 | Complex fixture | `[Done]` | `examples/complex-spec.md`, `examples/complex-spec.html` | Keep synthetic and non-sensitive. |
 | Visual/browser verification | `[Done]` | `docs/testing-pipeline.md` | Repeatable desktop and narrow-viewport browser checklist is documented for layout-sensitive changes. |
-| CommonMark conformance suite | `[Planned]` | Testing docs only | Add fixture runner and pass/fail reporting. |
+| Conformance fixture runner | `[Done]` | `test/conformance.test.mjs`, `test/fixtures/conformance` | Seed packs cover representative CommonMark and supported GFM/frontmatter cases. |
+| Full CommonMark/GFM conformance corpus | `[Planned]` | Conformance docs | Vendor full upstream fixtures before claiming full conformance. |
 | CI workflow | `[Planned]` | Roadmap only | Add after scripts stabilize. |
 | User README | `[Done]` | `README.md` | README includes current implementation, usage commands, option summary, examples, and planning document links. |
 | Contribution guide | `[Planned]` | Roadmap only | Add before broader collaboration. |

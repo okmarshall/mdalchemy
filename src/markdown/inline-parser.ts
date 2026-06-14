@@ -15,6 +15,14 @@ import type {
   StrikethroughNode,
   TextNode
 } from "./ast.js";
+import {
+  canOpenEmphasis,
+  findClosingDelimiter,
+  mergeAdjacentText,
+  normalizeCodeSpan
+} from "./inline-delimiters.js";
+import { isLiteralAutolinkBoundary, trimLiteralAutolinkCandidate } from "./inline-extensions.js";
+import { findMatchingBracket, readDestination, readTitle, skipSpaces } from "./inline-links.js";
 import { hasMarkdownExtension, type MarkdownExtension } from "./extensions.js";
 import { textContent } from "./ast.js";
 import { normalizeReferenceLabel } from "./references.js";
@@ -581,129 +589,6 @@ class InlineParser {
   }
 }
 
-function normalizeCodeSpan(raw: string): string {
-  const flattened = raw.replace(/[\r\n]+/g, " ");
-  if (/^ .*\S.* $/.test(flattened)) {
-    return flattened.slice(1, -1);
-  }
-  return flattened;
-}
-
-function findMatchingBracket(source: string, from: number): number {
-  let depth = 0;
-  for (let index = from; index < source.length; index += 1) {
-    const char = source[index];
-    if (char === "\\") {
-      index += 1;
-      continue;
-    }
-    if (char === "[") {
-      depth += 1;
-    } else if (char === "]") {
-      if (depth === 0) return index;
-      depth -= 1;
-    }
-  }
-  return -1;
-}
-
-function readDestination(source: string, from: number): { destination: string; end: number } | undefined {
-  if (source[from] === "<") {
-    const close = source.indexOf(">", from + 1);
-    if (close === -1) return undefined;
-    return {
-      destination: unescapeDestination(source.slice(from + 1, close)),
-      end: close + 1
-    };
-  }
-
-  let index = from;
-  let depth = 0;
-  while (index < source.length) {
-    const char = source[index];
-    if (!char) break;
-    if (char === "\\") {
-      index += 2;
-      continue;
-    }
-    if (char === "(") depth += 1;
-    if (char === ")") {
-      if (depth === 0) break;
-      depth -= 1;
-    }
-    if (/\s/.test(char) && depth === 0) break;
-    index += 1;
-  }
-
-  if (index === from) return undefined;
-  return {
-    destination: unescapeDestination(source.slice(from, index)),
-    end: index
-  };
-}
-
-function readTitle(source: string, from: number): { title: string; end: number } | undefined {
-  const open = source[from];
-  if (open !== "\"" && open !== "'" && open !== "(") return undefined;
-  const close = open === "(" ? ")" : open;
-  let index = from + 1;
-  while (index < source.length) {
-    const char = source[index];
-    if (char === "\\") {
-      index += 2;
-      continue;
-    }
-    if (char === close) {
-      return {
-        title: unescapeDestination(source.slice(from + 1, index)),
-        end: index + 1
-      };
-    }
-    index += 1;
-  }
-  return undefined;
-}
-
-function skipSpaces(source: string, from: number): number {
-  let index = from;
-  while (source[index] === " " || source[index] === "\t" || source[index] === "\n") {
-    index += 1;
-  }
-  return index;
-}
-
-function isLiteralAutolinkBoundary(source: string, index: number): boolean {
-  const previous = source[index - 1] ?? "";
-  return !previous || !/[A-Za-z0-9@._~-]/.test(previous);
-}
-
-function trimLiteralAutolinkCandidate(candidate: string): string {
-  let end = candidate.length;
-
-  while (end > 0 && /[.,;:!?]/.test(candidate[end - 1] ?? "")) {
-    end -= 1;
-  }
-
-  while (end > 0 && candidate[end - 1] === ")" && hasMoreClosingParens(candidate.slice(0, end))) {
-    end -= 1;
-  }
-
-  return candidate.slice(0, end);
-}
-
-function hasMoreClosingParens(value: string): boolean {
-  let balance = 0;
-  for (const char of value) {
-    if (char === "(") balance += 1;
-    if (char === ")") balance -= 1;
-  }
-  return balance < 0;
-}
-
-function unescapeDestination(value: string): string {
-  return value.replace(/\\([\\`*{}\[\]()#+\-.!_>~|])/g, "$1");
-}
-
 function isHtmlInline(literal: string): boolean {
   return /^<\/?[A-Za-z][A-Za-z0-9-]*(?:\s[^<>]*)?>$/.test(literal)
     || /^<!--[\s\S]*-->$/.test(literal)
@@ -720,41 +605,4 @@ function codePointToString(codePoint: number): string | undefined {
   } catch {
     return undefined;
   }
-}
-
-function canOpenEmphasis(source: string, start: number, length: number, char: "*" | "_"): boolean {
-  const before = source[start - 1] ?? "";
-  const after = source[start + length] ?? "";
-  if (!after || /\s/.test(after)) return false;
-  if (char === "_" && /\w/.test(before) && /\w/.test(after)) return false;
-  return true;
-}
-
-function findClosingDelimiter(source: string, delimiter: string, from: number): number {
-  let cursor = from;
-  while (cursor < source.length) {
-    const close = source.indexOf(delimiter, cursor);
-    if (close === -1) return -1;
-    const before = source[close - 1] ?? "";
-    const after = source[close + delimiter.length] ?? "";
-    if (!/\s/.test(before) && !(delimiter[0] === "_" && /\w/.test(before) && /\w/.test(after))) {
-      return close;
-    }
-    cursor = close + 1;
-  }
-  return -1;
-}
-
-function mergeAdjacentText(nodes: InlineNode[]): InlineNode[] {
-  const merged: InlineNode[] = [];
-  for (const node of nodes) {
-    const previous = merged[merged.length - 1];
-    if (previous?.type === "text" && node.type === "text") {
-      previous.value += node.value;
-      previous.range.end = node.range.end;
-    } else {
-      merged.push(node);
-    }
-  }
-  return merged;
 }

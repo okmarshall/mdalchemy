@@ -21,6 +21,7 @@ The package should expose at least these baseline scripts:
     "test": "npm run build && node --test test/*.test.mjs",
     "test:unit": "npm run build && node --test test/parser.test.mjs test/renderer.test.mjs test/cli.test.mjs",
     "test:fixtures": "npm run build && node --test test/example-fixture.test.mjs",
+    "test:conformance": "npm run build && node --test test/conformance.test.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "render:example": "npm run build && node dist/cli/main.js examples/complex-spec.md -o examples/complex-spec.html --toc --gfm --frontmatter"
   }
@@ -35,8 +36,9 @@ Run the checks in this order:
 2. Typecheck and build.
 3. Run unit tests.
 4. Run fixture tests.
-5. Render a representative Markdown file.
-6. Compare the generated HTML with the expected output.
+5. Run conformance seed fixtures.
+6. Render a representative Markdown file.
+7. Compare the generated HTML with the expected output.
 
 This order catches fast structural failures before slower parser and renderer
 fixtures.
@@ -152,7 +154,21 @@ Recommended fixture layers:
 Use fragment output for CommonMark conformance checks. Use standalone output for
 mdalchemy product behavior.
 
-## 5. Render An Example Markdown File
+## 5. Run Conformance Seed Fixtures
+
+The conformance runner reads JSON fixture packs from `test/fixtures/conformance`
+and renders HTML fragments for comparison. It currently includes seed fixtures
+for CommonMark 0.31.2 behavior and the supported GFM/frontmatter extension
+surface.
+
+```sh
+npm run test:conformance
+```
+
+The runner is intentionally data-driven so full upstream CommonMark/GFM fixture
+packs can be added without replacing the harness.
+
+## 6. Render An Example Markdown File
 
 The repository includes a broad Markdown smoke fixture at
 `examples/complex-spec.md`. It intentionally exercises many CommonMark features
@@ -198,7 +214,7 @@ node dist/cli/main.js examples/complex-spec.md --stdout --fragment --gfm --front
 Fragment output should omit the standalone HTML shell and theme CSS so parser
 and renderer mappings are easier to diff.
 
-## 6. Compare HTML Output
+## 7. Compare HTML Output
 
 Use a plain unified diff for deterministic HTML snapshots:
 
@@ -226,7 +242,7 @@ If whitespace-only diffs become noisy, prefer improving renderer formatting or
 the fixture comparison helper over weakening the fixture. HTML snapshots should
 remain useful to read in code review.
 
-## 7. Browser Layout Verification
+## 8. Browser Layout Verification
 
 Run browser checks for visual or layout-sensitive changes, especially changes to
 themes, page width, code blocks, tables, images, the table of contents, or mobile

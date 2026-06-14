@@ -118,6 +118,7 @@ node dist/cli/main.js examples/complex-spec.md -o examples/complex-spec.warm.htm
 - [Rendering And Theming](docs/rendering-and-theming.md) explains how Markdown becomes beautiful output without tying the whole project to HTML.
 - [CLI And Configuration](docs/cli-and-configuration.md) defines commands, flags, config discovery, theme configuration, diagnostics, and filesystem behavior.
 - [Implementation Roadmap](docs/implementation-roadmap.md) tracks implemented, partial, planned, and deferred features alongside phased delivery plans.
+- [Codebase Audit](docs/codebase-audit.md) records current quality findings, cleanup work, and maintainability follow-ups.
 - [Testing Pipeline](docs/testing-pipeline.md) explains how to build, test, render fixtures, and compare output.
 - [Conformance Status](docs/conformance-status.md) tracks current CommonMark-oriented coverage and known gaps.
 

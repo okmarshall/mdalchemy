@@ -1,7 +1,7 @@
 export { parseMarkdown } from "./markdown/parser.js";
 export { renderMarkdown, renderDocument } from "./render/html/html-renderer.js";
 export { loadConfig, resolveConfig } from "./config/config-loader.js";
-export { gfmMarkdownExtensions, supportedMarkdownExtensions } from "./config/config-schema.js";
+export { gfmMarkdownExtensions, isSupportedMarkdownExtension, supportedMarkdownExtensions } from "./config/config-schema.js";
 export { resolveTheme } from "./theme/theme.js";
 export type {
   BlockNode,

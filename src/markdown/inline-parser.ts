@@ -15,6 +15,7 @@ import type {
   StrikethroughNode,
   TextNode
 } from "./ast.js";
+import { hasMarkdownExtension, type MarkdownExtension } from "./extensions.js";
 import { textContent } from "./ast.js";
 import { normalizeReferenceLabel } from "./references.js";
 
@@ -34,7 +35,7 @@ const namedEntities: Record<string, string> = {
 export interface InlineParserOptions {
   references?: ReferenceMap;
   baseRange?: SourceRange;
-  extensions?: string[] | undefined;
+  extensions?: readonly string[] | undefined;
 }
 
 export function parseInlines(source: string, options: InlineParserOptions = {}): InlineNode[] {
@@ -50,7 +51,7 @@ class InlineParser {
     private readonly source: string,
     private readonly references: ReferenceMap,
     private readonly baseRange: SourceRange | undefined,
-    private readonly extensions: string[]
+    private readonly extensions: readonly string[]
   ) {}
 
   parse(): InlineNode[] {
@@ -479,8 +480,8 @@ class InlineParser {
       || /^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+/.test(rest);
   }
 
-  private hasExtension(extension: string): boolean {
-    return this.extensions.includes(extension);
+  private hasExtension(extension: MarkdownExtension): boolean {
+    return hasMarkdownExtension(this.extensions, extension);
   }
 
   private consumeRun(char: string): number {

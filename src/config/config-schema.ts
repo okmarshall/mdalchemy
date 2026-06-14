@@ -1,3 +1,10 @@
+export {
+  gfmMarkdownExtensions,
+  isSupportedMarkdownExtension,
+  supportedMarkdownExtensions
+} from "../markdown/extensions.js";
+export type { MarkdownExtension } from "../markdown/extensions.js";
+
 export interface MdalchemyConfig {
   version?: number | undefined;
   output?: OutputConfig | undefined;
@@ -16,21 +23,6 @@ export interface MarkdownConfig {
   profile?: "commonmark" | undefined;
   extensions?: string[] | undefined;
 }
-
-export const gfmMarkdownExtensions = [
-  "gfm-table",
-  "gfm-task-list",
-  "gfm-strikethrough",
-  "gfm-footnote",
-  "gfm-literal-autolink"
-] as const;
-
-export const supportedMarkdownExtensions = [
-  ...gfmMarkdownExtensions,
-  "frontmatter"
-] as const;
-
-export type MarkdownExtension = typeof supportedMarkdownExtensions[number];
 
 export interface HtmlConfig {
   lang?: string | undefined;

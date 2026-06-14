@@ -146,7 +146,7 @@ export async function resolveTheme(input: string | Record<string, unknown>, cwd 
     definition = parseThemeDefinition(input, diagnostics);
   }
 
-  definition ??= builtInThemes.serif!;
+  definition ??= builtInThemes["serif"]!;
 
   const resolvedTokens = resolveThemeTokens(definition, diagnostics, new Set());
   diagnostics.push(...validateThemeTokens(resolvedTokens));
@@ -160,16 +160,16 @@ export async function resolveTheme(input: string | Record<string, unknown>, cwd 
 }
 
 function parseThemeDefinition(raw: Record<string, unknown>, diagnostics: Diagnostic[], requireName = false): ThemeDefinition {
-  const name = typeof raw.name === "string" ? raw.name : "custom";
-  if (requireName && typeof raw.name !== "string") {
+  const name = typeof raw["name"] === "string" ? raw["name"] : "custom";
+  if (requireName && typeof raw["name"] !== "string") {
     diagnostics.push({
       severity: "error",
       code: "MDA_THEME_MISSING_NAME",
       message: "Theme files must include a string name."
     });
   }
-  const extendsName = typeof raw.extends === "string" ? raw.extends : undefined;
-  const rawTokens = isRecord(raw.tokens) ? raw.tokens : {};
+  const extendsName = typeof raw["extends"] === "string" ? raw["extends"] : undefined;
+  const rawTokens = isRecord(raw["tokens"]) ? raw["tokens"] : {};
   const tokens: ThemeTokens = {};
   for (const [key, value] of Object.entries(rawTokens)) {
     if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {

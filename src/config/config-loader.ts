@@ -3,10 +3,10 @@ import path from "node:path";
 import type { Diagnostic } from "../core/diagnostics.js";
 import {
   defaultConfig,
-  supportedMarkdownExtensions,
   type MdalchemyConfig,
   type ResolvedConfig
 } from "./config-schema.js";
+import { isSupportedMarkdownExtension } from "../markdown/extensions.js";
 
 export interface ConfigLoadOptions {
   cwd?: string | undefined;
@@ -72,25 +72,25 @@ export function resolveConfig(
   const fileHtml = isRecord(config.html) ? config.html : {};
   const resolved: ResolvedConfig = {
     output: {
-      format: stringOr(fileOutput.format, defaultConfig.output.format) as "html",
-      standalone: booleanOr(fileOutput.standalone, defaultConfig.output.standalone),
-      createDirs: booleanOr(fileOutput.createDirs, defaultConfig.output.createDirs)
+      format: stringOr(fileOutput["format"], defaultConfig.output.format) as "html",
+      standalone: booleanOr(fileOutput["standalone"], defaultConfig.output.standalone),
+      createDirs: booleanOr(fileOutput["createDirs"], defaultConfig.output.createDirs)
     },
     markdown: {
-      profile: stringOr(fileMarkdown.profile, defaultConfig.markdown.profile) as "commonmark",
-      extensions: stringArrayOr(fileMarkdown.extensions, defaultConfig.markdown.extensions)
+      profile: stringOr(fileMarkdown["profile"], defaultConfig.markdown.profile) as "commonmark",
+      extensions: stringArrayOr(fileMarkdown["extensions"], defaultConfig.markdown.extensions)
     },
     html: {
-      lang: stringOr(fileHtml.lang, defaultConfig.html.lang),
-      rawHtml: stringOr(fileHtml.rawHtml, defaultConfig.html.rawHtml) as "allow" | "escape" | "strip",
-      safeUrls: booleanOr(fileHtml.safeUrls, defaultConfig.html.safeUrls),
-      headingAnchors: booleanOr(fileHtml.headingAnchors, defaultConfig.html.headingAnchors),
-      sections: booleanOr(fileHtml.sections, defaultConfig.html.sections),
-      tableOfContents: tableOfContentsOr(fileHtml.tableOfContents, defaultConfig.html.tableOfContents),
-      tocDepth: numberOr(fileHtml.tocDepth, defaultConfig.html.tocDepth),
-      softBreak: stringOr(fileHtml.softBreak, defaultConfig.html.softBreak) as "newline" | "space" | "br",
-      fragment: booleanOr(fileHtml.fragment, defaultConfig.html.fragment),
-      title: stringOr(fileHtml.title, defaultConfig.html.title)
+      lang: stringOr(fileHtml["lang"], defaultConfig.html.lang),
+      rawHtml: stringOr(fileHtml["rawHtml"], defaultConfig.html.rawHtml) as "allow" | "escape" | "strip",
+      safeUrls: booleanOr(fileHtml["safeUrls"], defaultConfig.html.safeUrls),
+      headingAnchors: booleanOr(fileHtml["headingAnchors"], defaultConfig.html.headingAnchors),
+      sections: booleanOr(fileHtml["sections"], defaultConfig.html.sections),
+      tableOfContents: tableOfContentsOr(fileHtml["tableOfContents"], defaultConfig.html.tableOfContents),
+      tocDepth: numberOr(fileHtml["tocDepth"], defaultConfig.html.tocDepth),
+      softBreak: stringOr(fileHtml["softBreak"], defaultConfig.html.softBreak) as "newline" | "space" | "br",
+      fragment: booleanOr(fileHtml["fragment"], defaultConfig.html.fragment),
+      title: stringOr(fileHtml["title"], defaultConfig.html.title)
     },
     theme: typeof config.theme === "string" || isRecord(config.theme) ? config.theme : defaultConfig.theme,
     strict: options.strict ?? defaultConfig.strict
@@ -166,8 +166,7 @@ function validateConfig(config: ResolvedConfig): Diagnostic[] {
       message: `Unsupported markdown profile "${config.markdown.profile}".`
     });
   }
-  const supportedExtensions = new Set<string>(supportedMarkdownExtensions);
-  const unsupportedExtensions = config.markdown.extensions.filter((extension) => !supportedExtensions.has(extension));
+  const unsupportedExtensions = config.markdown.extensions.filter((extension) => !isSupportedMarkdownExtension(extension));
   if (unsupportedExtensions.length > 0) {
     diagnostics.push({
       severity: "error",
@@ -198,20 +197,20 @@ function validateConfigShape(config: Record<string, unknown>): Diagnostic[] {
   const diagnostics: Diagnostic[] = [];
   warnUnknownKeys(config, topLevelKeys, "", diagnostics);
 
-  if (config.version !== undefined && typeof config.version !== "number") {
+  if (config["version"] !== undefined && typeof config["version"] !== "number") {
     diagnostics.push(invalidType("version", "a number"));
   }
 
-  validateSection(config.output, "output", outputKeys, diagnostics, {
+  validateSection(config["output"], "output", outputKeys, diagnostics, {
     format: "string",
     standalone: "boolean",
     createDirs: "boolean"
   });
-  validateSection(config.markdown, "markdown", markdownKeys, diagnostics, {
+  validateSection(config["markdown"], "markdown", markdownKeys, diagnostics, {
     profile: "string",
     extensions: "string[]"
   });
-  validateSection(config.html, "html", htmlKeys, diagnostics, {
+  validateSection(config["html"], "html", htmlKeys, diagnostics, {
     lang: "string",
     rawHtml: "string",
     safeUrls: "boolean",
@@ -224,7 +223,7 @@ function validateConfigShape(config: Record<string, unknown>): Diagnostic[] {
     title: "string"
   });
 
-  if (config.theme !== undefined && typeof config.theme !== "string" && !isRecord(config.theme)) {
+  if (config["theme"] !== undefined && typeof config["theme"] !== "string" && !isRecord(config["theme"])) {
     diagnostics.push(invalidType("theme", "a built-in theme name, theme path, or theme object"));
   }
 

@@ -37,6 +37,7 @@ pnpm-debug.log*
 # Generated mdalchemy output
 *.generated.html
 *.generated.pdf
+examples/*.warm.html
 .mdalchemy-cache/
 
 # Editor and OS files
@@ -51,4 +52,3 @@ temp/
 *.tmp
 *.swp
 *.swo
-

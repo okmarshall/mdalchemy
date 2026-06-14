@@ -29,12 +29,13 @@ import type {
   TableNode,
   ThematicBreakNode
 } from "./ast.js";
+import { hasMarkdownExtension, type MarkdownExtension } from "./extensions.js";
 import { parseInlines } from "./inline-parser.js";
 import { normalizeReferenceLabel } from "./references.js";
 
 export interface MarkdownOptions {
   profile?: "commonmark";
-  extensions?: string[];
+  extensions?: readonly string[];
 }
 
 export interface ParseResult {
@@ -698,8 +699,8 @@ class BlockParser {
     return rangeFromOffsets(this.source, first.startOffset, last.endOffset);
   }
 
-  private hasExtension(extension: string): boolean {
-    return this.options.extensions?.includes(extension) ?? false;
+  private hasExtension(extension: MarkdownExtension): boolean {
+    return hasMarkdownExtension(this.options.extensions, extension);
   }
 
   private inlineOptions(baseRange: SourceRange) {

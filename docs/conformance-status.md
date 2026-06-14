@@ -67,6 +67,7 @@ Document/rendering coverage:
 - Config validation for unknown keys, section shapes, field types, supported Markdown extensions, raw HTML policy, TOC depth, and profile/format support.
 - CLI strict mode, which treats warnings as errors.
 - JSON-driven conformance fixture runner for CommonMark 0.31.2 seed fixtures and supported GFM/frontmatter seed fixtures.
+- Official CommonMark 0.31.2 corpus reporting through `npm run test:commonmark`.
 
 ## Known Gaps
 
@@ -82,6 +83,33 @@ These are the important areas to close before claiming full CommonMark conforman
 - GFM extension support covers pipe tables, task lists, strikethrough, footnotes, and literal autolinks, but full upstream GFM fixture coverage has not been vendored yet.
 - PDF and other output formats are not implemented.
 
+## Full CommonMark Corpus Baseline
+
+The repository vendors the official 652-example CommonMark 0.31.2 corpus at
+`test/fixtures/conformance/commonmark-0.31.2.json`. The report command compares
+mdalchemy fragment output against the official HTML examples and strips only the
+official terminal newline so formatting style does not hide parser behavior.
+
+Current baseline:
+
+```text
+CommonMark 0.31.2 corpus: 243/652 examples passed
+```
+
+Lowest or most important section pass rates to prioritize:
+
+- Tabs: 0/11.
+- Thematic breaks: 2/19.
+- Setext headings: 3/27.
+- Indented code blocks: 1/12.
+- Fenced code blocks: 5/29.
+- List items: 13/48.
+- Lists: 8/26.
+- Images: 2/22.
+- Emphasis and strong emphasis: 39/132.
+- Links: 53/90.
+- Hard line breaks: 4/15.
+
 ## Verification Available Now
 
 Run:
@@ -90,6 +118,7 @@ Run:
 npm run typecheck
 npm test
 npm run test:conformance
+npm run test:commonmark
 npm run render:example
 ```
 
@@ -101,15 +130,17 @@ The test suite includes:
 - CLI integration coverage, including stdout fragments, safe mode, strict mode, invalid config, and usage errors.
 - A complex fixture test that verifies `examples/complex-spec.md` renders exactly to `examples/complex-spec.html`.
 - A conformance fixture runner with seed fixture packs in `test/fixtures/conformance`.
+- A full CommonMark corpus report that prints pass/fail counts by section.
 
 ## Next Conformance Work
 
 Recommended next steps:
 
-1. Vendor or download the full CommonMark 0.31.2 examples into fixture packs.
-2. Add full supported-GFM fixture packs.
-3. Report pass/fail counts by CommonMark/GFM section.
-4. Replace simplified emphasis parsing with the full delimiter stack algorithm.
-5. Expand entity support to the complete named entity table.
-6. Harden list and blockquote continuation against the official examples.
-7. Keep extension behavior behind explicit extension flags and add official GFM fixtures if the supported extension surface grows.
+1. Use `npm run test:commonmark` before and after every CommonMark parser hardening change.
+2. Replace simplified emphasis parsing with the full delimiter stack algorithm.
+3. Implement full tab expansion and indentation-sensitive container parsing.
+4. Expand entity support to the complete named entity table.
+5. Harden thematic break, setext heading, list, and blockquote continuation rules against the official examples.
+6. Harden link, image, destination, title, and reference parsing against the official examples.
+7. Promote `npm run test:commonmark:strict` into the normal CI/release gate once all 652 examples pass.
+8. Add full supported-GFM fixture packs after deciding which GFM extensions are part of the supported surface.

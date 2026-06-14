@@ -570,11 +570,12 @@ This should live in `document/sections.ts`, not in the parser. The parser should
 
 ### CommonMark Spec Tests
 
-CommonMark examples can be used as conformance fixtures. The implementation should include a script that:
+CommonMark examples are used as conformance fixtures. The implementation
+includes `npm run test:commonmark`, which:
 
 1. Loads CommonMark spec examples from a vendored or downloaded fixture.
 2. Runs mdalchemy parser plus HTML renderer.
-3. Compares normalized HTML output to expected HTML.
+3. Compares normalized HTML fragment output to expected HTML.
 4. Reports pass/fail by spec section.
 
 Because the renderer may intentionally emit richer standalone HTML, conformance tests should use an HTML fragment renderer mode.
@@ -608,18 +609,12 @@ Because the renderer may intentionally emit richer standalone HTML, conformance 
 
 ### Conformance Reporting
 
-The test runner should output:
+The full-corpus report currently outputs:
 
 ```text
-CommonMark 0.31.2 conformance
-  total: 652
-  passed: 601
-  failed: 51
+CommonMark 0.31.2 corpus: 243/652 examples passed
 
-Failures by section:
-  6.4 Emphasis and strong emphasis: 29
-  4.6 HTML blocks: 12
-  6.6 Links: 10
+| Section | Passed | Total | First failing examples |
 ```
 
 This makes progress visible even before perfect conformance.

@@ -21,6 +21,8 @@
     "test:unit": "npm run build && node --test test/parser.test.mjs test/renderer.test.mjs test/cli.test.mjs",
     "test:fixtures": "npm run build && node --test test/example-fixture.test.mjs",
     "test:conformance": "npm run build && node --test test/conformance.test.mjs",
+    "test:commonmark": "npm run build && node test/commonmark-corpus-report.mjs",
+    "test:commonmark:strict": "npm run build && node test/commonmark-corpus-report.mjs --strict",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "render:example": "npm run build && node dist/cli/main.js examples/complex-spec.md -o examples/complex-spec.html --toc --gfm --frontmatter"
   },

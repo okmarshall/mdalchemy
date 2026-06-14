@@ -22,6 +22,8 @@ The package should expose at least these baseline scripts:
     "test:unit": "npm run build && node --test test/parser.test.mjs test/renderer.test.mjs test/cli.test.mjs",
     "test:fixtures": "npm run build && node --test test/example-fixture.test.mjs",
     "test:conformance": "npm run build && node --test test/conformance.test.mjs",
+    "test:commonmark": "npm run build && node test/commonmark-corpus-report.mjs",
+    "test:commonmark:strict": "npm run build && node test/commonmark-corpus-report.mjs --strict",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "render:example": "npm run build && node dist/cli/main.js examples/complex-spec.md -o examples/complex-spec.html --toc --gfm --frontmatter"
   }
@@ -37,8 +39,9 @@ Run the checks in this order:
 3. Run unit tests.
 4. Run fixture tests.
 5. Run conformance seed fixtures.
-6. Render a representative Markdown file.
-7. Compare the generated HTML with the expected output.
+6. Run the full CommonMark corpus report when changing parser behavior.
+7. Render a representative Markdown file.
+8. Compare the generated HTML with the expected output.
 
 This order catches fast structural failures before slower parser and renderer
 fixtures.
@@ -156,19 +159,29 @@ mdalchemy product behavior.
 
 ## 5. Run Conformance Seed Fixtures
 
-The conformance runner reads JSON fixture packs from `test/fixtures/conformance`
-and renders HTML fragments for comparison. It currently includes seed fixtures
-for CommonMark 0.31.2 behavior and the supported GFM/frontmatter extension
-surface.
+The strict conformance seed runner reads JSON fixture packs from
+`test/fixtures/conformance` and renders HTML fragments for comparison. It
+currently includes seed fixtures for CommonMark 0.31.2 behavior and the
+supported GFM/frontmatter extension surface.
 
 ```sh
 npm run test:conformance
 ```
 
-The runner is intentionally data-driven so full upstream CommonMark/GFM fixture
-packs can be added without replacing the harness.
+## 6. Run Full CommonMark Corpus Report
 
-## 6. Render An Example Markdown File
+The repository also vendors the official CommonMark 0.31.2 corpus in
+`test/fixtures/conformance/commonmark-0.31.2.json`. Use this report before and
+after parser changes to see section-level pass rates:
+
+```sh
+npm run test:commonmark
+```
+
+`npm run test:commonmark:strict` uses the same corpus as a future all-examples
+gate. It is expected to fail until the known CommonMark gaps are closed.
+
+## 7. Render An Example Markdown File
 
 The repository includes a broad Markdown smoke fixture at
 `examples/complex-spec.md`. It intentionally exercises many CommonMark features
@@ -214,7 +227,7 @@ node dist/cli/main.js examples/complex-spec.md --stdout --fragment --gfm --front
 Fragment output should omit the standalone HTML shell and theme CSS so parser
 and renderer mappings are easier to diff.
 
-## 7. Compare HTML Output
+## 8. Compare HTML Output
 
 Use a plain unified diff for deterministic HTML snapshots:
 
@@ -242,7 +255,7 @@ If whitespace-only diffs become noisy, prefer improving renderer formatting or
 the fixture comparison helper over weakening the fixture. HTML snapshots should
 remain useful to read in code review.
 
-## 8. Browser Layout Verification
+## 9. Browser Layout Verification
 
 Run browser checks for visual or layout-sensitive changes, especially changes to
 themes, page width, code blocks, tables, images, the table of contents, or mobile
@@ -281,7 +294,7 @@ Minimum narrow viewport checks, using a width around `390px`:
 Record the checked viewport sizes and any notable measurements in the change
 summary when layout changes are intentional.
 
-## 8. Accessibility Checklist
+## 10. Accessibility Checklist
 
 Run this checklist whenever renderer structure or theme CSS changes:
 

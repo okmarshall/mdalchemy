@@ -74,7 +74,6 @@ There are no known failures in the official CommonMark 0.31.2 example corpus. Re
 
 - Source ranges are useful for diagnostics but are approximate in nested virtual lines.
 - GFM extension support covers pipe tables, task lists, strikethrough, footnotes, and literal autolinks, but full upstream GFM fixture coverage has not been vendored yet.
-- PDF and other output formats are not implemented.
 
 ## Full CommonMark Corpus Baseline
 

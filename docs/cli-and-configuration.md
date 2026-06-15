@@ -128,19 +128,11 @@ Internal test/API format:
 html-fragment
 ```
 
-Future formats:
+If a user asks for an unsupported output format, show:
 
 ```text
-pdf
-plain
-json
-```
-
-If a user asks for `.pdf` before PDF support exists, show:
-
-```text
-mdalchemy: unsupported output format "pdf"
-PDF export is planned but not implemented yet. Use --format html or write to a .html file.
+mdalchemy: unsupported output format "<format>"
+Use --format html or write to a .html file.
 ```
 
 ## Config Discovery

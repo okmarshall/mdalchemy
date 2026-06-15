@@ -9,7 +9,7 @@ This audit tightened compiler enforcement, clarified extension ownership, isolat
 ## Strengths
 
 - The project uses modern TypeScript with ESM, `NodeNext`, declarations, source maps, and no runtime dependencies.
-- The parser emits a renderer-neutral AST, which keeps future HTML/PDF/export work possible.
+- The parser emits a renderer-neutral AST, which keeps Markdown correctness separate from HTML presentation.
 - Config loading validates shape and semantic values before rendering.
 - The HTML renderer escapes text and attributes, filters unsafe URLs in safe mode, and keeps raw HTML policy explicit.
 - Tests cover parser behavior, renderer behavior, CLI integration, config validation, and the checked complex fixture.

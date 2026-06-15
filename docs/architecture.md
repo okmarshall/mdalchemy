@@ -8,10 +8,10 @@ mdalchemy should be a pipeline, not a pile of string replacements. Markdown pars
 2. Parse Markdown into a document AST.
 3. Analyze or transform the document into renderer-neutral derived structures.
 4. Resolve configuration and theme.
-5. Render to a target format.
+5. Render to HTML.
 6. Write output.
 
-The first renderer is HTML. Future renderers should be able to consume the same document model.
+HTML is the supported rendering target. The parser and document layers still stay separate from HTML so correctness, analysis, and presentation remain independently testable.
 
 ## High-Level Pipeline
 
@@ -138,7 +138,7 @@ Should not:
 
 ### `document`
 
-Owns renderer-neutral document analysis and transforms.
+Owns document analysis and transforms.
 
 Responsibilities:
 
@@ -147,19 +147,17 @@ Responsibilities:
 - Slug generation.
 - Table of contents model.
 - Document metadata.
-- Future cross-renderer transforms.
+- Shared document features used by rendering.
 
 This layer sits between parsing and rendering so features like heading anchors are not hard-coded into the parser.
 
 ### `render`
 
-Owns output format rendering.
+Owns HTML rendering.
 
 Responsibilities:
 
-- Define renderer interface.
 - Provide HTML renderer.
-- Provide future text or PDF renderers.
 - Keep renderer-specific escaping and templates isolated.
 
 ### `theme`
@@ -364,14 +362,13 @@ export interface ContainerFrame {
 
 Inline parsing will need delimiter and bracket stacks, because emphasis and links require delayed resolution.
 
-## Renderer Interface
+## HTML Renderer Interface
 
-Renderers should consume the document model and a context object.
+The HTML renderer should consume the document model and a context object.
 
 ```ts
-export interface Renderer<TOutput = string> {
-  readonly format: OutputFormat;
-  render(document: DocumentNode, context: RenderContext): TOutput;
+export interface HtmlRenderer {
+  render(document: DocumentNode, context: RenderContext): string;
 }
 
 export interface RenderContext {
@@ -382,11 +379,11 @@ export interface RenderContext {
 }
 ```
 
-The HTML renderer returns a string. A future PDF renderer might return a `Uint8Array`, path, or structured artifact, so the generic output type is useful.
+The HTML renderer returns a string.
 
 ## Render Model
 
-For HTML, a direct recursive renderer is acceptable at first. If output formats become complex, introduce an intermediate render tree:
+For HTML, a direct recursive renderer is acceptable at first. If HTML rendering becomes hard to maintain, introduce an intermediate render tree:
 
 ```ts
 export interface RenderNode {
@@ -531,16 +528,6 @@ Standalone output should include:
 - `<html lang="...">`.
 - `<head>` with charset, viewport, title, and style.
 - `<body>` with the rendered document.
-
-## Future PDF Strategy
-
-PDF should not be bolted onto the parser. There are several viable paths:
-
-1. Render HTML and print to PDF with a browser engine.
-2. Render to a document layout tree and generate PDF directly.
-3. Use an external converter as an optional integration.
-
-For learning and output quality, option 1 is likely best after HTML stabilizes. It keeps PDF concerns in a renderer/export package while reusing themes and document structure.
 
 ## Design Constraints
 

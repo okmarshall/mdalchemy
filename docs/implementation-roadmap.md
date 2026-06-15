@@ -45,8 +45,6 @@ Status labels:
 | `--stdout` output | `[Done]` | `src/cli/main.ts` | Add direct CLI test if behavior changes. |
 | `--fragment` output | `[Done]` | `test/renderer.test.mjs` | Add CLI integration coverage if needed. |
 | `--format html` | `[Done]` | `src/cli/args.ts`, `src/config/config-loader.ts` | Keep unsupported format errors clear. |
-| PDF output | `[Planned]` | Architecture notes only | Choose browser-print or layout-tree strategy after HTML stabilizes. |
-| Other export formats | `[Deferred]` | Requirements mention future formats | Revisit after PDF direction is chosen. |
 | Watch mode | `[Deferred]` | CLI docs describe future behavior | Implement after normal render pipeline is stable. |
 | Theme subcommands | `[Done]` | `src/cli/main.ts`, `test/cli.test.mjs` | Keep output stable as more theme tooling is added. |
 | Diagnostics and exit codes | `[Done]` | `src/core/diagnostics.ts`, `src/cli/main.ts`, `test/cli.test.mjs` | Keep exit codes stable as new diagnostics are added. |
@@ -769,18 +767,6 @@ Mitigation:
 - Use fragment renderer for conformance.
 - Keep styling in themes.
 - Do not let renderer compensate for parser bugs.
-
-### Risk: Future PDF Needs Change Everything
-
-Impact:
-
-- Medium.
-
-Mitigation:
-
-- Keep AST renderer-neutral.
-- Keep HTML-specific logic in HTML renderer.
-- Use document analysis layer for shared features.
 
 ### Risk: Dependency Creep
 

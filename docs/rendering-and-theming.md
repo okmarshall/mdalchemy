@@ -2,33 +2,21 @@
 
 ## Goal
 
-Rendering turns the Markdown AST into an output format. The first output format is HTML, but mdalchemy should avoid treating HTML as the whole product. The parser creates document structure. The renderer presents it. Themes make it beautiful.
+Rendering turns the Markdown AST into beautiful semantic HTML. The parser creates document structure. The renderer presents it. Themes make it beautiful.
 
 ## Rendering Principles
 
-- Renderers consume AST nodes and derived document structures.
-- Renderers do not parse Markdown.
-- Renderers do not mutate the parser AST.
+- The HTML renderer consumes AST nodes and derived document structures.
+- The HTML renderer does not parse Markdown.
+- The HTML renderer does not mutate the parser AST.
 - Themes affect presentation, not document meaning.
 - HTML output should be semantic and accessible.
 - Standalone HTML should work offline.
-- Future PDF output should reuse document structure and as much theme information as practical.
 
-## Output Formats
-
-### Version 1
+## HTML Output Modes
 
 - `html`: complete standalone HTML file.
 - `html-fragment`: internal mode for tests and possible API use.
-
-### Future
-
-- `pdf`: likely via print-oriented HTML and a browser engine.
-- `docx`: possible long-term renderer using document model.
-- `plain`: text-only output for testing, terminal preview, or accessibility workflows.
-- `json`: AST output for debugging.
-
-Only HTML should be considered committed for v1.
 
 ## HTML Document Structure
 
@@ -400,7 +388,7 @@ Characteristics:
 
 Purpose:
 
-- Paper/PDF export.
+- Browser printing.
 
 Characteristics:
 
@@ -528,23 +516,7 @@ The HTML renderer should include basic print CSS:
 }
 ```
 
-This helps future PDF output and makes browser printing useful early.
-
-## Future PDF Export
-
-Likely plan:
-
-1. Render print-friendly standalone HTML.
-2. Use an optional browser automation dependency or external command to print to PDF.
-3. Keep PDF code in a separate renderer/export package.
-
-PDF config should not leak into parser options.
-
-Example future command:
-
-```text
-mdalchemy report.md -o report.pdf --format pdf --theme print
-```
+This makes browser printing useful early.
 
 ## Renderer Tests
 

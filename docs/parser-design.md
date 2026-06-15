@@ -520,7 +520,7 @@ Soft line breaks:
 Renderer:
 
 - Hard break becomes `<br>`.
-- Soft break defaults to newline or configurable space in future renderers.
+- Soft break defaults to newline or configurable space in HTML rendering.
 
 ## Link Reference Map
 

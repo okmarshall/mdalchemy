@@ -45,6 +45,7 @@ export interface BookConfig {
 }
 
 export interface ResolvedConfig {
+  version: 1;
   output: {
     format: "html";
     standalone: boolean;
@@ -88,6 +89,7 @@ export const defaultBookExclude = [
 ];
 
 export const defaultConfig: ResolvedConfig = {
+  version: 1,
   output: {
     format: "html",
     standalone: true,

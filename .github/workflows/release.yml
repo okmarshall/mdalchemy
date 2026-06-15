@@ -1,0 +1,46 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Publish to npm
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24.x
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate tag matches package version
+        run: |
+          node -e "const { readFileSync } = require('node:fs'); const pkg = JSON.parse(readFileSync('package.json', 'utf8')); const expected = 'v' + pkg.version; const actual = process.env.GITHUB_REF_NAME; if (actual !== expected) { throw new Error('Release tag ' + actual + ' does not match package version ' + expected); }"
+
+      - name: Verify package
+        run: npm run verify
+
+      - name: Package dry run
+        run: npm run pack:dry-run
+
+      - name: Publish to npm
+        run: npm publish

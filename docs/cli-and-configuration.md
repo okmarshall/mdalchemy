@@ -268,7 +268,6 @@ Versioned config:
 
 ```json
 {
-  "$schema": "https://example.invalid/mdalchemy.schema.json",
   "version": 1,
   "output": {
     "format": "html",
@@ -297,6 +296,10 @@ Versioned config:
   "theme": "serif"
 }
 ```
+
+`version` is optional. If it is present, v1 accepts only `1`; any other value is
+a config error. This keeps future schema migrations explicit instead of silently
+guessing how to interpret newer config files.
 
 ### `output`
 

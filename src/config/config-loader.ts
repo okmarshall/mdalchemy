@@ -72,6 +72,7 @@ export function resolveConfig(
   const fileHtml = isRecord(config.html) ? config.html : {};
   const fileBook = isRecord(config.book) ? config.book : {};
   const resolved: ResolvedConfig = {
+    version: defaultConfig.version,
     output: {
       format: stringOr(fileOutput["format"], defaultConfig.output.format) as "html",
       standalone: booleanOr(fileOutput["standalone"], defaultConfig.output.standalone),
@@ -214,8 +215,15 @@ function validateConfigShape(config: Record<string, unknown>): Diagnostic[] {
   const diagnostics: Diagnostic[] = [];
   warnUnknownKeys(config, topLevelKeys, "", diagnostics);
 
-  if (config["version"] !== undefined && typeof config["version"] !== "number") {
+  const version = config["version"];
+  if (version !== undefined && typeof version !== "number") {
     diagnostics.push(invalidType("version", "a number"));
+  } else if (typeof version === "number" && version !== defaultConfig.version) {
+    diagnostics.push({
+      severity: "error",
+      code: "MDA_CONFIG_UNSUPPORTED_VERSION",
+      message: `Unsupported config version "${version}". This release supports version ${defaultConfig.version}.`
+    });
   }
 
   validateSection(config["output"], "output", outputKeys, diagnostics, {

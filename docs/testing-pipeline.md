@@ -26,9 +26,10 @@ The package should expose at least these baseline scripts:
     "test:commonmark:strict": "npm run build && node test/commonmark-corpus-report.mjs --strict",
     "test:gfm": "npm run build && node test/gfm-corpus-report.mjs",
     "test:gfm:strict": "npm run build && node test/gfm-corpus-report.mjs --strict",
+    "test:install": "npm run build && node test/install-smoke.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "render:example": "npm run build && node dist/cli/main.js examples/complex-spec.md -o examples/complex-spec.html --toc --gfm --frontmatter",
-    "verify": "npm run typecheck && npm test && npm run test:commonmark:strict && npm run test:gfm:strict",
+    "verify": "npm run typecheck && npm test && npm run test:commonmark:strict && npm run test:gfm:strict && npm run test:install",
     "pack:dry-run": "npm pack --dry-run",
     "prepack": "npm run build"
   }
@@ -46,10 +47,11 @@ Run the checks in this order:
 5. Run conformance seed fixtures.
 6. Run the full CommonMark corpus report when changing parser behavior.
 7. Run the full GFM corpus report when changing extension behavior.
-8. Render a representative Markdown file.
-9. Render a representative project book when changing discovery or cross-file
+8. Run the packed install smoke test.
+9. Render a representative Markdown file.
+10. Render a representative project book when changing discovery or cross-file
    links.
-10. Compare the generated HTML with the expected output.
+11. Compare the generated HTML with the expected output.
 
 This order catches fast structural failures before slower parser and renderer
 fixtures.
@@ -89,10 +91,11 @@ If `typecheck` and `build` are the same command for an early version, keep both
 scripts available anyway. CI can call both and the implementation can decide
 whether `build` emits files or only validates source.
 
-The GitHub CI workflow runs the verification pipeline on Node 24. It installs
-with `npm ci`, then runs typecheck, tests, strict CommonMark/GFM corpus checks,
-and `npm run pack:dry-run`. The workflow uses `actions/checkout@v5` and
-`actions/setup-node@v5`, which target the same Node major version as the project
+The GitHub CI workflow runs the verification pipeline on Node 24 across Linux,
+macOS, and Windows. It installs with `npm ci`, then runs typecheck, tests, strict
+CommonMark/GFM corpus checks, `npm run test:install`, and
+`npm run pack:dry-run`. The workflow uses `actions/checkout@v6` and
+`actions/setup-node@v6`, which target the same Node major version as the project
 verification job.
 
 ## 3. Run Unit Tests
@@ -210,7 +213,26 @@ npm run test:gfm
 accepts the documented CommonMark-version emphasis differences between the
 GFM 0.29 baseline and mdalchemy's CommonMark 0.31.2 core target.
 
-## 8. Render An Example Markdown File
+## 8. Run Packed Install Smoke
+
+The packed install smoke test creates an npm tarball, installs it into a fresh
+temporary project, invokes the installed `mdalchemy` binary, renders a Markdown
+file, and renders a project book.
+
+```sh
+npm run test:install
+```
+
+Expected result:
+
+- `mdalchemy --version` matches `package.json`.
+- `mdalchemy help` prints the public command surface.
+- A packed install can render standalone HTML from Markdown.
+- A packed install can run `mdalchemy book`.
+- The test uses an isolated temporary npm cache so local user cache issues do
+  not affect CI or release verification.
+
+## 9. Render An Example Markdown File
 
 The repository includes a broad Markdown smoke fixture at
 `examples/complex-spec.md`. It intentionally exercises many CommonMark features
@@ -247,7 +269,7 @@ Expected result:
 - The output is deterministic across repeated runs from the same input and
   config.
 
-## 9. Render A Project Book
+## 10. Render A Project Book
 
 When changing `src/book`, CLI command dispatch, config discovery, heading IDs,
 or link rendering, run a project-book render in addition to the normal fixture:
@@ -276,7 +298,7 @@ node dist/cli/main.js examples/complex-spec.md --stdout --fragment --gfm --front
 Fragment output should omit the standalone HTML shell and theme CSS so parser
 and renderer mappings are easier to diff.
 
-## 10. Compare HTML Output
+## 11. Compare HTML Output
 
 Use a plain unified diff for deterministic HTML snapshots:
 
@@ -304,7 +326,7 @@ If whitespace-only diffs become noisy, prefer improving renderer formatting or
 the fixture comparison helper over weakening the fixture. HTML snapshots should
 remain useful to read in code review.
 
-## 11. Browser Layout Verification
+## 12. Browser Layout Verification
 
 Run browser checks for visual or layout-sensitive changes, especially changes to
 themes, page width, code blocks, tables, images, the table of contents, or mobile
@@ -343,7 +365,7 @@ Minimum narrow viewport checks, using a width around `390px`:
 Record the checked viewport sizes and any notable measurements in the change
 summary when layout changes are intentional.
 
-## 12. Accessibility Checklist
+## 13. Accessibility Checklist
 
 Run this checklist whenever renderer structure or theme CSS changes:
 
@@ -365,29 +387,21 @@ theme colors or focus styles change.
 
 ## Suggested CI Shape
 
-A minimal CI job should run:
+The current CI job should run:
 
 ```sh
 npm ci
 npm run typecheck
-npm run build
 npm test
+npm run test:commonmark:strict
+npm run test:gfm:strict
+npm run test:install
+npm run pack:dry-run
 ```
 
-After dedicated test splits exist, CI can run:
-
-```sh
-npm ci
-npm run typecheck
-npm run build
-npm run test:unit
-npm run test:fixtures
-```
-
-The fixture render and diff can either be part of `npm run test:fixtures` or a
-separate CI step. Keeping it in the fixture test suite is usually easier because
-the test runner can create temporary directories, compare snapshots, and produce
-actionable failure messages.
+The workflow runs this on Linux, macOS, and Windows. Release publishing runs on
+Linux after the same verification command passes and after the tag is confirmed
+to match the package version.
 
 ## Acceptance Checklist
 
@@ -397,6 +411,7 @@ Before a parser or renderer change is considered complete:
 - `npm run build` passes.
 - Unit tests for the changed module pass.
 - Fixture tests covering the changed Markdown behavior pass.
+- `npm run test:install` passes when package or CLI behavior changes.
 - `examples/complex-spec.md` renders without warnings in strict mode, or the
   remaining warnings are documented as known gaps.
 - HTML diff changes are reviewed and intentional.

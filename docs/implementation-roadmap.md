@@ -33,7 +33,7 @@ Status labels:
 | 7 | Theming system | `[Done]` | Built-in themes, CSS variables, token resolution, built-in-theme inheritance, custom JSON themes, and token validation are implemented and tested. |
 | 8 | Configuration | `[Done]` | JSON config, discovery, explicit config path, CLI overrides, safe preset, unknown-key warnings, type validation, and supported-extension validation are implemented and tested. |
 | 9 | HTML polish | `[Done]` | Default theme, syntax highlighting, responsive layout, print CSS, images, code blocks, blockquotes, scroll-safe tables, and layout/accessibility checklists are implemented. |
-| 10 | Release hardening | `[Partial]` | Node 24 CI, package metadata, pack dry-run script, and MIT license are in place; changelog, contribution docs, and release automation remain. |
+| 10 | Release hardening | `[Done]` | Node 24 cross-platform CI, packed install smoke, package metadata, pack dry-run script, MIT license, changelog, contribution docs, release docs, and tag-triggered npm release automation are in place. The first publish still requires npm trusted-publisher setup on npmjs.com. |
 
 ### Product And CLI
 
@@ -142,7 +142,7 @@ Status labels:
 | Strict mode | `[Done]` | `src/cli/main.ts`, `test/cli.test.mjs` | Warnings are treated as errors and return exit code `6`. |
 | Config validation | `[Done]` | `src/config/config-loader.ts`, `test/config.test.mjs` | Unknown keys warn; invalid section shapes, field types, raw HTML policy, TOC depth, profile, format, and unsupported extensions are diagnosed. |
 | Book include/exclude config | `[Done]` | `src/config/config-schema.ts`, `src/config/config-loader.ts`, `test/config.test.mjs` | `book.include` and `book.exclude` are typed, validated, documented, and used by the project book command. |
-| Config version handling | `[Planned]` | Schema has optional `version` | Decide migration/error behavior. |
+| Config version handling | `[Done]` | `src/config/config-loader.ts`, `test/config.test.mjs` | Config version `1` is accepted; unsupported versions are config errors. |
 
 ### Testing And Documentation
 
@@ -157,11 +157,13 @@ Status labels:
 | Full CommonMark conformance corpus | `[Done]` | `test/fixtures/conformance/commonmark-0.31.2.json`, `npm run test:commonmark` | Official corpus is vendored and section-level reporting is available. |
 | Full CommonMark strict pass | `[Done]` | `npm run test:commonmark:strict` | The official 652-example CommonMark 0.31.2 corpus passes in strict mode. |
 | Full GFM conformance corpus | `[Done]` | `test/fixtures/conformance/gfm-0.29.json`, `test/gfm-corpus-report.mjs`, `npm run test:gfm:strict` | Official enabled GFM 0.29 corpus has 0 unexpected failures; 9 emphasis examples are accepted CommonMark-version differences because core targets CommonMark 0.31.2. |
-| CI workflow | `[Done]` | `.github/workflows/ci.yml` | Push, pull request, and manual runs verify Node 24 with install, typecheck, tests, strict CommonMark/GFM corpus checks, and package dry run. |
-| Package metadata | `[Done]` | `package.json`, `package-lock.json`, `LICENSE` | Repository, bugs, homepage, Node engine, published file list, prepack build, pack dry-run script, and MIT license are present. |
-| User README | `[Done]` | `README.md` | README includes current implementation, usage commands, option summary, examples, and planning document links. |
-| Contribution guide | `[Planned]` | Roadmap only | Add before broader collaboration. |
-| Changelog | `[Planned]` | Roadmap only | Add before tagged releases. |
+| CI workflow | `[Done]` | `.github/workflows/ci.yml` | Push, pull request, and manual runs verify Node 24 on Linux, macOS, and Windows with install, typecheck, tests, strict CommonMark/GFM corpus checks, packed install smoke, and package dry run. |
+| Packed install smoke | `[Done]` | `test/install-smoke.mjs`, `npm run test:install` | The npm tarball is installed into a temporary project, then the installed `mdalchemy` binary renders a file and project book. |
+| Package metadata | `[Done]` | `package.json`, `package-lock.json`, `LICENSE` | Repository, bugs, homepage, package manager, Node engine, bin, main/types/exports, published file list, prepack build, pack dry-run script, and MIT license are present. |
+| Release workflow | `[Done]` | `.github/workflows/release.yml`, `docs/release.md` | Tag-triggered npm publish uses Node 24, OIDC permissions, tag/package-version validation, full verification, and npm trusted publishing. |
+| User README | `[Done]` | `README.md` | README includes current implementation, install-oriented usage commands, option summary, known limitations, examples, and planning document links. |
+| Contribution guide | `[Done]` | `CONTRIBUTING.md` | Setup, checks, development guidelines, documentation expectations, and release pointer are documented. |
+| Changelog | `[Done]` | `CHANGELOG.md` | Release-visible changes are tracked before tagged releases. |
 
 ### Tracker Maintenance Rules
 

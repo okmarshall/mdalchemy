@@ -24,74 +24,88 @@ The repository now contains a working TypeScript CLI and library:
 - Node built-in test runner coverage.
 - Complex Markdown smoke fixture plus checked HTML output.
 
-Install dependencies:
+## Installation
+
+After publication, install the CLI from npm:
+
+```sh
+npm install -g mdalchemy
+mdalchemy --version
+```
+
+When working from a clone, install dependencies and build first:
 
 ```sh
 npm install
-```
-
-## Usage
-
-Build the CLI:
-
-```sh
 npm run build
 ```
+
+Then replace `mdalchemy` in the examples below with `node dist/cli/main.js`.
+
+## Usage
 
 Render a Markdown file to standalone HTML:
 
 ```sh
-node dist/cli/main.js input.md -o output.html
+mdalchemy input.md -o output.html
 ```
 
 Build one standalone documentation book from a project Markdown tree:
 
 ```sh
-node dist/cli/main.js book . -o project-docs.html
+mdalchemy book . -o project-docs.html
 ```
 
 Show CLI help:
 
 ```sh
-node dist/cli/main.js help
-node dist/cli/main.js help book
-node dist/cli/main.js help theme
+mdalchemy help
+mdalchemy help book
+mdalchemy help theme
 ```
 
 Enable the supported GitHub Flavored Markdown extension bundle:
 
 ```sh
-node dist/cli/main.js input.md -o output.html --gfm
+mdalchemy input.md -o output.html --gfm
 ```
 
 Parse leading frontmatter:
 
 ```sh
-node dist/cli/main.js input.md -o output.html --frontmatter
+mdalchemy input.md -o output.html --frontmatter
 ```
 
 Render a fragment to stdout:
 
 ```sh
-node dist/cli/main.js input.md --stdout --fragment
+mdalchemy input.md --stdout --fragment
 ```
 
 Use safe mode when rendering untrusted Markdown:
 
 ```sh
-node dist/cli/main.js input.md -o output.html --safe
+mdalchemy input.md -o output.html --safe
 ```
 
 Wrap heading-led content in semantic sections:
 
 ```sh
-node dist/cli/main.js input.md -o output.html --sections
+mdalchemy input.md -o output.html --sections
 ```
 
 Add native expand/collapse controls to heading-led sections:
 
 ```sh
-node dist/cli/main.js input.md -o output.html --collapsible-sections
+mdalchemy input.md -o output.html --collapsible-sections
+```
+
+Theme helpers:
+
+```sh
+mdalchemy theme list
+mdalchemy theme inspect serif
+mdalchemy theme inspect examples/themes/warm-report.json
 ```
 
 Useful options:
@@ -129,13 +143,19 @@ mdalchemy:
 ---
 ```
 
-Theme helpers:
+## Known Limitations
 
-```sh
-node dist/cli/main.js theme list
-node dist/cli/main.js theme inspect serif
-node dist/cli/main.js theme inspect examples/themes/warm-report.json
-```
+- HTML is the only supported output format for v1.
+- Watch mode is not implemented.
+- Config discovery only checks the current working directory for
+  `mdalchemy.config.json` and `.mdalchemyrc.json`.
+- The syntax highlighter is lightweight and intentionally smaller than a full
+  programming-language grammar engine.
+- Raw HTML is allowed by default for trusted documents. Use `--safe` for
+  untrusted Markdown.
+- GFM corpus checks target supported GFM behavior on top of the project's
+  CommonMark 0.31.2 core; the report documents accepted CommonMark-version
+  differences.
 
 ## Development
 
@@ -150,6 +170,7 @@ npm run test:commonmark
 npm run test:commonmark:strict
 npm run test:gfm
 npm run test:gfm:strict
+npm run test:install
 ```
 
 Check the npm package contents before a release:
@@ -170,6 +191,8 @@ Try the example custom theme:
 node dist/cli/main.js examples/complex-spec.md -o examples/complex-spec.warm.html --theme examples/themes/warm-report.json --toc --gfm --frontmatter
 ```
 
+Release preparation is documented in [docs/release.md](docs/release.md).
+
 ## Planning Documents
 
 - [Requirements](docs/requirements.md) captures the product vision, scope, user stories, spec baseline, non-goals, and acceptance criteria.
@@ -181,6 +204,7 @@ node dist/cli/main.js examples/complex-spec.md -o examples/complex-spec.warm.htm
 - [Codebase Audit](docs/codebase-audit.md) records current quality findings, cleanup work, and maintainability follow-ups.
 - [Testing Pipeline](docs/testing-pipeline.md) explains how to build, test, render fixtures, and compare output.
 - [Conformance Status](docs/conformance-status.md) tracks current CommonMark-oriented coverage and known gaps.
+- [Release Process](docs/release.md) defines the v1 release gates, npm trusted-publishing setup, and tag flow.
 
 ## Example Fixture
 

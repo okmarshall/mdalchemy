@@ -11,11 +11,18 @@
     "url": "git+https://github.com/okmarshall/mdalchemy.git"
   },
   "type": "module",
+  "packageManager": "npm@11.13.0",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "bin": {
     "mdalchemy": "./dist/cli/main.js"
   },
   "exports": {
-    ".": "./dist/index.js"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
   },
   "files": [
     "dist",
@@ -25,6 +32,8 @@
     "examples/images",
     "examples/themes",
     "mdalchemy.config.example.json",
+    "CHANGELOG.md",
+    "CONTRIBUTING.md",
     "README.md"
   ],
   "scripts": {
@@ -37,9 +46,10 @@
     "test:commonmark:strict": "npm run build && node test/commonmark-corpus-report.mjs --strict",
     "test:gfm": "npm run build && node test/gfm-corpus-report.mjs",
     "test:gfm:strict": "npm run build && node test/gfm-corpus-report.mjs --strict",
+    "test:install": "npm run build && node test/install-smoke.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "render:example": "npm run build && node dist/cli/main.js examples/complex-spec.md -o examples/complex-spec.html --toc --gfm --frontmatter",
-    "verify": "npm run typecheck && npm test && npm run test:commonmark:strict && npm run test:gfm:strict",
+    "verify": "npm run typecheck && npm test && npm run test:commonmark:strict && npm run test:gfm:strict && npm run test:install",
     "pack:dry-run": "npm pack --dry-run",
     "prepack": "npm run build"
   },

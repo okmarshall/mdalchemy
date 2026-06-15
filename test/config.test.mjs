@@ -43,6 +43,30 @@ test("config loader reports invalid config value types without crashing", async 
   assert.equal(result.diagnostics.filter((diagnostic) => diagnostic.code === "MDA_CONFIG_INVALID_TYPE").length, 3);
 });
 
+test("config loader accepts version 1 and rejects unsupported config versions", async () => {
+  const supportedDir = await mkdtemp(path.join(tmpdir(), "mdalchemy-config-"));
+  await writeFile(path.join(supportedDir, "mdalchemy.config.json"), JSON.stringify({
+    version: 1
+  }), "utf8");
+
+  const supported = await loadConfig({ cwd: supportedDir });
+
+  assert.equal(supported.config.version, 1);
+  assert.equal(supported.diagnostics.some((diagnostic) => diagnostic.code === "MDA_CONFIG_UNSUPPORTED_VERSION"), false);
+
+  const unsupportedDir = await mkdtemp(path.join(tmpdir(), "mdalchemy-config-"));
+  await writeFile(path.join(unsupportedDir, "mdalchemy.config.json"), JSON.stringify({
+    version: 2
+  }), "utf8");
+
+  const unsupported = await loadConfig({ cwd: unsupportedDir });
+
+  assert.equal(unsupported.diagnostics.some((diagnostic) => (
+    diagnostic.code === "MDA_CONFIG_UNSUPPORTED_VERSION"
+    && diagnostic.message.includes("version 1")
+  )), true);
+});
+
 test("config loader validates and resolves collapsible section settings", async () => {
   const dir = await mkdtemp(path.join(tmpdir(), "mdalchemy-config-"));
   const configPath = path.join(dir, "mdalchemy.config.json");

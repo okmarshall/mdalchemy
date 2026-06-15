@@ -45,6 +45,8 @@ examples/*.warm.html
 Thumbs.db
 .idea/
 .vscode/
+!.vscode/
+!.vscode/launch.json
 
 # Temporary files
 tmp/

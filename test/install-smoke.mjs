@@ -49,6 +49,15 @@ try {
   });
   assert.equal(versionStdout.trim(), packageJson.version);
 
+  const { stdout: importStdout } = await runCommand(process.execPath, [
+    "--input-type=module",
+    "-e",
+    "const mdalchemy = await import('mdalchemy'); console.log(typeof mdalchemy.renderMarkdown);"
+  ], {
+    cwd: projectDir
+  });
+  assert.equal(importStdout.trim(), "function");
+
   const { stdout: helpStdout } = await runCommand(binPath, ["help"], {
     cwd: projectDir
   });

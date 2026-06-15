@@ -5,7 +5,10 @@ created.
 
 ## Unreleased
 
-No unreleased changes yet.
+### Added
+
+- VS Code extension command for rendering the current Markdown file to a sibling
+  HTML file and previewing it in an integrated webview.
 
 ## 1.0.0 - 2026-06-15
 

@@ -2,6 +2,8 @@
   "name": "mdalchemy",
   "version": "1.0.0",
   "description": "A modern TypeScript CLI for turning Markdown into beautiful human-readable HTML.",
+  "displayName": "mdalchemy",
+  "publisher": "okmarshall",
   "homepage": "https://github.com/okmarshall/mdalchemy#readme",
   "bugs": {
     "url": "https://github.com/okmarshall/mdalchemy/issues"
@@ -12,8 +14,48 @@
   },
   "type": "module",
   "packageManager": "npm@11.13.0",
-  "main": "./dist/index.js",
+  "main": "./dist/vscode/extension.js",
   "types": "./dist/index.d.ts",
+  "categories": [
+    "Visualization",
+    "Other"
+  ],
+  "extensionKind": [
+    "workspace"
+  ],
+  "activationEvents": [],
+  "contributes": {
+    "commands": [
+      {
+        "command": "mdalchemy.renderMarkdownToHtml",
+        "title": "Generate HTML Preview",
+        "category": "mdalchemy"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "mdalchemy.renderMarkdownToHtml",
+          "when": "resourceLangId == markdown",
+          "group": "navigation@30"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "mdalchemy.renderMarkdownToHtml",
+          "when": "resourceLangId == markdown",
+          "group": "navigation"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "mdalchemy.renderMarkdownToHtml",
+          "when": "resourceExtname == .md || resourceExtname == .markdown",
+          "group": "navigation"
+        }
+      ]
+    }
+  },
   "bin": {
     "mdalchemy": "./dist/cli/main.js"
   },
@@ -37,6 +79,7 @@
     "README.md"
   ],
   "scripts": {
+    "vscode:prepublish": "npm run build",
     "build": "tsc -p tsconfig.json",
     "test": "npm run build && node --test test/*.test.mjs",
     "test:unit": "npm run build && node --test test/parser.test.mjs test/renderer.test.mjs test/cli.test.mjs",
@@ -61,10 +104,12 @@
   ],
   "license": "MIT",
   "engines": {
-    "node": ">=24"
+    "node": ">=24",
+    "vscode": "^1.120.0"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
+    "@types/vscode": "^1.120.0",
     "typescript": "^5.8.0"
   }
 }

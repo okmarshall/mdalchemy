@@ -135,7 +135,20 @@ test("cli enables and disables heading-derived section wrappers", async () => {
   assert.match(enabled.stdout, /<section class="mda-section mda-section-level-1" aria-labelledby="overview">/);
   assert.match(enabled.stdout, /<section class="mda-section mda-section-level-2" aria-labelledby="details">/);
 
-  await writeFile(config, JSON.stringify({ html: { sections: true } }), "utf8");
+  const collapsible = await runCli([input, "--stdout", "--fragment", "--collapsible-sections"]);
+
+  assert.equal(collapsible.exitCode, 0);
+  assert.match(collapsible.stdout, /mda-section-collapsible/);
+  assert.match(collapsible.stdout, /<details class="mda-section-details" open>/);
+  assert.match(collapsible.stdout, /<summary class="mda-section-summary">/);
+
+  await writeFile(config, JSON.stringify({ html: { sections: true, collapsibleSections: true } }), "utf8");
+  const staticSections = await runCli([input, "--stdout", "--fragment", "--config", config, "--no-collapsible-sections"]);
+
+  assert.equal(staticSections.exitCode, 0);
+  assert.match(staticSections.stdout, /<section class="mda-section mda-section-level-1" aria-labelledby="overview">/);
+  assert.doesNotMatch(staticSections.stdout, /mda-section-collapsible/);
+
   const disabled = await runCli([input, "--stdout", "--fragment", "--config", config, "--no-sections"]);
 
   assert.equal(disabled.exitCode, 0);
@@ -192,6 +205,8 @@ test("cli returns usage errors for invalid argument combinations", async () => {
     { args: [input, "--stdout", "-o", path.join(dir, "out.html")], message: /Use either --stdout or --output/ },
     { args: [input, "--toc", "--no-toc"], message: /Use either --toc or --no-toc/ },
     { args: [input, "--sections", "--no-sections"], message: /Use either --sections or --no-sections/ },
+    { args: [input, "--collapsible-sections", "--no-collapsible-sections"], message: /Use either --collapsible-sections or --no-collapsible-sections/ },
+    { args: [input, "--no-sections", "--collapsible-sections"], message: /Use either --no-sections or --collapsible-sections/ },
     { args: ["theme", "list", "serif"], message: /theme list does not accept arguments/ }
   ];
 

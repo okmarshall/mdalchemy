@@ -97,9 +97,31 @@ With section rendering:
 </section>
 ```
 
-This is controlled by config, or by `--sections` / `--no-sections` in the CLI,
-because conformance tests need raw CommonMark HTML fragments without extra
-wrappers.
+With collapsible section rendering:
+
+```html
+<section class="mda-section mda-section-level-1 mda-section-collapsible" aria-labelledby="intro">
+  <details class="mda-section-details" open>
+    <summary class="mda-section-summary">
+      <h1 id="intro">
+        Intro
+        <a class="mda-heading-anchor mda-heading-anchor-after" href="#intro" aria-hidden="true">#</a>
+      </h1>
+    </summary>
+    <div class="mda-section-body">
+      <p>Text.</p>
+    </div>
+  </details>
+</section>
+```
+
+This is controlled by config, or by `--sections` / `--no-sections` and
+`--collapsible-sections` / `--no-collapsible-sections` in the CLI, because
+conformance tests need raw CommonMark HTML fragments without extra wrappers.
+Collapsible sections use native browser controls, render expanded by default,
+and do not require JavaScript. In collapsible summaries, heading permalink
+anchors trail the heading text so the collapse caret and permalink marker do
+not compete for the same left edge.
 
 ## Heading Anchors
 

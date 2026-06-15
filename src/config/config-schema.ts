@@ -30,6 +30,7 @@ export interface HtmlConfig {
   safeUrls?: boolean | undefined;
   headingAnchors?: boolean | undefined;
   sections?: boolean | undefined;
+  collapsibleSections?: boolean | undefined;
   tableOfContents?: boolean | "auto" | undefined;
   tocDepth?: number | undefined;
   softBreak?: "newline" | "space" | "br" | undefined;
@@ -53,6 +54,7 @@ export interface ResolvedConfig {
     safeUrls: boolean;
     headingAnchors: boolean;
     sections: boolean;
+    collapsibleSections: boolean;
     tableOfContents: boolean | "auto";
     tocDepth: number;
     softBreak: "newline" | "space" | "br";
@@ -79,6 +81,7 @@ export const defaultConfig: ResolvedConfig = {
     safeUrls: true,
     headingAnchors: true,
     sections: false,
+    collapsibleSections: false,
     tableOfContents: "auto",
     tocDepth: 3,
     softBreak: "newline",

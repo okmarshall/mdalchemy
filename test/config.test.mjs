@@ -43,6 +43,32 @@ test("config loader reports invalid config value types without crashing", async 
   assert.equal(result.diagnostics.filter((diagnostic) => diagnostic.code === "MDA_CONFIG_INVALID_TYPE").length, 3);
 });
 
+test("config loader validates and resolves collapsible section settings", async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), "mdalchemy-config-"));
+  const configPath = path.join(dir, "mdalchemy.config.json");
+  await writeFile(configPath, JSON.stringify({
+    html: {
+      collapsibleSections: "yes"
+    }
+  }), "utf8");
+
+  const result = await loadConfig({ cwd: dir });
+
+  assert.equal(result.diagnostics.some((diagnostic) => (
+    diagnostic.code === "MDA_CONFIG_INVALID_TYPE"
+    && diagnostic.message.includes("html.collapsibleSections")
+  )), true);
+
+  const config = resolveConfig({
+    html: {
+      collapsibleSections: true
+    }
+  });
+
+  assert.equal(config.html.collapsibleSections, true);
+  assert.equal(config.html.sections, true);
+});
+
 test("config loader reports unsupported but well-typed extension names", async () => {
   const dir = await mkdtemp(path.join(tmpdir(), "mdalchemy-config-"));
   const configPath = path.join(dir, "mdalchemy.config.json");

@@ -86,6 +86,8 @@ function renderSectionedItems(items: SectionedBlock[], context: RenderContext, p
 }
 
 function renderSection(section: RenderSection, context: RenderContext): string {
+  if (context.config.html.collapsibleSections) return renderCollapsibleSection(section, context);
+
   const id = context.headingIds.get(section.heading);
   const label = id ? ` aria-labelledby="${escapeAttribute(id)}"` : "";
   const content = [
@@ -94,6 +96,16 @@ function renderSection(section: RenderSection, context: RenderContext): string {
   ].filter(Boolean).join("\n");
 
   return `<section class="mda-section mda-section-level-${section.heading.level}"${label}>\n${indent(content, 2)}\n</section>`;
+}
+
+function renderCollapsibleSection(section: RenderSection, context: RenderContext): string {
+  const id = context.headingIds.get(section.heading);
+  const label = id ? ` aria-labelledby="${escapeAttribute(id)}"` : "";
+  const children = renderSectionedItems(section.children, context);
+  const body = children
+    ? `\n    <div class="mda-section-body">\n${indent(children, 6)}\n    </div>`
+    : "";
+  return `<section class="mda-section mda-section-level-${section.heading.level} mda-section-collapsible"${label}>\n  <details class="mda-section-details" open>\n    <summary class="mda-section-summary">\n${indent(renderHeading(section.heading, context, { anchorPlacement: "after" }), 6)}\n    </summary>${body}\n  </details>\n</section>`;
 }
 
 function renderBlock(block: BlockNode, context: RenderContext, parentList?: ListNode): string {
@@ -160,13 +172,20 @@ function renderCompatibleTableCell(cell: TableCellNode, context: RenderContext, 
   return `<${tag}${alignment}>${renderInlines(cell.children, context)}</${tag}>`;
 }
 
-function renderHeading(heading: HeadingNode, context: RenderContext): string {
+interface RenderHeadingOptions {
+  anchorPlacement?: "before" | "after";
+}
+
+function renderHeading(heading: HeadingNode, context: RenderContext, options: RenderHeadingOptions = {}): string {
   const id = context.commonmarkCompatible ? undefined : context.headingIds.get(heading);
   const attrs = id ? ` id="${escapeAttribute(id)}"` : "";
   const anchor = id && context.config.html.headingAnchors
-    ? `<a class="mda-heading-anchor" href="#${escapeAttribute(id)}" aria-hidden="true">#</a>`
+    ? `<a class="mda-heading-anchor${options.anchorPlacement === "after" ? " mda-heading-anchor-after" : ""}" href="#${escapeAttribute(id)}" aria-hidden="true">#</a>`
     : "";
-  return `<h${heading.level}${attrs}>${anchor}${renderInlines(heading.children, context)}</h${heading.level}>`;
+  const content = renderInlines(heading.children, context);
+  return options.anchorPlacement === "after"
+    ? `<h${heading.level}${attrs}>${content}${anchor}</h${heading.level}>`
+    : `<h${heading.level}${attrs}>${anchor}${content}</h${heading.level}>`;
 }
 
 function renderList(list: ListNode, context: RenderContext): string {

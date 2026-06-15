@@ -86,6 +86,7 @@ export function resolveConfig(
       safeUrls: booleanOr(fileHtml["safeUrls"], defaultConfig.html.safeUrls),
       headingAnchors: booleanOr(fileHtml["headingAnchors"], defaultConfig.html.headingAnchors),
       sections: booleanOr(fileHtml["sections"], defaultConfig.html.sections),
+      collapsibleSections: booleanOr(fileHtml["collapsibleSections"], defaultConfig.html.collapsibleSections),
       tableOfContents: tableOfContentsOr(fileHtml["tableOfContents"], defaultConfig.html.tableOfContents),
       tocDepth: numberOr(fileHtml["tocDepth"], defaultConfig.html.tocDepth),
       softBreak: stringOr(fileHtml["softBreak"], defaultConfig.html.softBreak) as "newline" | "space" | "br",
@@ -116,6 +117,10 @@ export function resolveConfig(
     if (options.overrides.html) resolved.html = { ...resolved.html, ...options.overrides.html };
     if (options.overrides.theme !== undefined) resolved.theme = options.overrides.theme;
     if (options.overrides.strict !== undefined) resolved.strict = options.overrides.strict;
+  }
+
+  if (resolved.html.collapsibleSections) {
+    resolved.html.sections = true;
   }
 
   return resolved;
@@ -186,6 +191,7 @@ const htmlKeys = new Set([
   "safeUrls",
   "headingAnchors",
   "sections",
+  "collapsibleSections",
   "tableOfContents",
   "tocDepth",
   "softBreak",
@@ -216,6 +222,7 @@ function validateConfigShape(config: Record<string, unknown>): Diagnostic[] {
     safeUrls: "boolean",
     headingAnchors: "boolean",
     sections: "boolean",
+    collapsibleSections: "boolean",
     tableOfContents: "boolean-or-auto",
     tocDepth: "number",
     softBreak: "string",

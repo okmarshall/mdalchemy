@@ -13,6 +13,7 @@
       "gfm-strikethrough",
       "gfm-footnote",
       "gfm-literal-autolink",
+      "gfm-tagfilter",
       "frontmatter"
     ]
   },
@@ -22,6 +23,7 @@
     "safeUrls": true,
     "headingAnchors": true,
     "sections": false,
+    "collapsibleSections": false,
     "tableOfContents": "auto",
     "tocDepth": 3,
     "softBreak": "newline"

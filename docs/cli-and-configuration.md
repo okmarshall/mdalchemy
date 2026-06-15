@@ -55,6 +55,8 @@ HTML:
 --no-toc                  Disable table of contents.
 --sections                Wrap heading-led content in section elements.
 --no-sections             Disable section wrappers.
+--collapsible-sections    Add native expand/collapse controls to sections.
+--no-collapsible-sections Disable section expand/collapse controls.
 ```
 
 Safety and diagnostics:
@@ -135,6 +137,8 @@ Invalid command combinations:
 - `--stdout` and `--output` together are a usage error.
 - `--toc` and `--no-toc` together are a usage error.
 - `--sections` and `--no-sections` together are a usage error.
+- `--collapsible-sections` and `--no-collapsible-sections` together are a usage error.
+- `--no-sections` and `--collapsible-sections` together are a usage error.
 - Theme subcommands reject unexpected extra arguments.
 
 ## Format Inference
@@ -210,6 +214,7 @@ Versioned config:
     "safeUrls": true,
     "headingAnchors": true,
     "sections": false,
+    "collapsibleSections": false,
     "tableOfContents": "auto",
     "tocDepth": 3,
     "softBreak": "newline"
@@ -261,6 +266,7 @@ interface HtmlConfig {
   safeUrls: boolean;
   headingAnchors: boolean;
   sections: boolean;
+  collapsibleSections: boolean;
   tableOfContents: boolean | "auto";
   tocDepth: number;
   softBreak: "newline" | "space" | "br";
@@ -272,6 +278,12 @@ interface HtmlConfig {
 you need CommonMark-like fragment output without mdalchemy document structure.
 Use `--sections` or `--no-sections` to override this setting for a single CLI
 render.
+
+`collapsibleSections` adds native `<details>` / `<summary>` controls inside the
+generated section wrappers. Collapsible sections render expanded by default so
+HTML output remains fully readable until the reader chooses to collapse a
+section. Enabling `collapsibleSections` also enables `sections`; use
+`--no-collapsible-sections` to keep section wrappers but disable the controls.
 
 ### `theme`
 
@@ -341,6 +353,10 @@ HTML:
       --no-toc              Disable table of contents
       --sections            Wrap heading-led content in section elements
       --no-sections         Disable section wrappers
+      --collapsible-sections
+                            Add native expand/collapse controls to sections
+      --no-collapsible-sections
+                            Disable section expand/collapse controls
 
 Safety and diagnostics:
       --config <path>       Config file

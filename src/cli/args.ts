@@ -23,6 +23,7 @@ export interface CliArgs {
   title: string | undefined;
   toc: boolean | undefined;
   sections: boolean | undefined;
+  collapsibleSections: boolean | undefined;
   help: boolean;
   version: boolean;
   debug: boolean;
@@ -48,6 +49,12 @@ export function parseCliArgs(argv: string[]): CliArgs {
     if (parsed.values.sections && parsed.values["no-sections"]) {
       throw new CliUsageError("Use either --sections or --no-sections, not both.");
     }
+    if (parsed.values["collapsible-sections"] && parsed.values["no-collapsible-sections"]) {
+      throw new CliUsageError("Use either --collapsible-sections or --no-collapsible-sections, not both.");
+    }
+    if (parsed.values["no-sections"] && parsed.values["collapsible-sections"]) {
+      throw new CliUsageError("Use either --no-sections or --collapsible-sections, not both.");
+    }
   }
 
   const result: CliArgs = {
@@ -65,6 +72,11 @@ export function parseCliArgs(argv: string[]): CliArgs {
     title: parsed.values.title,
     toc: parsed.values.toc === true ? true : parsed.values["no-toc"] === true ? false : undefined,
     sections: parsed.values.sections === true ? true : parsed.values["no-sections"] === true ? false : undefined,
+    collapsibleSections: parsed.values["collapsible-sections"] === true
+      ? true
+      : parsed.values["no-collapsible-sections"] === true
+        ? false
+        : undefined,
     help: Boolean(parsed.values.help),
     version: Boolean(parsed.values.version),
     debug: Boolean(parsed.values.debug)
@@ -93,6 +105,8 @@ function parseCliArgValues(argv: string[]) {
         "no-toc": { type: "boolean" },
         sections: { type: "boolean" },
         "no-sections": { type: "boolean" },
+        "collapsible-sections": { type: "boolean" },
+        "no-collapsible-sections": { type: "boolean" },
         help: { type: "boolean", short: "h" },
         version: { type: "boolean", short: "v" },
         debug: { type: "boolean" }
@@ -109,6 +123,11 @@ export function cliOverrides(args: CliArgs): Partial<ResolvedConfig> {
   if (args.title) html.title = args.title;
   if (args.toc !== undefined) html.tableOfContents = args.toc;
   if (args.sections !== undefined) html.sections = args.sections;
+  if (args.sections === false) html.collapsibleSections = false;
+  if (args.collapsibleSections !== undefined) {
+    html.collapsibleSections = args.collapsibleSections;
+    if (args.collapsibleSections) html.sections = true;
+  }
 
   const overrides: Partial<ResolvedConfig> = {
     strict: args.strict
@@ -147,6 +166,10 @@ HTML:
       --no-toc              Disable table of contents
       --sections            Wrap heading-led content in section elements
       --no-sections         Disable section wrappers
+      --collapsible-sections
+                            Add native expand/collapse controls to sections
+      --no-collapsible-sections
+                            Disable section expand/collapse controls
 
 Safety and diagnostics:
       --config <path>       Config file

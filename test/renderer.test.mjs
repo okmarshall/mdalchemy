@@ -59,6 +59,34 @@ Final text.
   assert.match(rendered.content, /Nested text/);
 });
 
+test("renders collapsible heading-derived sections when enabled", async () => {
+  const markdown = `# Intro
+
+Opening text.
+
+## Details
+
+Nested text.
+`;
+  const { document } = parseMarkdown(markdown);
+  const config = resolveConfig({}, {
+    overrides: {
+      html: {
+        fragment: true,
+        collapsibleSections: true
+      }
+    }
+  });
+  const rendered = await renderDocument(document, { config });
+
+  assert.match(rendered.content, /<section class="mda-section mda-section-level-1 mda-section-collapsible" aria-labelledby="intro">/);
+  assert.match(rendered.content, /<details class="mda-section-details" open>/);
+  assert.match(rendered.content, /<summary class="mda-section-summary">/);
+  assert.match(rendered.content, /<div class="mda-section-body">/);
+  assert.match(rendered.content, /<h1 id="intro">Intro<a class="mda-heading-anchor mda-heading-anchor-after" href="#intro" aria-hidden="true">#<\/a><\/h1>/);
+  assert.match(rendered.content, /<section class="mda-section mda-section-level-2 mda-section-collapsible" aria-labelledby="details">/);
+});
+
 test("omits section wrappers in CommonMark-compatible output", async () => {
   const markdown = "# Intro\n\nText.\n";
   const config = resolveConfig({}, {

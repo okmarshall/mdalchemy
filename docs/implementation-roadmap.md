@@ -106,6 +106,7 @@ Status labels:
 | Heading anchors | `[Done]` | `test/renderer.test.mjs` | Keep anchor markup accessible. |
 | Table of contents | `[Done]` | `test/renderer.test.mjs` | Add TOC depth and auto-mode coverage. |
 | Section wrappers | `[Done]` | `src/render/html/block-renderer.ts`, `src/cli/args.ts`, `test/renderer.test.mjs`, `test/cli.test.mjs` | `html.sections` plus `--sections` / `--no-sections` render heading-derived nested sections outside CommonMark-compatible output. |
+| Collapsible sections | `[Done]` | `src/render/html/block-renderer.ts`, `src/theme/css.ts`, `src/cli/args.ts`, `test/renderer.test.mjs`, `test/cli.test.mjs` | `html.collapsibleSections` plus `--collapsible-sections` / `--no-collapsible-sections` add native expanded-by-default details controls to heading-derived sections. |
 | Images | `[Done]` | `examples/complex-spec.md` | Add image safety and broken path notes if needed. |
 | Lightweight syntax highlighting | `[Done]` | `src/render/html/syntax-highlight.ts`, `test/renderer.test.mjs` | Add language fixtures when highlighter expands. |
 | C# syntax highlighting | `[Done]` | `test/renderer.test.mjs` | Add additional C# constructs as regressions appear. |

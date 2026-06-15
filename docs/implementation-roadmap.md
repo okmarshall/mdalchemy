@@ -33,7 +33,7 @@ Status labels:
 | 7 | Theming system | `[Done]` | Built-in themes, CSS variables, token resolution, built-in-theme inheritance, custom JSON themes, and token validation are implemented and tested. |
 | 8 | Configuration | `[Done]` | JSON config, discovery, explicit config path, CLI overrides, safe preset, unknown-key warnings, type validation, and supported-extension validation are implemented and tested. |
 | 9 | HTML polish | `[Done]` | Default theme, syntax highlighting, responsive layout, print CSS, images, code blocks, blockquotes, scroll-safe tables, and layout/accessibility checklists are implemented. |
-| 10 | Release hardening | `[Planned]` | Stable CLI/config freeze, CI matrix, changelog, license review, and contribution docs remain. |
+| 10 | Release hardening | `[Partial]` | CI matrix, package metadata, pack dry-run script, and MIT license are in place; changelog, contribution docs, and release automation remain. |
 
 ### Product And CLI
 
@@ -157,7 +157,8 @@ Status labels:
 | Full CommonMark conformance corpus | `[Done]` | `test/fixtures/conformance/commonmark-0.31.2.json`, `npm run test:commonmark` | Official corpus is vendored and section-level reporting is available. |
 | Full CommonMark strict pass | `[Done]` | `npm run test:commonmark:strict` | The official 652-example CommonMark 0.31.2 corpus passes in strict mode. |
 | Full GFM conformance corpus | `[Done]` | `test/fixtures/conformance/gfm-0.29.json`, `test/gfm-corpus-report.mjs`, `npm run test:gfm:strict` | Official enabled GFM 0.29 corpus has 0 unexpected failures; 9 emphasis examples are accepted CommonMark-version differences because core targets CommonMark 0.31.2. |
-| CI workflow | `[Planned]` | Roadmap only | Add after scripts stabilize. |
+| CI workflow | `[Done]` | `.github/workflows/ci.yml` | Push, pull request, and manual runs verify Node 20/22/24 with install, typecheck, tests, strict CommonMark/GFM corpus checks, and package dry run. |
+| Package metadata | `[Done]` | `package.json`, `package-lock.json`, `LICENSE` | Repository, bugs, homepage, Node engine, published file list, prepack build, pack dry-run script, and MIT license are present. |
 | User README | `[Done]` | `README.md` | README includes current implementation, usage commands, option summary, examples, and planning document links. |
 | Contribution guide | `[Planned]` | Roadmap only | Add before broader collaboration. |
 | Changelog | `[Planned]` | Roadmap only | Add before tagged releases. |

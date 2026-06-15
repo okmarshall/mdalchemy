@@ -27,7 +27,10 @@ The package should expose at least these baseline scripts:
     "test:gfm": "npm run build && node test/gfm-corpus-report.mjs",
     "test:gfm:strict": "npm run build && node test/gfm-corpus-report.mjs --strict",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "render:example": "npm run build && node dist/cli/main.js examples/complex-spec.md -o examples/complex-spec.html --toc --gfm --frontmatter"
+    "render:example": "npm run build && node dist/cli/main.js examples/complex-spec.md -o examples/complex-spec.html --toc --gfm --frontmatter",
+    "verify": "npm run typecheck && npm test && npm run test:commonmark:strict && npm run test:gfm:strict",
+    "pack:dry-run": "npm pack --dry-run",
+    "prepack": "npm run build"
   }
 }
 ```
@@ -85,6 +88,10 @@ Expected result:
 If `typecheck` and `build` are the same command for an early version, keep both
 scripts available anyway. CI can call both and the implementation can decide
 whether `build` emits files or only validates source.
+
+The GitHub CI workflow runs the verification pipeline on Node 20, 22, and 24.
+It installs with `npm ci`, then runs typecheck, tests, strict CommonMark/GFM
+corpus checks, and `npm run pack:dry-run`.
 
 ## 3. Run Unit Tests
 

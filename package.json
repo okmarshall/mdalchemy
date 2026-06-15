@@ -2,6 +2,14 @@
   "name": "mdalchemy",
   "version": "0.1.0",
   "description": "A modern TypeScript CLI for turning Markdown into beautiful human-readable HTML.",
+  "homepage": "https://github.com/okmarshall/mdalchemy#readme",
+  "bugs": {
+    "url": "https://github.com/okmarshall/mdalchemy/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/okmarshall/mdalchemy.git"
+  },
   "type": "module",
   "bin": {
     "mdalchemy": "./dist/cli/main.js"
@@ -12,7 +20,11 @@
   "files": [
     "dist",
     "docs",
-    "examples",
+    "examples/complex-spec.md",
+    "examples/complex-spec.html",
+    "examples/images",
+    "examples/themes",
+    "mdalchemy.config.example.json",
     "README.md"
   ],
   "scripts": {
@@ -26,7 +38,10 @@
     "test:gfm": "npm run build && node test/gfm-corpus-report.mjs",
     "test:gfm:strict": "npm run build && node test/gfm-corpus-report.mjs --strict",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "render:example": "npm run build && node dist/cli/main.js examples/complex-spec.md -o examples/complex-spec.html --toc --gfm --frontmatter"
+    "render:example": "npm run build && node dist/cli/main.js examples/complex-spec.md -o examples/complex-spec.html --toc --gfm --frontmatter",
+    "verify": "npm run typecheck && npm test && npm run test:commonmark:strict && npm run test:gfm:strict",
+    "pack:dry-run": "npm pack --dry-run",
+    "prepack": "npm run build"
   },
   "keywords": [
     "markdown",
@@ -35,6 +50,9 @@
     "cli"
   ],
   "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
   "devDependencies": {
     "@types/node": "^24.0.0",
     "typescript": "^5.8.0"

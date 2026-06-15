@@ -142,6 +142,7 @@ node dist/cli/main.js theme inspect examples/themes/warm-report.json
 Run the checks:
 
 ```sh
+npm run verify
 npm run typecheck
 npm test
 npm run test:conformance
@@ -149,6 +150,12 @@ npm run test:commonmark
 npm run test:commonmark:strict
 npm run test:gfm
 npm run test:gfm:strict
+```
+
+Check the npm package contents before a release:
+
+```sh
+npm run pack:dry-run
 ```
 
 Render the complex fixture:

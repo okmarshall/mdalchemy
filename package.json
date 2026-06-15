@@ -1,6 +1,6 @@
 {
   "name": "mdalchemy",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "A modern TypeScript CLI for turning Markdown into beautiful human-readable HTML.",
   "homepage": "https://github.com/okmarshall/mdalchemy#readme",
   "bugs": {

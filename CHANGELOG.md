@@ -5,6 +5,10 @@ created.
 
 ## Unreleased
 
+No unreleased changes yet.
+
+## 1.0.0 - 2026-06-15
+
 ### Added
 
 - Cross-platform Node 24 CI for Linux, macOS, and Windows.
@@ -12,11 +16,6 @@ created.
 - Tag-triggered npm release workflow using GitHub Actions OIDC.
 - Release and contribution documentation.
 - Explicit config version handling for config schema version `1`.
-
-## 0.1.0 - 2026-06-15
-
-### Added
-
 - Custom Markdown parser with full CommonMark 0.31.2 corpus coverage in core
   mode.
 - Supported GFM extensions: pipe tables, task lists, strikethrough, footnotes,

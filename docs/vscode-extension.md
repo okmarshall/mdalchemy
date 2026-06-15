@@ -115,3 +115,17 @@ configuration. In the Extension Development Host, open a Markdown file and run
 The VS Code extension entry point is `src/vscode/extension.ts`. The package
 manifest points VS Code at `dist/vscode/extension.js`, while the npm library API
 continues to resolve through the package `exports` map.
+
+## Packaging
+
+Build a local VSIX with:
+
+```sh
+vsce package
+```
+
+VSCE runs `npm run vscode:prepublish`, so the TypeScript output is rebuilt
+before packaging. The extension uses the `files` allowlist in `package.json` as
+the single packaging strategy for both npm and VSIX output. Do not add a
+`.vscodeignore` file unless the `files` allowlist is removed first; VSCE rejects
+packages that combine both strategies.

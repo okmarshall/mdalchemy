@@ -89,9 +89,9 @@ If `typecheck` and `build` are the same command for an early version, keep both
 scripts available anyway. CI can call both and the implementation can decide
 whether `build` emits files or only validates source.
 
-The GitHub CI workflow runs the verification pipeline on Node 20, 22, and 24.
-It installs with `npm ci`, then runs typecheck, tests, strict CommonMark/GFM
-corpus checks, and `npm run pack:dry-run`.
+The GitHub CI workflow runs the verification pipeline on Node 24. It installs
+with `npm ci`, then runs typecheck, tests, strict CommonMark/GFM corpus checks,
+and `npm run pack:dry-run`.
 
 ## 3. Run Unit Tests
 

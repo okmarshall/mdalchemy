@@ -39,15 +39,15 @@ Status labels:
 
 | Feature | Status | Evidence | Next action |
 | --- | --- | --- | --- |
-| CLI help and version flags | `[Done]` | `src/cli/args.ts`, `src/cli/main.ts` | Keep help text synced with new flags. |
+| CLI help and version flags | `[Done]` | `src/cli/args.ts`, `src/cli/main.ts`, `test/cli.test.mjs` | `mdalchemy help` and `mdalchemy help theme` are covered; keep help text synced with new flags. |
 | Render Markdown file to HTML file | `[Done]` | `test/cli.test.mjs` | Add more end-to-end fixtures as features grow. |
 | Default output path inference | `[Done]` | `src/io/files.ts` | Keep behavior documented in CLI docs. |
-| `--stdout` output | `[Done]` | `src/cli/main.ts` | Add direct CLI test if behavior changes. |
-| `--fragment` output | `[Done]` | `test/renderer.test.mjs` | Add CLI integration coverage if needed. |
+| `--stdout` output | `[Done]` | `src/cli/main.ts`, `test/cli.test.mjs` | `--stdout` and `--output` are mutually exclusive. |
+| `--fragment` output | `[Done]` | `test/renderer.test.mjs`, `test/cli.test.mjs` | Keep fragment behavior available for piping and conformance use. |
 | `--format html` | `[Done]` | `src/cli/args.ts`, `src/config/config-loader.ts` | Keep unsupported format errors clear. |
 | Watch mode | `[Deferred]` | CLI docs describe future behavior | Implement after normal render pipeline is stable. |
-| Theme subcommands | `[Done]` | `src/cli/main.ts`, `test/cli.test.mjs` | Keep output stable as more theme tooling is added. |
-| Diagnostics and exit codes | `[Done]` | `src/core/diagnostics.ts`, `src/cli/main.ts`, `test/cli.test.mjs` | Keep exit codes stable as new diagnostics are added. |
+| Theme subcommands | `[Done]` | `src/cli/main.ts`, `src/cli/theme-command.ts`, `test/cli.test.mjs` | Extra subcommand arguments are usage errors. |
+| Diagnostics and exit codes | `[Done]` | `src/core/diagnostics.ts`, `src/cli/main.ts`, `test/cli.test.mjs` | Usage, input, config, theme, render, and output failures have stable exit codes. |
 
 ### Markdown Parser
 
@@ -146,7 +146,7 @@ Status labels:
 | --- | --- | --- | --- |
 | Typecheck script | `[Done]` | `npm run typecheck` | Keep required before release. |
 | Unit tests | `[Done]` | `test/*.test.mjs` | Continue adding focused tests for parser regressions. |
-| CLI integration tests | `[Done]` | `test/cli.test.mjs` | Covers file output, GFM, frontmatter, theme subcommands, stdout fragments, safe mode, invalid config, strict mode, and usage errors. |
+| CLI integration tests | `[Done]` | `test/cli.test.mjs` | Covers file output, GFM, frontmatter, help, theme subcommands, stdout fragments, safe mode, invalid combinations, invalid config, strict mode, and exit codes. |
 | Complex fixture | `[Done]` | `examples/complex-spec.md`, `examples/complex-spec.html` | Keep synthetic and non-sensitive. |
 | Visual/browser verification | `[Done]` | `docs/testing-pipeline.md` | Repeatable desktop and narrow-viewport browser checklist is documented for layout-sensitive changes. |
 | Conformance fixture runner | `[Done]` | `test/conformance.test.mjs`, `test/fixtures/conformance` | Seed packs cover representative CommonMark and supported GFM/frontmatter cases. |

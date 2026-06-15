@@ -8,15 +8,40 @@ import { parseMarkdown } from "../markdown/parser.js";
 import { resolveTheme } from "../theme/theme.js";
 import { renderDocument } from "../render/html/html-renderer.js";
 import { defaultOutputPath, inferFormat, readMarkdownFile, writeOutputFile } from "../io/files.js";
-import { cliOverrides, helpText, parseCliArgs } from "./args.js";
+import { CliUsageError, cliOverrides, helpText, parseCliArgs } from "./args.js";
 import { handleThemeCommand } from "./theme-command.js";
 
 async function main(argv: string[]): Promise<number> {
+  if (argv[0] === "help") {
+    const topic = argv[1];
+    if (!topic) {
+      console.log(helpText);
+      return 0;
+    }
+    if (topic === "theme") {
+      return handleThemeCommand(["help"]);
+    }
+
+    console.error(`mdalchemy: unknown help topic "${topic}"\n`);
+    console.error(helpText);
+    return 2;
+  }
+
   if (argv[0] === "theme") {
     return handleThemeCommand(argv.slice(1));
   }
 
-  const args = parseCliArgs(argv);
+  let args;
+  try {
+    args = parseCliArgs(argv);
+  } catch (error) {
+    if (error instanceof CliUsageError) {
+      console.error(`mdalchemy: ${error.message}\n`);
+      console.error(helpText);
+      return 2;
+    }
+    throw error;
+  }
 
   if (args.help) {
     console.log(helpText);
@@ -64,9 +89,27 @@ async function main(argv: string[]): Promise<number> {
     return 4;
   }
 
-  const markdown = await readMarkdownFile(inputPath);
+  let markdown;
+  try {
+    markdown = await readMarkdownFile(inputPath);
+  } catch (error) {
+    console.error(`mdalchemy: ${error instanceof Error ? error.message : String(error)}`);
+    return 3;
+  }
+
   const parsed = parseMarkdown(markdown, configResult.config.markdown, inputPath);
   const theme = await resolveTheme(configResult.config.theme, process.cwd());
+
+  const themeErrors = theme.diagnostics.filter((diagnostic) => diagnostic.severity === "error");
+  if (themeErrors.length > 0) {
+    for (const diagnostic of theme.diagnostics) {
+      if (diagnostic.severity === "error" || diagnostic.severity === "warning" || args.debug) {
+        console.error(formatDiagnostic(diagnostic, inputPath));
+      }
+    }
+    return 5;
+  }
+
   const rendered = await renderDocument(parsed.document, {
     config: configResult.config,
     theme,
@@ -94,7 +137,12 @@ async function main(argv: string[]): Promise<number> {
   if (args.stdout) {
     process.stdout.write(rendered.content);
   } else if (outputPath) {
-    await writeOutputFile(outputPath, rendered.content, configResult.config.output.createDirs);
+    try {
+      await writeOutputFile(outputPath, rendered.content, configResult.config.output.createDirs);
+    } catch (error) {
+      console.error(`mdalchemy: ${error instanceof Error ? error.message : String(error)}`);
+      return 7;
+    }
     console.error(`mdalchemy: wrote ${path.relative(process.cwd(), outputPath) || outputPath}`);
   }
 

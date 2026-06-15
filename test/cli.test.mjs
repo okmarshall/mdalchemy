@@ -93,6 +93,23 @@ test("cli lists and inspects built-in themes", async () => {
   assert.equal(details.tokens["layout.maxWidth"], "960px");
 });
 
+test("cli exposes top-level and theme help", async () => {
+  const help = await runCli(["help"]);
+  assert.equal(help.exitCode, 0);
+  assert.match(help.stdout, /Usage:/);
+  assert.match(help.stdout, /Markdown:/);
+  assert.match(help.stdout, /Safety and diagnostics:/);
+
+  const noisyHelp = await runCli(["--help", "--stdout", "-o", "ignored.html", "--format", "pdf"]);
+  assert.equal(noisyHelp.exitCode, 0);
+  assert.match(noisyHelp.stdout, /Usage:/);
+
+  const themeHelp = await runCli(["help", "theme"]);
+  assert.equal(themeHelp.exitCode, 0);
+  assert.match(themeHelp.stdout, /mdalchemy theme list/);
+  assert.match(themeHelp.stdout, /mdalchemy theme inspect/);
+});
+
 test("cli writes fragment output to stdout", async () => {
   const dir = await mkdtemp(path.join(tmpdir(), "mdalchemy-"));
   const input = path.join(dir, "fragment.md");
@@ -162,6 +179,46 @@ test("cli returns config error for invalid config files", async () => {
 
   assert.equal(result.exitCode, 4);
   assert.match(result.stderr, /MDA_CONFIG_INVALID_TYPE/);
+});
+
+test("cli returns usage errors for invalid argument combinations", async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), "mdalchemy-"));
+  const input = path.join(dir, "input.md");
+  await writeFile(input, "# Usage\n", "utf8");
+
+  const cases = [
+    { args: ["--badflag"], message: /Unknown option '--badflag'/ },
+    { args: [input, "extra.md"], message: /Unexpected argument "extra.md"/ },
+    { args: [input, "--stdout", "-o", path.join(dir, "out.html")], message: /Use either --stdout or --output/ },
+    { args: [input, "--toc", "--no-toc"], message: /Use either --toc or --no-toc/ },
+    { args: [input, "--sections", "--no-sections"], message: /Use either --sections or --no-sections/ },
+    { args: ["theme", "list", "serif"], message: /theme list does not accept arguments/ }
+  ];
+
+  for (const testCase of cases) {
+    const result = await runCli(testCase.args);
+    assert.equal(result.exitCode, 2);
+    assert.match(result.stderr, testCase.message);
+    assert.match(result.stderr, /Usage:/);
+  }
+});
+
+test("cli returns specific exit codes for input, theme, and output failures", async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), "mdalchemy-"));
+  const input = path.join(dir, "input.md");
+  await writeFile(input, "# Failures\n", "utf8");
+
+  const missingInput = await runCli([path.join(dir, "missing.md"), "--stdout"]);
+  assert.equal(missingInput.exitCode, 3);
+  assert.match(missingInput.stderr, /ENOENT/);
+
+  const badTheme = await runCli([input, "--theme", path.join(dir, "missing-theme.json"), "--stdout"]);
+  assert.equal(badTheme.exitCode, 5);
+  assert.match(badTheme.stderr, /MDA_THEME_LOAD_FAILED/);
+
+  const badOutput = await runCli([input, "-o", path.join(dir, "missing", "out.html")]);
+  assert.equal(badOutput.exitCode, 7);
+  assert.match(badOutput.stderr, /ENOENT/);
 });
 
 test("cli strict mode treats warnings as errors", async () => {

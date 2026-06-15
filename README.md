@@ -43,6 +43,13 @@ Render a Markdown file to standalone HTML:
 node dist/cli/main.js input.md -o output.html
 ```
 
+Show CLI help:
+
+```sh
+node dist/cli/main.js help
+node dist/cli/main.js help theme
+```
+
 Enable the supported GitHub Flavored Markdown extension bundle:
 
 ```sh
@@ -84,6 +91,7 @@ Useful options:
 | `--config <path>` | Load a specific config file. |
 | `--safe` | Escape raw HTML and reject unsafe URLs. |
 | `--strict` | Treat warnings as errors. |
+| `--debug` | Show extra diagnostics. |
 | `--gfm` | Enable supported GFM extensions: pipe tables, task lists, strikethrough, footnotes, literal autolinks, and tagfilter. |
 | `--frontmatter` | Parse a leading YAML-style frontmatter block and omit it from visible HTML. |
 | `--toc` / `--no-toc` | Force table of contents on or off. |

@@ -23,28 +23,47 @@ mdalchemy notes.md \
 Initial command:
 
 ```text
-mdalchemy <input> [options]
+mdalchemy <input.md> [options]
+mdalchemy theme <command>
+mdalchemy help [theme]
 ```
 
-Options:
+Options should be grouped by intent in help output.
+
+Output:
 
 ```text
--o, --output <path>       Output file path.
---format <format>         Output format. Defaults to html.
---theme <name-or-path>    Built-in theme name or theme config path.
---config <path>           Config file path.
---stdout                  Write rendered output to stdout.
---strict                  Treat warnings as errors.
---safe                    Enable safe rendering preset.
+-o, --output <path>       Write standalone HTML to a file.
+--stdout                  Write rendered HTML to stdout.
+--fragment                Render HTML fragment instead of standalone document.
+--format <format>         Output format. Only html is implemented.
+```
+
+Markdown:
+
+```text
 --gfm                     Enable supported GitHub Flavored Markdown extensions.
 --frontmatter             Parse leading YAML-style frontmatter.
---fragment                Render HTML fragment instead of standalone document.
+```
+
+HTML:
+
+```text
+--theme <name-or-path>    Built-in theme name or theme config path.
 --title <title>           Override document title.
 --toc                     Force table of contents on.
 --no-toc                  Disable table of contents.
 --sections                Wrap heading-led content in section elements.
 --no-sections             Disable section wrappers.
---debug                   Show stack traces and extra diagnostics.
+```
+
+Safety and diagnostics:
+
+```text
+--config <path>           Config file path.
+--safe                    Enable safe rendering preset.
+--strict                  Treat warnings as errors.
+--debug                   Show extra diagnostics.
 -h, --help                Show help.
 -v, --version             Show version.
 ```
@@ -54,6 +73,7 @@ Theme commands:
 ```text
 mdalchemy theme list
 mdalchemy theme inspect <name-or-path>
+mdalchemy help theme
 ```
 
 `theme list` prints the built-in theme names. `theme inspect` resolves a built-in
@@ -108,6 +128,14 @@ If neither `--output` nor `--stdout` is provided:
 If output path equals input path:
 
 - Fail unless a future explicit overwrite flag exists.
+
+Invalid command combinations:
+
+- More than one input path is a usage error.
+- `--stdout` and `--output` together are a usage error.
+- `--toc` and `--no-toc` together are a usage error.
+- `--sections` and `--no-sections` together are a usage error.
+- Theme subcommands reject unexpected extra arguments.
 
 ## Format Inference
 
@@ -292,26 +320,33 @@ Short help:
 
 ```text
 Usage:
-  mdalchemy <input> [options]
-  mdalchemy theme list
-  mdalchemy theme inspect <name-or-path>
+  mdalchemy <input.md> [options]
+  mdalchemy theme <command>
+  mdalchemy help [theme]
 
-Options:
-  -o, --output <path>       Output file path
-      --format <format>     Output format, currently html
-      --theme <name|path>   Theme name or theme file
-      --config <path>       Config file
-      --stdout              Write to stdout
-      --safe                Escape raw HTML and reject unsafe URLs
-      --strict              Treat warnings as errors
+Output:
+  -o, --output <path>       Write standalone HTML to a file
+      --stdout              Write rendered HTML to stdout
+      --fragment            Render an HTML fragment instead of a full document
+      --format <format>     Output format; only html is implemented
+
+Markdown:
       --gfm                 Enable supported GitHub Flavored Markdown extensions
       --frontmatter         Parse leading YAML-style frontmatter
-      --fragment            Render an HTML fragment
+
+HTML:
+      --theme <name|path>   Built-in theme name or theme JSON file
       --title <title>       Override document title
       --toc                 Force table of contents on
       --no-toc              Disable table of contents
       --sections            Wrap heading-led content in section elements
       --no-sections         Disable section wrappers
+
+Safety and diagnostics:
+      --config <path>       Config file
+      --safe                Escape raw HTML and reject unsafe URLs
+      --strict              Treat warnings as errors
+      --debug               Show extra diagnostics
   -h, --help                Show help
   -v, --version             Show version
 ```

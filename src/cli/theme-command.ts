@@ -9,6 +9,7 @@ export async function handleThemeCommand(argv: string[], cwd = process.cwd()): P
   }
 
   if (command === "list") {
+    if (argv.length > 1) return themeUsageError("theme list does not accept arguments.");
     console.log("Built-in themes:");
     for (const name of Object.keys(builtInThemes)) {
       console.log(`- ${name}${name === "serif" ? " (default)" : ""}`);
@@ -17,10 +18,17 @@ export async function handleThemeCommand(argv: string[], cwd = process.cwd()): P
   }
 
   if (command === "inspect") {
+    if (argv.length > 2) return themeUsageError("theme inspect accepts exactly one theme name or path.");
     return inspectTheme(argv[1], cwd);
   }
 
   console.error(`mdalchemy: unknown theme command "${command}"\n`);
+  console.error(themeHelpText);
+  return 2;
+}
+
+function themeUsageError(message: string): number {
+  console.error(`mdalchemy: ${message}\n`);
   console.error(themeHelpText);
   return 2;
 }
@@ -51,4 +59,5 @@ async function inspectTheme(themeInput: string | undefined, cwd: string): Promis
 
 const themeHelpText = `Usage:
   mdalchemy theme list
-  mdalchemy theme inspect <name-or-path>`;
+  mdalchemy theme inspect <name-or-path>
+  mdalchemy help theme`;

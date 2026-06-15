@@ -1,6 +1,13 @@
 import { parseArgs } from "node:util";
 import { gfmMarkdownExtensions, type ResolvedConfig } from "../config/config-schema.js";
 
+export class CliUsageError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "CliUsageError";
+  }
+}
+
 export interface CliArgs {
   input: string | undefined;
   output: string | undefined;
@@ -22,40 +29,31 @@ export interface CliArgs {
 }
 
 export function parseCliArgs(argv: string[]): CliArgs {
-  const parsed = parseArgs({
-    args: argv,
-    allowPositionals: true,
-    options: {
-      output: { type: "string", short: "o" },
-      format: { type: "string" },
-      theme: { type: "string" },
-      config: { type: "string" },
-      stdout: { type: "boolean" },
-      strict: { type: "boolean" },
-      safe: { type: "boolean" },
-      fragment: { type: "boolean" },
-      gfm: { type: "boolean" },
-      frontmatter: { type: "boolean" },
-      title: { type: "string" },
-      toc: { type: "boolean" },
-      "no-toc": { type: "boolean" },
-      sections: { type: "boolean" },
-      "no-sections": { type: "boolean" },
-      help: { type: "boolean", short: "h" },
-      version: { type: "boolean", short: "v" },
-      debug: { type: "boolean" }
-    }
-  });
+  const parsed = parseCliArgValues(argv);
 
-  const format = parsed.values.format;
-  if (format !== undefined && format !== "html") {
-    throw new Error(`Unsupported format "${format}". Only html is implemented.`);
+  if (!parsed.values.help && !parsed.values.version) {
+    const format = parsed.values.format;
+    if (format !== undefined && format !== "html") {
+      throw new CliUsageError(`Unsupported format "${format}". Only html is implemented.`);
+    }
+    if (parsed.positionals.length > 1) {
+      throw new CliUsageError(`Unexpected argument "${parsed.positionals[1]}". mdalchemy accepts one input file.`);
+    }
+    if (parsed.values.stdout && parsed.values.output) {
+      throw new CliUsageError("Use either --stdout or --output, not both.");
+    }
+    if (parsed.values.toc && parsed.values["no-toc"]) {
+      throw new CliUsageError("Use either --toc or --no-toc, not both.");
+    }
+    if (parsed.values.sections && parsed.values["no-sections"]) {
+      throw new CliUsageError("Use either --sections or --no-sections, not both.");
+    }
   }
 
   const result: CliArgs = {
     input: parsed.positionals[0],
     output: parsed.values.output,
-    format: format as "html" | undefined,
+    format: parsed.values.format as "html" | undefined,
     theme: parsed.values.theme,
     configPath: parsed.values.config,
     stdout: Boolean(parsed.values.stdout),
@@ -72,6 +70,37 @@ export function parseCliArgs(argv: string[]): CliArgs {
     debug: Boolean(parsed.values.debug)
   };
   return result;
+}
+
+function parseCliArgValues(argv: string[]) {
+  try {
+    return parseArgs({
+      args: argv,
+      allowPositionals: true,
+      options: {
+        output: { type: "string", short: "o" },
+        format: { type: "string" },
+        theme: { type: "string" },
+        config: { type: "string" },
+        stdout: { type: "boolean" },
+        strict: { type: "boolean" },
+        safe: { type: "boolean" },
+        fragment: { type: "boolean" },
+        gfm: { type: "boolean" },
+        frontmatter: { type: "boolean" },
+        title: { type: "string" },
+        toc: { type: "boolean" },
+        "no-toc": { type: "boolean" },
+        sections: { type: "boolean" },
+        "no-sections": { type: "boolean" },
+        help: { type: "boolean", short: "h" },
+        version: { type: "boolean", short: "v" },
+        debug: { type: "boolean" }
+      }
+    });
+  } catch (error) {
+    throw new CliUsageError(error instanceof Error ? error.message : String(error));
+  }
 }
 
 export function cliOverrides(args: CliArgs): Partial<ResolvedConfig> {
@@ -97,25 +126,32 @@ export function cliOverrides(args: CliArgs): Partial<ResolvedConfig> {
 }
 
 export const helpText = `Usage:
-  mdalchemy <input> [options]
-  mdalchemy theme list
-  mdalchemy theme inspect <name-or-path>
+  mdalchemy <input.md> [options]
+  mdalchemy theme <command>
+  mdalchemy help [theme]
 
-Options:
-  -o, --output <path>       Output file path
-      --format <format>     Output format, currently html
-      --theme <name|path>   Built-in theme name or theme file
-      --config <path>       Config file
-      --stdout              Write to stdout
-      --safe                Escape raw HTML and reject unsafe URLs
-      --strict              Treat warnings as errors
+Output:
+  -o, --output <path>       Write standalone HTML to a file
+      --stdout              Write rendered HTML to stdout
+      --fragment            Render an HTML fragment instead of a full document
+      --format <format>     Output format; only html is implemented
+
+Markdown:
       --gfm                 Enable supported GitHub Flavored Markdown extensions
       --frontmatter         Parse leading YAML-style frontmatter
-      --fragment            Render an HTML fragment
+
+HTML:
+      --theme <name|path>   Built-in theme name or theme JSON file
       --title <title>       Override document title
       --toc                 Force table of contents on
       --no-toc              Disable table of contents
       --sections            Wrap heading-led content in section elements
       --no-sections         Disable section wrappers
+
+Safety and diagnostics:
+      --config <path>       Config file
+      --safe                Escape raw HTML and reject unsafe URLs
+      --strict              Treat warnings as errors
+      --debug               Show extra diagnostics
   -h, --help                Show help
   -v, --version             Show version`;

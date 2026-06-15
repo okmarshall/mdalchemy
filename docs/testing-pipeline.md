@@ -91,9 +91,9 @@ whether `build` emits files or only validates source.
 
 The GitHub CI workflow runs the verification pipeline on Node 24. It installs
 with `npm ci`, then runs typecheck, tests, strict CommonMark/GFM corpus checks,
-and `npm run pack:dry-run`. The workflow also sets
-`FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true` so JavaScript-based actions run on the
-same Node major version as the project verification job.
+and `npm run pack:dry-run`. The workflow uses `actions/checkout@v5` and
+`actions/setup-node@v5`, which target the same Node major version as the project
+verification job.
 
 ## 3. Run Unit Tests
 

@@ -5,6 +5,8 @@ created.
 
 ## Unreleased
 
+## 1.1.0 - 2026-06-15
+
 ### Added
 
 - VS Code extension command for rendering the current Markdown file to a sibling

@@ -7,7 +7,15 @@ import { formatDiagnostic, type Diagnostic } from "../core/diagnostics.js";
 import { defaultOutputPath } from "../io/files.js";
 import { parseMarkdown } from "../markdown/parser.js";
 import { renderDocument } from "../render/html/html-renderer.js";
-import { resolveTheme, type ResolvedTheme } from "../theme/theme.js";
+import { builtInThemes, resolveTheme, type ResolvedTheme } from "../theme/theme.js";
+import {
+  buildBookConfigOverrides,
+  defaultBookOutputPath,
+  normalizeBookOutputPath,
+  type BookPromptSelections,
+  type BookSectionMode,
+  type BookTocMode
+} from "./book-options.js";
 import { prepareHtmlForWebview } from "./webview-html.js";
 
 const renderMarkdownCommand = "mdalchemy.renderMarkdownToHtml";
@@ -27,6 +35,29 @@ interface PreviewOptions {
   resourceBaseDirectory: string;
   outputUri: vscode.Uri;
   html: string;
+}
+
+interface BookRenderSettings {
+  outputPath: string;
+  configOverrides: Partial<ResolvedConfig>;
+}
+
+interface BookRootQuickPickItem extends vscode.QuickPickItem {
+  uri?: vscode.Uri | undefined;
+  browse?: boolean | undefined;
+}
+
+interface ThemeQuickPickItem extends vscode.QuickPickItem {
+  theme?: string | undefined;
+  custom?: boolean | undefined;
+}
+
+interface SectionQuickPickItem extends vscode.QuickPickItem {
+  sectionMode: BookSectionMode;
+}
+
+interface TocQuickPickItem extends vscode.QuickPickItem {
+  tocMode: BookTocMode;
 }
 
 export function activate(context: vscode.ExtensionContext): void {
@@ -97,13 +128,19 @@ async function renderFolderToBook(
   outputChannel: vscode.OutputChannel
 ): Promise<void> {
   try {
-    const rootUri = await resolveBookRoot(resource);
+    const interactive = resource === undefined;
+    const rootUri = interactive ? await promptForBookRoot() : await resolveBookRoot(resource);
+    if (!rootUri) return;
+
     const rootPath = rootUri.fsPath;
-    const outputPath = path.join(rootPath, "mdalchemy-book.html");
+    const settings = interactive ? await promptForBookSettings(rootUri) : defaultBookRenderSettings(rootPath);
+    if (!settings) return;
+
+    const outputPath = settings.outputPath;
     const outputUri = vscode.Uri.file(outputPath);
     const workspaceFolder = vscode.workspace.getWorkspaceFolder(rootUri);
     const cwd = workspaceFolder?.uri.fsPath ?? rootPath;
-    const environment = await loadRenderEnvironment(cwd, rootPath, outputChannel);
+    const environment = await loadRenderEnvironment(cwd, rootPath, outputChannel, settings.configOverrides);
     const rendered = await renderProjectBook({
       rootPath,
       outputPath,
@@ -143,11 +180,12 @@ async function renderFolderToBook(
 async function loadRenderEnvironment(
   cwd: string,
   diagnosticSourcePath: string,
-  outputChannel: vscode.OutputChannel
+  outputChannel: vscode.OutputChannel,
+  configOverrides: Partial<ResolvedConfig> = {}
 ): Promise<RenderEnvironment> {
   const configResult = await loadConfig({
     cwd,
-    overrides: defaultExtensionOverrides()
+    overrides: extensionConfigOverrides(configOverrides)
   });
 
   const configErrors = configResult.diagnostics.filter((diagnostic) => diagnostic.severity === "error");
@@ -180,6 +218,25 @@ function defaultExtensionOverrides(): Partial<ResolvedConfig> {
   };
 }
 
+function extensionConfigOverrides(configOverrides: Partial<ResolvedConfig>): Partial<ResolvedConfig> {
+  const base = defaultExtensionOverrides();
+  const merged: Partial<ResolvedConfig> = {
+    output: {
+      ...base.output!,
+      ...configOverrides.output
+    },
+    markdown: {
+      ...base.markdown!,
+      ...configOverrides.markdown
+    }
+  };
+  if (configOverrides.html) merged.html = configOverrides.html;
+  if (configOverrides.book) merged.book = configOverrides.book;
+  if (configOverrides.theme !== undefined) merged.theme = configOverrides.theme;
+  if (configOverrides.strict !== undefined) merged.strict = configOverrides.strict;
+  return merged;
+}
+
 async function resolveMarkdownDocument(resource: vscode.Uri | undefined): Promise<vscode.TextDocument> {
   const activeDocument = vscode.window.activeTextEditor?.document;
   const candidate = resource ?? activeDocument?.uri;
@@ -202,27 +259,191 @@ function isMarkdownDocument(document: vscode.TextDocument): boolean {
 }
 
 async function resolveBookRoot(resource: vscode.Uri | undefined): Promise<vscode.Uri> {
-  if (resource) {
-    if (resource.scheme !== "file") throw new Error("mdalchemy can only render books from local folders.");
-    if (!(await isDirectory(resource))) throw new Error("Select a folder to generate a project HTML book.");
-    return resource;
-  }
+  if (!resource) throw new Error("Select a folder to generate a project HTML book.");
+  if (resource.scheme !== "file") throw new Error("mdalchemy can only render books from local folders.");
+  if (!(await isDirectory(resource))) throw new Error("Select a folder to generate a project HTML book.");
+  return resource;
+}
 
+async function promptForBookRoot(): Promise<vscode.Uri | undefined> {
   const workspaceFolders = vscode.workspace.workspaceFolders ?? [];
-  if (workspaceFolders.length === 1) return workspaceFolders[0]!.uri;
-  if (workspaceFolders.length > 1) {
-    const selected = await vscode.window.showWorkspaceFolderPick({
-      placeHolder: "Select a folder to generate an mdalchemy HTML book"
-    });
-    if (!selected) throw new Error("No folder selected for mdalchemy book generation.");
-    return selected.uri;
-  }
+  const items: BookRootQuickPickItem[] = workspaceFolders.map((folder) => ({
+    label: folder.name,
+    description: folder.uri.fsPath,
+    uri: folder.uri
+  }));
 
   const activeUri = vscode.window.activeTextEditor?.document.uri;
   if (activeUri?.scheme === "file") {
-    return vscode.Uri.file(path.dirname(activeUri.fsPath));
+    const activeFolder = vscode.Uri.file(path.dirname(activeUri.fsPath));
+    if (!items.some((item) => item.uri?.toString() === activeFolder.toString())) {
+      items.push({
+        label: path.basename(activeFolder.fsPath) || activeFolder.fsPath,
+        description: activeFolder.fsPath,
+        detail: "Folder containing the active editor",
+        uri: activeFolder
+      });
+    }
   }
-  throw new Error("Open a workspace folder before generating an mdalchemy HTML book.");
+
+  items.push({
+    label: "Choose another folder...",
+    description: "Browse for a local folder",
+    browse: true
+  });
+
+  const selected = await vscode.window.showQuickPick(items, {
+    title: "mdalchemy: Generate HTML Book",
+    placeHolder: "Select the folder to scan for Markdown"
+  });
+  if (!selected) return undefined;
+  if (selected.browse) {
+    const folders = await vscode.window.showOpenDialog({
+      title: "Select folder for mdalchemy HTML book",
+      openLabel: "Use Folder",
+      canSelectFiles: false,
+      canSelectFolders: true,
+      canSelectMany: false
+    });
+    return folders?.[0];
+  }
+  return selected.uri;
+}
+
+function defaultBookRenderSettings(rootPath: string): BookRenderSettings {
+  return {
+    outputPath: defaultBookOutputPath(rootPath),
+    configOverrides: {}
+  };
+}
+
+async function promptForBookSettings(rootUri: vscode.Uri): Promise<BookRenderSettings | undefined> {
+  const theme = await promptForBookTheme();
+  if (!theme) return undefined;
+
+  const sectionMode = await promptForSectionMode();
+  if (!sectionMode) return undefined;
+
+  const tocMode = await promptForTocMode();
+  if (!tocMode) return undefined;
+
+  const outputUri = await vscode.window.showSaveDialog({
+    title: "Save mdalchemy HTML book",
+    saveLabel: "Generate HTML Book",
+    defaultUri: vscode.Uri.file(defaultBookOutputPath(rootUri.fsPath)),
+    filters: {
+      "HTML": ["html", "htm"]
+    }
+  });
+  if (!outputUri) return undefined;
+  if (outputUri.scheme !== "file") throw new Error("mdalchemy can only write HTML books to local files.");
+
+  const selections: BookPromptSelections = {
+    sectionMode,
+    tocMode
+  };
+  if (theme !== "config") selections.theme = theme;
+
+  return {
+    outputPath: normalizeBookOutputPath(rootUri.fsPath, outputUri.fsPath),
+    configOverrides: buildBookConfigOverrides(selections)
+  };
+}
+
+async function promptForBookTheme(): Promise<string | "config" | undefined> {
+  const themeItems: ThemeQuickPickItem[] = [
+    {
+      label: "Config/default",
+      description: "Use mdalchemy.config.json, otherwise serif"
+    },
+    ...Object.keys(builtInThemes).map((theme) => ({
+      label: theme,
+      description: theme === "serif" ? "Default editorial theme" : "Built-in theme",
+      theme
+    })),
+    {
+      label: "Custom theme file...",
+      description: "Choose a JSON theme file",
+      custom: true
+    }
+  ];
+
+  const selected = await vscode.window.showQuickPick(themeItems, {
+    title: "mdalchemy: Book Theme",
+    placeHolder: "Choose a theme"
+  });
+  if (!selected) return undefined;
+  if (selected.custom) {
+    const files = await vscode.window.showOpenDialog({
+      title: "Select mdalchemy theme JSON",
+      openLabel: "Use Theme",
+      canSelectFiles: true,
+      canSelectFolders: false,
+      canSelectMany: false,
+      filters: {
+        "JSON": ["json"],
+        "All files": ["*"]
+      }
+    });
+    const themeFile = files?.[0];
+    if (!themeFile) return undefined;
+    if (themeFile.scheme !== "file") throw new Error("mdalchemy can only load local theme files.");
+    return themeFile.fsPath;
+  }
+  return selected.theme ?? "config";
+}
+
+async function promptForSectionMode(): Promise<BookSectionMode | undefined> {
+  const selected = await vscode.window.showQuickPick<SectionQuickPickItem>([
+    {
+      label: "Config/default",
+      description: "Use html.sections and html.collapsibleSections from config",
+      sectionMode: "config"
+    },
+    {
+      label: "No sections",
+      description: "Render headings without section wrappers",
+      sectionMode: "none"
+    },
+    {
+      label: "Sections",
+      description: "Wrap heading-led content in section elements",
+      sectionMode: "sections"
+    },
+    {
+      label: "Collapsible sections",
+      description: "Add native expand/collapse controls to heading sections",
+      sectionMode: "collapsible"
+    }
+  ], {
+    title: "mdalchemy: Section Rendering",
+    placeHolder: "Choose section behavior"
+  });
+  return selected?.sectionMode;
+}
+
+async function promptForTocMode(): Promise<BookTocMode | undefined> {
+  const selected = await vscode.window.showQuickPick<TocQuickPickItem>([
+    {
+      label: "Config/default",
+      description: "Use html.tableOfContents from config",
+      tocMode: "config"
+    },
+    {
+      label: "Show table of contents",
+      description: "Force the book table of contents on",
+      tocMode: "on"
+    },
+    {
+      label: "Hide table of contents",
+      description: "Force the book table of contents off",
+      tocMode: "off"
+    }
+  ], {
+    title: "mdalchemy: Table Of Contents",
+    placeHolder: "Choose TOC behavior"
+  });
+  return selected?.tocMode;
 }
 
 async function isDirectory(uri: vscode.Uri): Promise<boolean> {

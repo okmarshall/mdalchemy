@@ -12,6 +12,8 @@ created.
 - VS Code extension folder command for generating a recursive
   `mdalchemy-book.html` project documentation book.
 - VS Code command icons and a shorter `mdalchemy: Generate HTML` command title.
+- Guided VS Code Command Palette flow for choosing project-book root, theme,
+  section rendering, table of contents behavior, and output file.
 
 ## 1.0.0 - 2026-06-15
 

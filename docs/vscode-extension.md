@@ -26,9 +26,11 @@ folder in the Explorer and run:
 mdalchemy: Generate HTML Book
 ```
 
-The book command is also available from the Command Palette. When no Explorer
-folder is supplied, it uses the open workspace folder, prompts in multi-root
-workspaces, or falls back to the active file's folder outside a workspace.
+The book command is also available from the Command Palette. When launched from
+the Command Palette, mdalchemy walks through a guided flow for the root folder,
+theme, section rendering, table of contents behavior, and output file. When
+launched from the Explorer folder context menu, it uses the configured defaults
+and writes the standard `mdalchemy-book.html` file immediately.
 
 ## File Behavior
 
@@ -72,6 +74,11 @@ VS Code as well.
 5. Rewrites included cross-file Markdown links into same-page HTML anchors.
 6. Writes `mdalchemy-book.html` inside the selected folder.
 7. Opens the generated book in a VS Code webview.
+
+From the Command Palette, the generated file path and selected render options
+come from the guided prompts. Any prompt left on `Config/default` inherits
+`mdalchemy.config.json` or `.mdalchemyrc.json`, with mdalchemy's built-in
+defaults used when no config value exists.
 
 The generated book is the same kind of standalone HTML artifact produced by:
 

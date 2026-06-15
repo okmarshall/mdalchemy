@@ -49,6 +49,15 @@ try {
   });
   assert.equal(versionStdout.trim(), packageJson.version);
 
+  const { stdout: importStdout } = await runCommand(process.execPath, [
+    "--input-type=module",
+    "-e",
+    "const mdalchemy = await import('mdalchemy'); console.log(typeof mdalchemy.renderMarkdown);"
+  ], {
+    cwd: projectDir
+  });
+  assert.equal(importStdout.trim(), "function");
+
   const { stdout: helpStdout } = await runCommand(binPath, ["help"], {
     cwd: projectDir
   });
@@ -98,7 +107,13 @@ try {
 function runCommand(command, args, options = {}) {
   return execFileAsync(command, args, {
     ...options,
-    shell: process.platform === "win32",
+    shell: options.shell ?? shouldUseWindowsShell(command),
     windowsHide: true
   });
+}
+
+function shouldUseWindowsShell(command) {
+  if (process.platform !== "win32") return false;
+  const executable = path.basename(command).toLowerCase();
+  return executable === "npm" || executable.endsWith(".cmd");
 }

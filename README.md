@@ -23,6 +23,7 @@ The repository now contains a working TypeScript CLI and library:
 - Theme token validation for custom themes.
 - Heading anchors, table of contents generation, optional section wrappers, and optional collapsible sections.
 - Project documentation books through `mdalchemy book`, with recursive Markdown discovery, frontmatter opt-out, and cross-file links rewritten into one standalone HTML document.
+- VS Code extension command for generating a sibling HTML file from the current Markdown file and previewing it in an integrated webview.
 - Node built-in test runner coverage.
 - Complex Markdown smoke fixture plus checked HTML output.
 
@@ -57,6 +58,10 @@ Build one standalone documentation book from a project Markdown tree:
 ```sh
 mdalchemy book . -o project-docs.html
 ```
+
+When installed as a VS Code extension, run `mdalchemy: Generate HTML Preview`
+from a Markdown editor to write a sibling `.html` file and open the rendered
+document in a VS Code webview.
 
 Show CLI help:
 
@@ -207,6 +212,7 @@ Release preparation is documented in [docs/release.md](docs/release.md).
 - [Testing Pipeline](docs/testing-pipeline.md) explains how to build, test, render fixtures, and compare output.
 - [Conformance Status](docs/conformance-status.md) tracks current CommonMark-oriented coverage and known gaps.
 - [Release Process](docs/release.md) defines the v1 release gates, npm trusted-publishing setup, and tag flow.
+- [VS Code Extension](docs/vscode-extension.md) explains the extension command, webview preview behavior, and local development flow.
 
 ## Example Fixture
 

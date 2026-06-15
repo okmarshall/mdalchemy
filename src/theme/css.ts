@@ -25,7 +25,7 @@ body {
 }
 
 .mda-document {
-  width: min(100%, var(--mda-layout-maxWidth));
+  width: min(calc(100% - clamp(24px, 4vw, 80px)), var(--mda-layout-maxWidth));
   margin: clamp(18px, 4vw, 56px) auto;
   padding: var(--mda-layout-pagePadding);
   background: var(--mda-color-document);
@@ -198,6 +198,7 @@ del {
 pre {
   overflow-x: auto;
   position: relative;
+  tab-size: 2;
   margin: 1.25rem 0;
   padding: calc(var(--mda-space-code) + 0.25rem) var(--mda-space-code) var(--mda-space-code);
   border-radius: var(--mda-layout-radius);
@@ -480,6 +481,7 @@ h6:hover .mda-heading-anchor {
 
 @media (max-width: 720px) {
   .mda-document {
+    width: 100%;
     margin: 0;
     border-width: 0;
     border-radius: 0;

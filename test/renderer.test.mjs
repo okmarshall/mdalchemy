@@ -169,6 +169,15 @@ test("default theme includes print-friendly CSS rules", async () => {
   assert.match(theme.css, /\.mda-table-scroll \{\n    overflow: visible;/);
 });
 
+test("default theme uses responsive width and compact code tab stops", async () => {
+  const theme = await resolveTheme("serif", process.cwd());
+
+  assert.equal(theme.tokens["layout.maxWidth"], "1440px");
+  assert.match(theme.css, /width: min\(calc\(100% - clamp\(24px, 4vw, 80px\)\), var\(--mda-layout-maxWidth\)\);/);
+  assert.match(theme.css, /tab-size: 2;/);
+  assert.match(theme.css, /@media \(max-width: 720px\) \{\n  \.mda-document \{\n    width: 100%;/);
+});
+
 test("renders GFM tables with header, body, and alignment", async () => {
   const markdown = `| Name | Count |
 | :--- | ---: |

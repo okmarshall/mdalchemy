@@ -6,6 +6,8 @@ The codebase is in good health for the current stage of mdalchemy. The project h
 
 This audit tightened compiler enforcement, clarified extension ownership, isolated CLI theme subcommands, split the parser/theme/renderer hotspots, added conformance fixture scaffolding, and documented the remaining coverage expansion work.
 
+The v1 readiness follow-up audit focused on the newer VS Code extension surface. That integration had grown quickly as file rendering, project-book rendering, webview previews, diagnostics, and prompted Command Palette flows were added. The extension now has smaller modules split by responsibility, while the package manifest and public library exports remain unchanged.
+
 ## Strengths
 
 - The project uses modern TypeScript with ESM, `NodeNext`, declarations, source maps, and no runtime dependencies.
@@ -14,6 +16,7 @@ This audit tightened compiler enforcement, clarified extension ownership, isolat
 - The HTML renderer escapes text and attributes, filters unsafe URLs in safe mode, and keeps raw HTML policy explicit.
 - Tests cover parser behavior, renderer behavior, CLI integration, config validation, and the checked complex fixture.
 - Docs and the implementation roadmap are close to the current behavior.
+- The VS Code extension reuses the same core pipeline as the CLI instead of duplicating parsing or rendering behavior.
 
 ## Changes Made In This Audit
 
@@ -25,6 +28,32 @@ This audit tightened compiler enforcement, clarified extension ownership, isolat
 - Ignored generated warm-theme example output with `examples/*.warm.html`.
 - Split block, inline, theme, and HTML renderer helpers into focused modules.
 - Added JSON-driven conformance seed fixture packs and `npm run test:conformance`.
+
+## V1 Readiness Follow-Up
+
+### Changes Made
+
+- Split VS Code activation from command implementation.
+- Moved Markdown file command orchestration into `src/vscode/render-markdown-command.ts`.
+- Moved project-book command orchestration into `src/vscode/render-book-command.ts`.
+- Moved Command Palette book prompts into `src/vscode/book-prompts.ts`.
+- Moved shared config/theme loading into `src/vscode/render-environment.ts`.
+- Moved webview preview setup and local resource mapping into `src/vscode/preview.ts`.
+- Moved output diagnostics into `src/vscode/diagnostics.ts`.
+- Moved Markdown document resolution into `src/vscode/markdown-document.ts`.
+
+### Current Assessment
+
+- `src/vscode/extension.ts` is now a thin activation layer that only creates the output channel and registers commands.
+- The VS Code extension code has clearer ownership boundaries and is easier to extend with additional commands.
+- The CLI, parser, renderer, book builder, and public API did not need behavioral changes during this pass.
+- Existing strict compiler settings are still doing useful work, especially `exactOptionalPropertyTypes` and `noUncheckedIndexedAccess`.
+
+### Watchlist
+
+- `src/markdown/parser.ts` and `src/markdown/inline-parser.ts` remain the largest handwritten source files. They are complex because Markdown parsing is complex, but future parser changes should keep pushing isolated recognizers into focused helper modules.
+- `src/book/book-builder.ts` is cohesive but large. If project-book features grow again, the next likely split is clone/composition helpers versus link/asset rewriting helpers.
+- `src/theme/css.ts` is intentionally long because it owns the built-in stylesheet. If theme variants become more numerous, consider splitting structural layout, block styling, inline styling, syntax highlighting, and print CSS into separate CSS-generation helpers.
 
 ## Advisory Status
 

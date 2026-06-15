@@ -7,7 +7,7 @@ import { promisify } from "node:util";
 
 const execFileAsync = promisify(execFile);
 const repoRoot = process.cwd();
-const npm = process.platform === "win32" ? "npm.cmd" : "npm";
+const npm = "npm";
 const binName = process.platform === "win32" ? "mdalchemy.cmd" : "mdalchemy";
 const packageJson = JSON.parse(await readFile(path.join(repoRoot, "package.json"), "utf8"));
 const workDir = await mkdtemp(path.join(tmpdir(), "mdalchemy-install-smoke-"));
@@ -22,8 +22,8 @@ try {
   await mkdir(packDir);
   await mkdir(projectDir);
 
-  const { stdout: packStdout } = await execFileAsync(npm, ["pack", "--json", "--ignore-scripts", "--pack-destination", packDir], {
-    cwd: repoRoot,
+  const { stdout: packStdout } = await runCommand(npm, ["pack", "--json", "--ignore-scripts", repoRoot], {
+    cwd: packDir,
     env: smokeEnv,
     maxBuffer: 1024 * 1024 * 10
   });
@@ -37,19 +37,19 @@ try {
     type: "module"
   }), "utf8");
 
-  await execFileAsync(npm, ["install", "--ignore-scripts", "--no-audit", "--no-fund", tarballPath], {
+  await runCommand(npm, ["install", "--ignore-scripts", "--no-audit", "--no-fund", tarballPath], {
     cwd: projectDir,
     env: smokeEnv,
     maxBuffer: 1024 * 1024 * 10
   });
 
   const binPath = path.join(projectDir, "node_modules", ".bin", binName);
-  const { stdout: versionStdout } = await execFileAsync(binPath, ["--version"], {
+  const { stdout: versionStdout } = await runCommand(binPath, ["--version"], {
     cwd: projectDir
   });
   assert.equal(versionStdout.trim(), packageJson.version);
 
-  const { stdout: helpStdout } = await execFileAsync(binPath, ["help"], {
+  const { stdout: helpStdout } = await runCommand(binPath, ["help"], {
     cwd: projectDir
   });
   assert.match(helpStdout, /mdalchemy <input\.md>/);
@@ -68,7 +68,7 @@ try {
     ""
   ].join("\n"), "utf8");
 
-  await execFileAsync(binPath, ["README.md", "-o", "README.html", "--gfm", "--toc"], {
+  await runCommand(binPath, ["README.md", "-o", "README.html", "--gfm", "--toc"], {
     cwd: projectDir,
     maxBuffer: 1024 * 1024 * 10
   });
@@ -84,7 +84,7 @@ try {
     ""
   ].join("\n"), "utf8");
 
-  await execFileAsync(binPath, ["book", ".", "-o", "book.html"], {
+  await runCommand(binPath, ["book", ".", "-o", "book.html"], {
     cwd: projectDir,
     maxBuffer: 1024 * 1024 * 10
   });
@@ -93,4 +93,12 @@ try {
   assert.match(bookHtml, /href="#install-smoke"/);
 } finally {
   await rm(workDir, { recursive: true, force: true });
+}
+
+function runCommand(command, args, options = {}) {
+  return execFileAsync(command, args, {
+    ...options,
+    shell: process.platform === "win32",
+    windowsHide: true
+  });
 }

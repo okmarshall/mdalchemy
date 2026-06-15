@@ -28,8 +28,21 @@
     "commands": [
       {
         "command": "mdalchemy.renderMarkdownToHtml",
-        "title": "Generate HTML Preview",
-        "category": "mdalchemy"
+        "title": "Generate HTML",
+        "category": "mdalchemy",
+        "icon": {
+          "light": "./media/html-light.svg",
+          "dark": "./media/html-dark.svg"
+        }
+      },
+      {
+        "command": "mdalchemy.renderFolderToBook",
+        "title": "Generate HTML Book",
+        "category": "mdalchemy",
+        "icon": {
+          "light": "./media/html-book-light.svg",
+          "dark": "./media/html-book-dark.svg"
+        }
       }
     ],
     "menus": {
@@ -52,6 +65,11 @@
           "command": "mdalchemy.renderMarkdownToHtml",
           "when": "resourceExtname == .md || resourceExtname == .markdown",
           "group": "navigation"
+        },
+        {
+          "command": "mdalchemy.renderFolderToBook",
+          "when": "explorerResourceIsFolder",
+          "group": "navigation"
         }
       ]
     }
@@ -73,6 +91,7 @@
     "examples/complex-spec.html",
     "examples/images",
     "examples/themes",
+    "media",
     "mdalchemy.config.example.json",
     "CHANGELOG.md",
     "CONTRIBUTING.md",

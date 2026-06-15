@@ -9,6 +9,9 @@ created.
 
 - VS Code extension command for rendering the current Markdown file to a sibling
   HTML file and previewing it in an integrated webview.
+- VS Code extension folder command for generating a recursive
+  `mdalchemy-book.html` project documentation book.
+- VS Code command icons and a shorter `mdalchemy: Generate HTML` command title.
 
 ## 1.0.0 - 2026-06-15
 

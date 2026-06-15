@@ -1,5 +1,7 @@
 # mdalchemy
 
+[![npm version](https://img.shields.io/npm/v/mdalchemy.svg)](https://www.npmjs.com/package/mdalchemy)
+
 mdalchemy is a modern TypeScript CLI that converts Markdown files into polished, human-readable standalone HTML.
 
 The project is a learning-focused implementation. It should build its own Markdown parser, keep dependencies minimal, and make each stage of the pipeline understandable: input, parsing, document model, rendering, theming, and CLI orchestration.
@@ -26,7 +28,7 @@ The repository now contains a working TypeScript CLI and library:
 
 ## Installation
 
-After publication, install the CLI from npm:
+Install the CLI from npm:
 
 ```sh
 npm install -g mdalchemy

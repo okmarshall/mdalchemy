@@ -63,7 +63,9 @@ When installed as a VS Code extension, run `mdalchemy: Generate HTML` from a
 Markdown editor to write a sibling `.html` file and open the rendered document
 in a VS Code webview. Right-click a folder in the Explorer and run
 `mdalchemy: Generate HTML Book` to recursively build `mdalchemy-book.html` from
-the folder's Markdown files.
+the folder's Markdown files. Running the book command from the Command Palette
+opens a guided flow for folder, theme, section, table-of-contents, and output
+settings.
 
 Show CLI help:
 

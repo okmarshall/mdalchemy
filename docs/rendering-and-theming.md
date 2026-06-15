@@ -340,7 +340,7 @@ Each token maps to a CSS variable:
   --mda-color-background: #ffffff;
   --mda-color-document: #fffefa;
   --mda-color-text: #202124;
-  --mda-layout-maxWidth: 760px;
+  --mda-layout-maxWidth: 1440px;
 }
 ```
 
@@ -348,7 +348,7 @@ CSS classes use variables:
 
 ```css
 .mda-document {
-  max-width: var(--mda-layout-maxWidth);
+  width: min(calc(100% - clamp(24px, 4vw, 80px)), var(--mda-layout-maxWidth));
   color: var(--mda-color-text);
   background: var(--mda-color-document);
 }

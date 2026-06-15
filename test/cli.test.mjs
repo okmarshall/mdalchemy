@@ -90,7 +90,7 @@ test("cli lists and inspects built-in themes", async () => {
   assert.equal(inspect.exitCode, 0);
   const details = JSON.parse(inspect.stdout);
   assert.equal(details.name, "serif");
-  assert.equal(details.tokens["layout.maxWidth"], "960px");
+  assert.equal(details.tokens["layout.maxWidth"], "1440px");
 });
 
 test("cli exposes top-level and theme help", async () => {

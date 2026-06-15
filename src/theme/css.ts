@@ -42,6 +42,14 @@ body {
   margin-top: var(--mda-space-block);
 }
 
+.mda-section {
+  display: block;
+}
+
+.mda-section > .mda-section {
+  margin-top: var(--mda-space-block);
+}
+
 h1,
 h2,
 h3,
@@ -395,6 +403,7 @@ h6:hover .mda-heading-anchor {
 
   pre,
   blockquote,
+  .mda-section,
   .mda-table-scroll {
     break-inside: avoid;
   }

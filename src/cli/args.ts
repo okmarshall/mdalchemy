@@ -15,6 +15,7 @@ export interface CliArgs {
   frontmatter: boolean;
   title: string | undefined;
   toc: boolean | undefined;
+  sections: boolean | undefined;
   help: boolean;
   version: boolean;
   debug: boolean;
@@ -38,6 +39,8 @@ export function parseCliArgs(argv: string[]): CliArgs {
       title: { type: "string" },
       toc: { type: "boolean" },
       "no-toc": { type: "boolean" },
+      sections: { type: "boolean" },
+      "no-sections": { type: "boolean" },
       help: { type: "boolean", short: "h" },
       version: { type: "boolean", short: "v" },
       debug: { type: "boolean" }
@@ -63,6 +66,7 @@ export function parseCliArgs(argv: string[]): CliArgs {
     frontmatter: Boolean(parsed.values.frontmatter),
     title: parsed.values.title,
     toc: parsed.values.toc === true ? true : parsed.values["no-toc"] === true ? false : undefined,
+    sections: parsed.values.sections === true ? true : parsed.values["no-sections"] === true ? false : undefined,
     help: Boolean(parsed.values.help),
     version: Boolean(parsed.values.version),
     debug: Boolean(parsed.values.debug)
@@ -75,6 +79,7 @@ export function cliOverrides(args: CliArgs): Partial<ResolvedConfig> {
   if (args.fragment) html.fragment = true;
   if (args.title) html.title = args.title;
   if (args.toc !== undefined) html.tableOfContents = args.toc;
+  if (args.sections !== undefined) html.sections = args.sections;
 
   const overrides: Partial<ResolvedConfig> = {
     strict: args.strict
@@ -110,5 +115,7 @@ Options:
       --title <title>       Override document title
       --toc                 Force table of contents on
       --no-toc              Disable table of contents
+      --sections            Wrap heading-led content in section elements
+      --no-sections         Disable section wrappers
   -h, --help                Show help
   -v, --version             Show version`;

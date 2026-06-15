@@ -28,6 +28,53 @@ Text with [a link](https://example.com).
   assert.match(rendered.content, /href="https:\/\/example.com"/);
 });
 
+test("renders heading-derived section wrappers when enabled", async () => {
+  const markdown = `# Intro
+
+Opening text.
+
+## Details
+
+Nested text.
+
+# Next
+
+Final text.
+`;
+  const { document } = parseMarkdown(markdown);
+  const config = resolveConfig({}, {
+    overrides: {
+      html: {
+        fragment: true,
+        sections: true
+      }
+    }
+  });
+  const rendered = await renderDocument(document, { config });
+
+  assert.match(rendered.content, /<section class="mda-section mda-section-level-1" aria-labelledby="intro">/);
+  assert.match(rendered.content, /<section class="mda-section mda-section-level-2" aria-labelledby="details">/);
+  assert.match(rendered.content, /<section class="mda-section mda-section-level-1" aria-labelledby="next">/);
+  assert.match(rendered.content, /<h1 id="intro"><a class="mda-heading-anchor" href="#intro" aria-hidden="true">#<\/a>Intro<\/h1>/);
+  assert.match(rendered.content, /Nested text/);
+});
+
+test("omits section wrappers in CommonMark-compatible output", async () => {
+  const markdown = "# Intro\n\nText.\n";
+  const config = resolveConfig({}, {
+    overrides: {
+      html: {
+        fragment: true,
+        sections: true,
+        headingAnchors: false
+      }
+    }
+  });
+  const rendered = await renderMarkdown(markdown, { config, commonmarkCompatible: true });
+
+  assert.equal(rendered.content, "<h1>Intro</h1>\n<p>Text.</p>");
+});
+
 test("renders accessible image alt text and table overflow regions", async () => {
   const markdown = `# Accessible Output
 

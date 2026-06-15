@@ -29,7 +29,7 @@ Status labels:
 | 3 | Inline parser basics | `[Done]` | Core inline syntax is implemented and covered by parser tests, seed fixtures, and the strict CommonMark corpus. |
 | 4 | Links, images, and references | `[Done]` | Links, images, autolinks, and references are implemented with CommonMark bracket-stack behavior and strict corpus coverage. |
 | 5 | CommonMark hard cases | `[Done]` | Official CommonMark 0.31.2 corpus is vendored and `npm run test:commonmark:strict` passes all 652 examples. |
-| 6 | Document analysis | `[Done]` | Title extraction, heading slugs, duplicate slug suffixes, outline, heading anchors, and TOC are implemented; optional section wrappers remain planned. |
+| 6 | Document analysis | `[Done]` | Title extraction, heading slugs, duplicate slug suffixes, outline, heading anchors, TOC, and optional section wrappers are implemented. |
 | 7 | Theming system | `[Done]` | Built-in themes, CSS variables, token resolution, built-in-theme inheritance, custom JSON themes, and token validation are implemented and tested. |
 | 8 | Configuration | `[Done]` | JSON config, discovery, explicit config path, CLI overrides, safe preset, unknown-key warnings, type validation, and supported-extension validation are implemented and tested. |
 | 9 | HTML polish | `[Done]` | Default theme, syntax highlighting, responsive layout, print CSS, images, code blocks, blockquotes, scroll-safe tables, and layout/accessibility checklists are implemented. |
@@ -83,13 +83,13 @@ Status labels:
 | Feature | Status | Evidence | Next action |
 | --- | --- | --- | --- |
 | Extension flag plumbing | `[Done]` | `markdown.extensions`, `--gfm`, `--frontmatter` | Keep extensions opt-in. |
-| GFM pipe tables | `[Done]` | `test/parser.test.mjs`, `test/renderer.test.mjs` | Add more escaped-pipe and alignment fixtures as needed. |
+| GFM pipe tables | `[Done]` | `test/parser.test.mjs`, `test/renderer.test.mjs`, `test/fixtures/conformance/gfm-supported.seed.json` | Escaped-pipe, code-pipe, and alignment fixtures are covered. |
 | Scroll-safe table rendering | `[Done]` | `src/render/html/html-renderer.ts`, `src/theme/theme.ts` | Keep browser checks when table CSS changes. |
 | Task lists | `[Done]` | `src/markdown/parser.ts`, `src/render/html/html-renderer.ts`, `test/parser.test.mjs`, `test/renderer.test.mjs` | Add edge cases for nested task lists if bugs appear. |
 | Strikethrough | `[Done]` | `src/markdown/inline-parser.ts`, `src/render/html/html-renderer.ts`, `test/parser.test.mjs`, `test/renderer.test.mjs` | Add delimiter edge cases if the GFM fixture suite is added. |
-| Footnotes | `[Done]` | `src/markdown/parser.ts`, `src/render/html/html-renderer.ts`, `test/parser.test.mjs`, `test/renderer.test.mjs` | Add repeated-reference and nested-footnote regression tests as needed. |
+| Footnotes | `[Done]` | `src/markdown/parser.ts`, `src/render/html/footnotes.ts`, `test/parser.test.mjs`, `test/renderer.test.mjs`, `test/fixtures/conformance/gfm-supported.seed.json` | Basic rendering and repeated-reference backrefs are covered. |
 | Frontmatter | `[Done]` | `src/markdown/parser.ts`, `test/parser.test.mjs`, `test/renderer.test.mjs` | Keep metadata separate from CommonMark core parsing. |
-| Literal autolinks | `[Done]` | `src/markdown/inline-parser.ts`, `test/parser.test.mjs`, `test/renderer.test.mjs` | Expand URL boundary cases as regressions appear. |
+| Literal autolinks | `[Done]` | `src/markdown/inline-parser.ts`, `test/parser.test.mjs`, `test/renderer.test.mjs`, `test/fixtures/conformance/gfm-supported.seed.json` | URI, email, and trailing punctuation trimming are covered. |
 
 ### Rendering And Document Features
 
@@ -104,7 +104,7 @@ Status labels:
 | Stable heading slugs | `[Done]` | `src/document/slug.ts` | Add more duplicate and punctuation fixtures. |
 | Heading anchors | `[Done]` | `test/renderer.test.mjs` | Keep anchor markup accessible. |
 | Table of contents | `[Done]` | `test/renderer.test.mjs` | Add TOC depth and auto-mode coverage. |
-| Section wrappers | `[Planned]` | Config field exists, renderer support does not | Implement in document analysis or renderer layer. |
+| Section wrappers | `[Done]` | `src/render/html/block-renderer.ts`, `src/cli/args.ts`, `test/renderer.test.mjs`, `test/cli.test.mjs` | `html.sections` plus `--sections` / `--no-sections` render heading-derived nested sections outside CommonMark-compatible output. |
 | Images | `[Done]` | `examples/complex-spec.md` | Add image safety and broken path notes if needed. |
 | Lightweight syntax highlighting | `[Done]` | `src/render/html/syntax-highlight.ts`, `test/renderer.test.mjs` | Add language fixtures when highlighter expands. |
 | C# syntax highlighting | `[Done]` | `test/renderer.test.mjs` | Add additional C# constructs as regressions appear. |
@@ -449,7 +449,7 @@ Add higher-level document features that make output feel intentional.
 
 - Implement `document/outline.ts`.
 - Implement `document/slug.ts`.
-- Implement `document/sections.ts`.
+- Implement heading-derived section rendering.
 - Add renderer support for anchors.
 - Add renderer support for TOC.
 - Add config flags.

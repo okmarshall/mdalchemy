@@ -19,7 +19,7 @@ The repository now contains a working TypeScript CLI and library:
 - GFM pipe tables, task lists, strikethrough, footnotes, and literal autolinks through `--gfm` or `markdown.extensions`, with scroll-safe HTML output for wide tables.
 - Optional leading YAML-style frontmatter parsing through `--frontmatter` or `markdown.extensions`.
 - Theme token validation for custom themes.
-- Heading anchors and table of contents generation.
+- Heading anchors, table of contents generation, and optional section wrappers.
 - Node built-in test runner coverage.
 - Complex Markdown smoke fixture plus checked HTML output.
 
@@ -67,6 +67,12 @@ Use safe mode when rendering untrusted Markdown:
 node dist/cli/main.js input.md -o output.html --safe
 ```
 
+Wrap heading-led content in semantic sections:
+
+```sh
+node dist/cli/main.js input.md -o output.html --sections
+```
+
 Useful options:
 
 | Option | Purpose |
@@ -81,6 +87,7 @@ Useful options:
 | `--gfm` | Enable supported GFM extensions: pipe tables, task lists, strikethrough, footnotes, and literal autolinks. |
 | `--frontmatter` | Parse a leading YAML-style frontmatter block and omit it from visible HTML. |
 | `--toc` / `--no-toc` | Force table of contents on or off. |
+| `--sections` / `--no-sections` | Force heading-derived section wrappers on or off. |
 
 Theme helpers:
 

@@ -50,6 +50,7 @@ Document/rendering coverage:
 - Heading-derived title.
 - Stable heading slugs.
 - Duplicate heading slug suffixes.
+- Optional heading-derived section wrappers.
 - Table of contents generation.
 - Standalone HTML output.
 - HTML fragment output.
@@ -73,7 +74,7 @@ Document/rendering coverage:
 There are no known failures in the official CommonMark 0.31.2 example corpus. Remaining known gaps are outside that strict core-corpus pass:
 
 - Source ranges are useful for diagnostics but are approximate in nested virtual lines.
-- GFM extension support covers pipe tables, task lists, strikethrough, footnotes, and literal autolinks, but full upstream GFM fixture coverage has not been vendored yet.
+- GFM extension support covers pipe tables, task lists, strikethrough, footnotes, and literal autolinks with representative seed fixtures, but full upstream GFM fixture coverage has not been vendored yet.
 
 ## Full CommonMark Corpus Baseline
 
@@ -127,5 +128,5 @@ Recommended next steps:
 
 1. Keep `npm run test:commonmark:strict` green for every CommonMark parser change.
 2. Add focused seed fixtures whenever a corpus edge case regresses.
-3. Add full supported-GFM fixture packs after deciding which GFM extensions are part of the supported surface.
+3. Add full supported-GFM fixture packs after deciding whether to mirror the whole upstream GFM suite or keep a documented supported subset.
 4. Continue improving source-range precision where diagnostics need exact nested positions.

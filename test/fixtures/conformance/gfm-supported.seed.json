@@ -16,6 +16,11 @@
       "expected": "<div class=\"mda-table-scroll\" role=\"region\" aria-label=\"Scrollable table\" tabindex=\"0\">\n<table>\n<thead>\n<tr><th style=\"text-align: left\">Name</th><th style=\"text-align: right\">Count</th></tr>\n</thead>\n<tbody>\n<tr><td style=\"text-align: left\">Alpha</td><td style=\"text-align: right\"><code>1</code></td></tr>\n</tbody>\n</table>\n</div>"
     },
     {
+      "name": "pipe table escaped pipes and code pipes",
+      "markdown": "| Name | Notes |\n| --- | --- |\n| Alpha | escaped \\| pipe and `code | stays` |\n",
+      "expected": "<div class=\"mda-table-scroll\" role=\"region\" aria-label=\"Scrollable table\" tabindex=\"0\">\n<table>\n<thead>\n<tr><th>Name</th><th>Notes</th></tr>\n</thead>\n<tbody>\n<tr><td>Alpha</td><td>escaped | pipe and <code>code | stays</code></td></tr>\n</tbody>\n</table>\n</div>"
+    },
+    {
       "name": "task list and strikethrough",
       "markdown": "- [x] Done\n- [ ] ~~Pending~~\n",
       "expected": "<ul class=\"mda-task-list\">\n<li class=\"mda-task-list-item\"><input class=\"mda-task-list-checkbox\" type=\"checkbox\" disabled checked aria-label=\"Completed task\"><div class=\"mda-task-list-content\">Done</div></li>\n<li class=\"mda-task-list-item\"><input class=\"mda-task-list-checkbox\" type=\"checkbox\" disabled aria-label=\"Incomplete task\"><div class=\"mda-task-list-content\"><del>Pending</del></div></li>\n</ul>"
@@ -26,6 +31,11 @@
       "expected": "<p>Visit <a href=\"http://www.example.com\">www.example.com</a> or email <a href=\"mailto:docs@example.com\">docs@example.com</a>.</p>"
     },
     {
+      "name": "literal autolinks trim trailing punctuation",
+      "markdown": "Visit (www.example.com/docs).\n",
+      "expected": "<p>Visit (<a href=\"http://www.example.com/docs\">www.example.com/docs</a>).</p>"
+    },
+    {
       "name": "frontmatter omitted",
       "markdown": "---\ntitle: Hidden\n---\n\nVisible body.\n",
       "expected": "<p>Visible body.</p>"
@@ -34,6 +44,11 @@
       "name": "footnotes",
       "markdown": "Footnote reference.[^a]\n\n[^a]: Footnote **body**.\n",
       "expected": "<p>Footnote reference.<sup id=\"fnref-1\"><a class=\"mda-footnote-ref\" href=\"#fn-1\" role=\"doc-noteref\">1</a></sup></p>\n<section class=\"mda-footnotes\" role=\"doc-endnotes\">\n<hr>\n<ol>\n<li id=\"fn-1\">\n  <p>Footnote <strong>body</strong>.</p>\n  <p class=\"mda-footnote-backrefs\"><a class=\"mda-footnote-backref\" href=\"#fnref-1\" aria-label=\"Back to footnote reference 1\">Back</a></p>\n</li>\n</ol>\n</section>"
+    },
+    {
+      "name": "footnotes repeated references",
+      "markdown": "First.[^a] Second.[^a]\n\n[^a]: Shared body.\n",
+      "expected": "<p>First.<sup id=\"fnref-1\"><a class=\"mda-footnote-ref\" href=\"#fn-1\" role=\"doc-noteref\">1</a></sup> Second.<sup id=\"fnref-1-2\"><a class=\"mda-footnote-ref\" href=\"#fn-1\" role=\"doc-noteref\">1</a></sup></p>\n<section class=\"mda-footnotes\" role=\"doc-endnotes\">\n<hr>\n<ol>\n<li id=\"fn-1\">\n  <p>Shared body.</p>\n  <p class=\"mda-footnote-backrefs\"><a class=\"mda-footnote-backref\" href=\"#fnref-1\" aria-label=\"Back to footnote reference 1\">Back</a> <a class=\"mda-footnote-backref\" href=\"#fnref-1-2\" aria-label=\"Back to footnote reference 1\">Back</a></p>\n</li>\n</ol>\n</section>"
     }
   ]
 }

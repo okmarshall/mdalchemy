@@ -8,20 +8,92 @@ import type {
   TableNode
 } from "../../markdown/ast.js";
 import { escapeAttribute, escapeText } from "./escape.js";
+import { indent } from "./formatting.js";
 import { highlightCode } from "./syntax-highlight.js";
 import { renderInlines, renderRawHtml } from "./inline-renderer.js";
 import type { RenderContext } from "./types.js";
 
+type SectionedBlock = BlockNode | RenderSection;
+
+interface RenderSection {
+  type: "section";
+  heading: HeadingNode;
+  children: SectionedBlock[];
+}
+
 export function renderBlocks(blocks: BlockNode[], context: RenderContext, parentList?: ListNode): string {
-  return blocks
-    .filter((block) => (
-      block.type !== "linkReferenceDefinition"
-      && block.type !== "footnoteDefinition"
-      && block.type !== "frontmatter"
-    ))
+  const renderableBlocks = blocks.filter(isRenderableBlock);
+  if (shouldRenderSections(context, parentList)) {
+    return renderSectionedBlocks(renderableBlocks, context, parentList);
+  }
+
+  return renderableBlocks
     .map((block) => renderBlock(block, context, parentList))
     .filter(Boolean)
     .join("\n");
+}
+
+function isRenderableBlock(block: BlockNode): boolean {
+  return block.type !== "linkReferenceDefinition"
+    && block.type !== "footnoteDefinition"
+    && block.type !== "frontmatter";
+}
+
+function shouldRenderSections(context: RenderContext, parentList: ListNode | undefined): boolean {
+  return context.config.html.sections && !context.commonmarkCompatible && parentList === undefined;
+}
+
+function renderSectionedBlocks(blocks: BlockNode[], context: RenderContext, parentList?: ListNode): string {
+  return renderSectionedItems(buildSections(blocks), context, parentList);
+}
+
+function buildSections(blocks: BlockNode[]): SectionedBlock[] {
+  const roots: SectionedBlock[] = [];
+  const stack: RenderSection[] = [];
+
+  for (const block of blocks) {
+    if (block.type !== "heading") {
+      const current = stack[stack.length - 1];
+      if (current) current.children.push(block);
+      else roots.push(block);
+      continue;
+    }
+
+    const section: RenderSection = {
+      type: "section",
+      heading: block,
+      children: []
+    };
+
+    while (stack.length > 0 && (stack[stack.length - 1]?.heading.level ?? 0) >= block.level) {
+      stack.pop();
+    }
+
+    const parent = stack[stack.length - 1];
+    if (parent) parent.children.push(section);
+    else roots.push(section);
+    stack.push(section);
+  }
+
+  return roots;
+}
+
+function renderSectionedItems(items: SectionedBlock[], context: RenderContext, parentList?: ListNode): string {
+  return items
+    .map((item) => item.type === "section" ? renderSection(item, context) : renderBlock(item, context, parentList))
+    .filter(Boolean)
+    .join("\n");
+}
+
+function renderSection(section: RenderSection, context: RenderContext): string {
+  const id = context.headingIds.get(section.heading);
+  const label = id ? ` aria-labelledby="${escapeAttribute(id)}"` : "";
+  const content = [
+    renderHeading(section.heading, context),
+    renderSectionedItems(section.children, context)
+  ].filter(Boolean).join("\n");
+
+  return `<section class="mda-section mda-section-level-${section.heading.level}"${label}>\n${indent(content, 2)}\n</section>`;
 }
 
 function renderBlock(block: BlockNode, context: RenderContext, parentList?: ListNode): string {

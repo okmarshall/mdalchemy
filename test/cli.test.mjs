@@ -103,6 +103,26 @@ test("cli writes fragment output to stdout", async () => {
   assert.match(result.stdout, /Fragment body/);
 });
 
+test("cli enables and disables heading-derived section wrappers", async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), "mdalchemy-"));
+  const input = path.join(dir, "sections.md");
+  const config = path.join(dir, "mdalchemy.config.json");
+  await writeFile(input, "# Overview\n\nIntro text.\n\n## Details\n\nMore text.\n", "utf8");
+
+  const enabled = await runCli([input, "--stdout", "--fragment", "--sections"]);
+
+  assert.equal(enabled.exitCode, 0);
+  assert.match(enabled.stdout, /<section class="mda-section mda-section-level-1" aria-labelledby="overview">/);
+  assert.match(enabled.stdout, /<section class="mda-section mda-section-level-2" aria-labelledby="details">/);
+
+  await writeFile(config, JSON.stringify({ html: { sections: true } }), "utf8");
+  const disabled = await runCli([input, "--stdout", "--fragment", "--config", config, "--no-sections"]);
+
+  assert.equal(disabled.exitCode, 0);
+  assert.doesNotMatch(disabled.stdout, /class="mda-section/);
+  assert.match(disabled.stdout, /<h1 id="overview">/);
+});
+
 test("cli safe mode escapes raw html and omits unsafe links", async () => {
   const dir = await mkdtemp(path.join(tmpdir(), "mdalchemy-"));
   const input = path.join(dir, "safe.md");

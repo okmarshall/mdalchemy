@@ -73,7 +73,7 @@ The exact class names should be stable and documented. Rendered Markdown tables 
 
 ## Section Rendering
 
-mdalchemy should optionally render heading-derived sections.
+mdalchemy can optionally render heading-derived sections.
 
 Without section rendering:
 
@@ -97,7 +97,9 @@ With section rendering:
 </section>
 ```
 
-This should be controlled by config because conformance tests may need raw CommonMark HTML fragments without extra wrappers.
+This is controlled by config, or by `--sections` / `--no-sections` in the CLI,
+because conformance tests need raw CommonMark HTML fragments without extra
+wrappers.
 
 ## Heading Anchors
 

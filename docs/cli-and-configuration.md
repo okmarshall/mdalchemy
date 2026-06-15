@@ -42,6 +42,8 @@ Options:
 --title <title>           Override document title.
 --toc                     Force table of contents on.
 --no-toc                  Disable table of contents.
+--sections                Wrap heading-led content in section elements.
+--no-sections             Disable section wrappers.
 --debug                   Show stack traces and extra diagnostics.
 -h, --help                Show help.
 -v, --version             Show version.
@@ -236,6 +238,12 @@ interface HtmlConfig {
 }
 ```
 
+`sections` wraps heading-led content in nested `<section>` elements with
+`mda-section` classes and `aria-labelledby` attributes. Leave it disabled when
+you need CommonMark-like fragment output without mdalchemy document structure.
+Use `--sections` or `--no-sections` to override this setting for a single CLI
+render.
+
 ### `theme`
 
 ```ts
@@ -301,6 +309,8 @@ Options:
       --title <title>       Override document title
       --toc                 Force table of contents on
       --no-toc              Disable table of contents
+      --sections            Wrap heading-led content in section elements
+      --no-sections         Disable section wrappers
   -h, --help                Show help
   -v, --version             Show version
 ```

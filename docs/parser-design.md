@@ -564,7 +564,7 @@ section C
   content
 ```
 
-This should live in `document/sections.ts`, not in the parser. The parser should emit headings as ordinary block nodes.
+This should be derived after parsing, not in the parser. The parser should emit headings as ordinary block nodes.
 
 ## Conformance Plan
 

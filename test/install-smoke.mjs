@@ -107,7 +107,13 @@ try {
 function runCommand(command, args, options = {}) {
   return execFileAsync(command, args, {
     ...options,
-    shell: process.platform === "win32",
+    shell: options.shell ?? shouldUseWindowsShell(command),
     windowsHide: true
   });
+}
+
+function shouldUseWindowsShell(command) {
+  if (process.platform !== "win32") return false;
+  const executable = path.basename(command).toLowerCase();
+  return executable === "npm" || executable.endsWith(".cmd");
 }

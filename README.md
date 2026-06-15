@@ -213,6 +213,7 @@ Release preparation is documented in [docs/release.md](docs/release.md).
 - [examples/complex-spec.md](examples/complex-spec.md) is a broad Markdown fixture.
 - [examples/complex-spec.html](examples/complex-spec.html) is the generated HTML artifact.
 - [examples/images](examples/images) contains local image fixtures used by the generated example.
+- [examples/skills/mdalchemy-markdown-authoring](examples/skills/mdalchemy-markdown-authoring) is an agent-facing skill for writing Markdown that renders well through mdalchemy.
 - [examples/themes/warm-report.json](examples/themes/warm-report.json) is a custom theme example.
 - [mdalchemy.config.example.json](mdalchemy.config.example.json) shows the supported config shape.
 

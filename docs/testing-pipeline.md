@@ -44,7 +44,9 @@ Run the checks in this order:
 6. Run the full CommonMark corpus report when changing parser behavior.
 7. Run the full GFM corpus report when changing extension behavior.
 8. Render a representative Markdown file.
-9. Compare the generated HTML with the expected output.
+9. Render a representative project book when changing discovery or cross-file
+   links.
+10. Compare the generated HTML with the expected output.
 
 This order catches fast structural failures before slower parser and renderer
 fixtures.
@@ -236,6 +238,26 @@ Expected result:
 - The output is deterministic across repeated runs from the same input and
   config.
 
+## 9. Render A Project Book
+
+When changing `src/book`, CLI command dispatch, config discovery, heading IDs,
+or link rendering, run a project-book render in addition to the normal fixture:
+
+```sh
+npm run build
+node dist/cli/main.js book . -o tmp/rendered/mdalchemy-book.html --title "mdalchemy Documentation"
+```
+
+Expected result:
+
+- Exit code is `0`.
+- The output contains a project-wide table of contents.
+- Links between included Markdown files point to generated `#anchor` targets.
+- Files with leading `mdalchemy.include: false` or nested
+  `mdalchemy: include: false` frontmatter are omitted.
+- Relative image paths from nested Markdown files still resolve from the HTML
+  output location.
+
 For fragment-specific tests, render to stdout:
 
 ```sh
@@ -245,7 +267,7 @@ node dist/cli/main.js examples/complex-spec.md --stdout --fragment --gfm --front
 Fragment output should omit the standalone HTML shell and theme CSS so parser
 and renderer mappings are easier to diff.
 
-## 9. Compare HTML Output
+## 10. Compare HTML Output
 
 Use a plain unified diff for deterministic HTML snapshots:
 
@@ -273,7 +295,7 @@ If whitespace-only diffs become noisy, prefer improving renderer formatting or
 the fixture comparison helper over weakening the fixture. HTML snapshots should
 remain useful to read in code review.
 
-## 10. Browser Layout Verification
+## 11. Browser Layout Verification
 
 Run browser checks for visual or layout-sensitive changes, especially changes to
 themes, page width, code blocks, tables, images, the table of contents, or mobile
@@ -312,7 +334,7 @@ Minimum narrow viewport checks, using a width around `390px`:
 Record the checked viewport sizes and any notable measurements in the change
 summary when layout changes are intentional.
 
-## 11. Accessibility Checklist
+## 12. Accessibility Checklist
 
 Run this checklist whenever renderer structure or theme CSS changes:
 

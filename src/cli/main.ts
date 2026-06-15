@@ -9,6 +9,7 @@ import { resolveTheme } from "../theme/theme.js";
 import { renderDocument } from "../render/html/html-renderer.js";
 import { defaultOutputPath, inferFormat, readMarkdownFile, writeOutputFile } from "../io/files.js";
 import { CliUsageError, cliOverrides, helpText, parseCliArgs } from "./args.js";
+import { handleBookCommand } from "./book-command.js";
 import { handleThemeCommand } from "./theme-command.js";
 
 async function main(argv: string[]): Promise<number> {
@@ -21,6 +22,9 @@ async function main(argv: string[]): Promise<number> {
     if (topic === "theme") {
       return handleThemeCommand(["help"]);
     }
+    if (topic === "book") {
+      return handleBookCommand(["--help"]);
+    }
 
     console.error(`mdalchemy: unknown help topic "${topic}"\n`);
     console.error(helpText);
@@ -29,6 +33,10 @@ async function main(argv: string[]): Promise<number> {
 
   if (argv[0] === "theme") {
     return handleThemeCommand(argv.slice(1));
+  }
+
+  if (argv[0] === "book") {
+    return handleBookCommand(argv.slice(1));
   }
 
   let args;

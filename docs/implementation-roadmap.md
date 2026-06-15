@@ -41,6 +41,7 @@ Status labels:
 | --- | --- | --- | --- |
 | CLI help and version flags | `[Done]` | `src/cli/args.ts`, `src/cli/main.ts`, `test/cli.test.mjs` | `mdalchemy help` and `mdalchemy help theme` are covered; keep help text synced with new flags. |
 | Render Markdown file to HTML file | `[Done]` | `test/cli.test.mjs` | Add more end-to-end fixtures as features grow. |
+| Project documentation book command | `[Done]` | `src/cli/book-command.ts`, `src/book/book-builder.ts`, `src/book/discovery.ts`, `test/cli.test.mjs` | `mdalchemy book [root]` recursively discovers Markdown, applies include/exclude controls, supports frontmatter opt-out, rewrites cross-file Markdown links into same-page anchors, and emits one standalone HTML book. |
 | Default output path inference | `[Done]` | `src/io/files.ts` | Keep behavior documented in CLI docs. |
 | `--stdout` output | `[Done]` | `src/cli/main.ts`, `test/cli.test.mjs` | `--stdout` and `--output` are mutually exclusive. |
 | `--fragment` output | `[Done]` | `test/renderer.test.mjs`, `test/cli.test.mjs` | Keep fragment behavior available for piping and conformance use. |
@@ -105,6 +106,7 @@ Status labels:
 | Stable heading slugs | `[Done]` | `src/document/slug.ts` | Add more duplicate and punctuation fixtures. |
 | Heading anchors | `[Done]` | `test/renderer.test.mjs` | Keep anchor markup accessible. |
 | Table of contents | `[Done]` | `test/renderer.test.mjs` | Add TOC depth and auto-mode coverage. |
+| Cross-file book TOC and links | `[Done]` | `src/book/book-builder.ts`, `test/cli.test.mjs` | Project books compose included files into one document outline, map same-file and cross-file Markdown links to generated anchors, and keep relative images valid from the output location. |
 | Section wrappers | `[Done]` | `src/render/html/block-renderer.ts`, `src/cli/args.ts`, `test/renderer.test.mjs`, `test/cli.test.mjs` | `html.sections` plus `--sections` / `--no-sections` render heading-derived nested sections outside CommonMark-compatible output. |
 | Collapsible sections | `[Done]` | `src/render/html/block-renderer.ts`, `src/theme/css.ts`, `src/cli/args.ts`, `test/renderer.test.mjs`, `test/cli.test.mjs` | `html.collapsibleSections` plus `--collapsible-sections` / `--no-collapsible-sections` add native expanded-by-default details controls to heading-derived sections. |
 | Images | `[Done]` | `examples/complex-spec.md` | Add image safety and broken path notes if needed. |
@@ -139,6 +141,7 @@ Status labels:
 | Safe preset | `[Done]` | `--safe`, `resolveConfig` | Add CLI integration coverage. |
 | Strict mode | `[Done]` | `src/cli/main.ts`, `test/cli.test.mjs` | Warnings are treated as errors and return exit code `6`. |
 | Config validation | `[Done]` | `src/config/config-loader.ts`, `test/config.test.mjs` | Unknown keys warn; invalid section shapes, field types, raw HTML policy, TOC depth, profile, format, and unsupported extensions are diagnosed. |
+| Book include/exclude config | `[Done]` | `src/config/config-schema.ts`, `src/config/config-loader.ts`, `test/config.test.mjs` | `book.include` and `book.exclude` are typed, validated, documented, and used by the project book command. |
 | Config version handling | `[Planned]` | Schema has optional `version` | Decide migration/error behavior. |
 
 ### Testing And Documentation
@@ -147,7 +150,7 @@ Status labels:
 | --- | --- | --- | --- |
 | Typecheck script | `[Done]` | `npm run typecheck` | Keep required before release. |
 | Unit tests | `[Done]` | `test/*.test.mjs` | Continue adding focused tests for parser regressions. |
-| CLI integration tests | `[Done]` | `test/cli.test.mjs` | Covers file output, GFM, frontmatter, help, theme subcommands, stdout fragments, safe mode, invalid combinations, invalid config, strict mode, and exit codes. |
+| CLI integration tests | `[Done]` | `test/cli.test.mjs` | Covers file output, GFM, frontmatter, help, theme subcommands, project books, stdout fragments, safe mode, invalid combinations, invalid config, strict mode, and exit codes. |
 | Complex fixture | `[Done]` | `examples/complex-spec.md`, `examples/complex-spec.html` | Keep synthetic and non-sensitive. |
 | Visual/browser verification | `[Done]` | `docs/testing-pipeline.md` | Repeatable desktop and narrow-viewport browser checklist is documented for layout-sensitive changes. |
 | Conformance fixture runner | `[Done]` | `test/conformance.test.mjs`, `test/fixtures/conformance` | Seed packs cover representative CommonMark and supported GFM/frontmatter cases. |

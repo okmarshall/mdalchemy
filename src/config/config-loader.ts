@@ -70,6 +70,7 @@ export function resolveConfig(
   const fileOutput = isRecord(config.output) ? config.output : {};
   const fileMarkdown = isRecord(config.markdown) ? config.markdown : {};
   const fileHtml = isRecord(config.html) ? config.html : {};
+  const fileBook = isRecord(config.book) ? config.book : {};
   const resolved: ResolvedConfig = {
     output: {
       format: stringOr(fileOutput["format"], defaultConfig.output.format) as "html",
@@ -93,6 +94,12 @@ export function resolveConfig(
       fragment: booleanOr(fileHtml["fragment"], defaultConfig.html.fragment),
       title: stringOr(fileHtml["title"], defaultConfig.html.title)
     },
+    book: {
+      include: stringArrayOr(fileBook["include"], defaultConfig.book.include),
+      exclude: fileBook["exclude"] === undefined
+        ? defaultConfig.book.exclude
+        : uniqueStrings([...defaultConfig.book.exclude, ...stringArrayOr(fileBook["exclude"], [])])
+    },
     theme: typeof config.theme === "string" || isRecord(config.theme) ? config.theme : defaultConfig.theme,
     strict: options.strict ?? defaultConfig.strict
   };
@@ -115,6 +122,9 @@ export function resolveConfig(
       resolved.markdown = nextMarkdown;
     }
     if (options.overrides.html) resolved.html = { ...resolved.html, ...options.overrides.html };
+    if (options.overrides.book) {
+      resolved.book = { ...resolved.book, ...options.overrides.book };
+    }
     if (options.overrides.theme !== undefined) resolved.theme = options.overrides.theme;
     if (options.overrides.strict !== undefined) resolved.strict = options.overrides.strict;
   }
@@ -182,9 +192,10 @@ function validateConfig(config: ResolvedConfig): Diagnostic[] {
   return diagnostics;
 }
 
-const topLevelKeys = new Set(["version", "output", "markdown", "html", "theme"]);
+const topLevelKeys = new Set(["version", "output", "markdown", "html", "book", "theme"]);
 const outputKeys = new Set(["format", "standalone", "createDirs"]);
 const markdownKeys = new Set(["profile", "extensions"]);
+const bookKeys = new Set(["include", "exclude"]);
 const htmlKeys = new Set([
   "lang",
   "rawHtml",
@@ -215,6 +226,10 @@ function validateConfigShape(config: Record<string, unknown>): Diagnostic[] {
   validateSection(config["markdown"], "markdown", markdownKeys, diagnostics, {
     profile: "string",
     extensions: "string[]"
+  });
+  validateSection(config["book"], "book", bookKeys, diagnostics, {
+    include: "string[]",
+    exclude: "string[]"
   });
   validateSection(config["html"], "html", htmlKeys, diagnostics, {
     lang: "string",

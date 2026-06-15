@@ -24,11 +24,19 @@ Initial command:
 
 ```text
 mdalchemy <input.md> [options]
+mdalchemy book [root] [options]
 mdalchemy theme <command>
-mdalchemy help [theme]
+mdalchemy help [book|theme]
 ```
 
 Options should be grouped by intent in help output.
+
+Commands:
+
+```text
+book                      Build one HTML documentation book from a Markdown tree.
+theme                     List and inspect built-in or custom themes.
+```
 
 Output:
 
@@ -80,6 +88,69 @@ mdalchemy help theme
 
 `theme list` prints the built-in theme names. `theme inspect` resolves a built-in
 theme or theme JSON file and prints the resolved token set as JSON.
+
+Book command:
+
+```text
+mdalchemy book [root]
+mdalchemy book . -o project-docs.html
+mdalchemy book . --include "**/README.md" --exclude "docs/private/**"
+mdalchemy help book
+```
+
+`book` recursively discovers Markdown files under `root`, defaults `root` to the
+current directory, and writes `mdalchemy-book.html` inside the root unless
+`--output` or `--stdout` is provided. It produces one standalone HTML document
+by default rather than a multi-page site. A single output keeps sharing,
+archiving, search, print, and LLM-generated documentation review simple. It also
+lets mdalchemy reuse one global outline so cross-file Markdown links can become
+same-page anchor links.
+
+Project books enable the supported GFM extension bundle and frontmatter parsing
+by default because project documentation commonly follows GitHub README
+conventions. The single-file render path keeps its existing opt-in behavior.
+
+Book-specific options:
+
+```text
+--include <pattern>       Include Markdown paths; repeatable.
+--exclude <pattern>       Exclude paths or directories; repeatable.
+```
+
+Default include patterns:
+
+```text
+**/*.md
+**/*.markdown
+```
+
+Default exclude patterns:
+
+```text
+.git/**
+node_modules/**
+dist/**
+build/**
+coverage/**
+.next/**
+out/**
+```
+
+If `--include` is supplied, it replaces the configured include list for that
+run. If `--exclude` is supplied, it is appended to the configured exclude list.
+Patterns use a small dependency-free glob matcher supporting `*`, `?`, and
+`**`.
+
+Files can opt out with leading frontmatter:
+
+```yaml
+---
+mdalchemy:
+  include: false
+---
+```
+
+The shorthand `mdalchemy.include: false` is also accepted.
 
 Future commands:
 
@@ -219,6 +290,10 @@ Versioned config:
     "tocDepth": 3,
     "softBreak": "newline"
   },
+  "book": {
+    "include": ["**/*.md", "**/*.markdown"],
+    "exclude": [".git/**", "node_modules/**", "dist/**", "build/**", "coverage/**", ".next/**", "out/**"]
+  },
   "theme": "serif"
 }
 ```
@@ -293,6 +368,26 @@ type ThemeConfig = string | ThemeDefinition;
 
 A string can be a built-in theme name or a path.
 
+### `book`
+
+```ts
+interface BookConfig {
+  include: string[];
+  exclude: string[];
+}
+```
+
+`include` controls which Markdown files are eligible for project-book output.
+`exclude` removes matching files or directories and extends the built-in default
+excludes. The CLI `--include` flag replaces `include` for a run; the CLI
+`--exclude` flag appends to `exclude`.
+
+When a book is composed, mdalchemy inserts a master title, creates one section
+per included file, rewrites links between included Markdown files to same-page
+anchors, rewrites relative image paths from each source file to the output
+location, and prefixes footnotes per file so repeated labels such as `[^1]` do
+not collide.
+
 ## Safe Preset
 
 `--safe` should apply these overrides:
@@ -333,8 +428,13 @@ Short help:
 ```text
 Usage:
   mdalchemy <input.md> [options]
+  mdalchemy book [root] [options]
   mdalchemy theme <command>
-  mdalchemy help [theme]
+  mdalchemy help [book|theme]
+
+Commands:
+      book                Build one HTML documentation book from a Markdown tree
+      theme               List and inspect built-in or custom themes
 
 Output:
   -o, --output <path>       Write standalone HTML to a file

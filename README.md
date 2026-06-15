@@ -20,6 +20,7 @@ The repository now contains a working TypeScript CLI and library:
 - Optional leading YAML-style frontmatter parsing through `--frontmatter` or `markdown.extensions`.
 - Theme token validation for custom themes.
 - Heading anchors, table of contents generation, optional section wrappers, and optional collapsible sections.
+- Project documentation books through `mdalchemy book`, with recursive Markdown discovery, frontmatter opt-out, and cross-file links rewritten into one standalone HTML document.
 - Node built-in test runner coverage.
 - Complex Markdown smoke fixture plus checked HTML output.
 
@@ -43,10 +44,17 @@ Render a Markdown file to standalone HTML:
 node dist/cli/main.js input.md -o output.html
 ```
 
+Build one standalone documentation book from a project Markdown tree:
+
+```sh
+node dist/cli/main.js book . -o project-docs.html
+```
+
 Show CLI help:
 
 ```sh
 node dist/cli/main.js help
+node dist/cli/main.js help book
 node dist/cli/main.js help theme
 ```
 
@@ -103,6 +111,23 @@ Useful options:
 | `--toc` / `--no-toc` | Force table of contents on or off. |
 | `--sections` / `--no-sections` | Force heading-derived section wrappers on or off. |
 | `--collapsible-sections` / `--no-collapsible-sections` | Force native section expand/collapse controls on or off. |
+
+Project book controls:
+
+| Option | Purpose |
+| --- | --- |
+| `mdalchemy book [root]` | Recursively scan a project for Markdown and render one standalone HTML documentation book. |
+| `--include <pattern>` | Include matching Markdown paths; repeat for multiple patterns. |
+| `--exclude <pattern>` | Exclude matching paths or directories; repeat for multiple patterns. |
+
+`mdalchemy book` enables the supported GFM bundle and frontmatter parsing by default because project READMEs commonly use GitHub Flavored Markdown. Opt a file out of a project book with leading frontmatter:
+
+```yaml
+---
+mdalchemy:
+  include: false
+---
+```
 
 Theme helpers:
 

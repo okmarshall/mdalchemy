@@ -10,6 +10,7 @@ export interface MdalchemyConfig {
   output?: OutputConfig | undefined;
   markdown?: MarkdownConfig | undefined;
   html?: HtmlConfig | undefined;
+  book?: BookConfig | undefined;
   theme?: string | Record<string, unknown> | undefined;
 }
 
@@ -38,6 +39,11 @@ export interface HtmlConfig {
   title?: string | undefined;
 }
 
+export interface BookConfig {
+  include?: string[] | undefined;
+  exclude?: string[] | undefined;
+}
+
 export interface ResolvedConfig {
   output: {
     format: "html";
@@ -61,9 +67,25 @@ export interface ResolvedConfig {
     fragment: boolean;
     title: string;
   };
+  book: {
+    include: string[];
+    exclude: string[];
+  };
   theme: string | Record<string, unknown>;
   strict: boolean;
 }
+
+export const defaultBookInclude = ["**/*.md", "**/*.markdown"];
+
+export const defaultBookExclude = [
+  ".git/**",
+  "node_modules/**",
+  "dist/**",
+  "build/**",
+  "coverage/**",
+  ".next/**",
+  "out/**"
+];
 
 export const defaultConfig: ResolvedConfig = {
   output: {
@@ -87,6 +109,10 @@ export const defaultConfig: ResolvedConfig = {
     softBreak: "newline",
     fragment: false,
     title: ""
+  },
+  book: {
+    include: defaultBookInclude,
+    exclude: defaultBookExclude
   },
   theme: "serif",
   strict: false

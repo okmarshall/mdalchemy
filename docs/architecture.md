@@ -28,14 +28,33 @@ Markdown file
   -> output writer
 ```
 
+Project books use the same pipeline per source file, then add a document-layer
+composition step:
+
+```text
+Project root
+  -> recursive Markdown discovery
+  -> per-file Markdown parsing
+  -> book composition
+  -> cross-file link and asset path rewriting
+  -> document analyzers
+  -> renderer
+  -> output writer
+```
+
 The pipeline should remain explicit in code. Each phase should have clear inputs and outputs so individual pieces can be tested.
 
 ## Current Source Layout
 
 ```text
 src/
+  book/
+    book-builder.ts
+    discovery.ts
+    frontmatter.ts
   cli/
     args.ts
+    book-command.ts
     main.ts
   config/
     config-loader.ts
@@ -85,6 +104,31 @@ Should not:
 - Parse Markdown directly.
 - Build HTML manually.
 - Know theme internals beyond selecting config.
+
+The `book` subcommand remains a CLI orchestration layer. Recursive discovery,
+frontmatter opt-out, composition, footnote prefixing, and cross-file link
+rewriting live in `src/book`.
+
+### `book`
+
+Owns project-level documentation book assembly.
+
+Responsibilities:
+
+- Discover Markdown files under a project root.
+- Apply include/exclude patterns.
+- Read leading frontmatter metadata used by the book builder.
+- Compose multiple parsed documents into one renderer-neutral document.
+- Create one section per included file.
+- Rewrite links between included Markdown files to same-page anchors.
+- Rewrite relative image paths to remain valid from the final output location.
+- Prefix footnote labels per file so repeated labels do not collide.
+
+Should not:
+
+- Render HTML directly.
+- Own theme behavior.
+- Change single-file rendering semantics.
 
 ### `config`
 

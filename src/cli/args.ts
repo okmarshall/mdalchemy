@@ -146,8 +146,13 @@ export function cliOverrides(args: CliArgs): Partial<ResolvedConfig> {
 
 export const helpText = `Usage:
   mdalchemy <input.md> [options]
+  mdalchemy book [root] [options]
   mdalchemy theme <command>
-  mdalchemy help [theme]
+  mdalchemy help [book|theme]
+
+Commands:
+      book                Build one HTML documentation book from a Markdown tree
+      theme               List and inspect built-in or custom themes
 
 Output:
   -o, --output <path>       Write standalone HTML to a file

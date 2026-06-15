@@ -28,5 +28,9 @@
     "tocDepth": 3,
     "softBreak": "newline"
   },
+  "book": {
+    "include": ["**/*.md", "**/*.markdown"],
+    "exclude": [".git/**", "node_modules/**", "dist/**", "build/**", "coverage/**", ".next/**", "out/**"]
+  },
   "theme": "./examples/themes/warm-report.json"
 }

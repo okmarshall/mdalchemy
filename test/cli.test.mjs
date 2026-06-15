@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mkdtemp, readFile, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { execFile } from "node:child_process";
@@ -97,6 +97,7 @@ test("cli exposes top-level and theme help", async () => {
   const help = await runCli(["help"]);
   assert.equal(help.exitCode, 0);
   assert.match(help.stdout, /Usage:/);
+  assert.match(help.stdout, /mdalchemy book \[root\]/);
   assert.match(help.stdout, /Markdown:/);
   assert.match(help.stdout, /Safety and diagnostics:/);
 
@@ -108,6 +109,75 @@ test("cli exposes top-level and theme help", async () => {
   assert.equal(themeHelp.exitCode, 0);
   assert.match(themeHelp.stdout, /mdalchemy theme list/);
   assert.match(themeHelp.stdout, /mdalchemy theme inspect/);
+
+  const bookHelp = await runCli(["help", "book"]);
+  assert.equal(bookHelp.exitCode, 0);
+  assert.match(bookHelp.stdout, /mdalchemy book \[root\]/);
+  assert.match(bookHelp.stdout, /--include <pattern>/);
+});
+
+test("cli builds a project documentation book from a markdown tree", async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), "mdalchemy-book-"));
+  const docsDir = path.join(dir, "docs");
+  const assetsDir = path.join(docsDir, "assets");
+  const outputDir = path.join(dir, "out");
+  await mkdir(assetsDir, { recursive: true });
+  await mkdir(outputDir);
+  await mkdir(path.join(dir, "node_modules"), { recursive: true });
+
+  await writeFile(path.join(dir, "README.md"), `# Root Project
+
+See the [guide](docs/guide.md#usage) and the generated diagram.
+
+![Diagram](docs/assets/diagram.svg)
+
+Root note.[^1]
+
+[^1]: Root footnote.
+`, "utf8");
+  await writeFile(path.join(docsDir, "guide.md"), `---
+title: Guide Doc
+---
+
+# Guide Doc
+
+## Usage
+
+Return to the [root readme](../README.md).
+
+Guide note.[^1]
+
+[^1]: Guide footnote.
+`, "utf8");
+  await writeFile(path.join(docsDir, "skip.md"), `---
+mdalchemy:
+  include: false
+---
+
+# Secret Internal Draft
+`, "utf8");
+  await writeFile(path.join(dir, "node_modules", "ignored.md"), "# Dependency Docs\n", "utf8");
+  await writeFile(path.join(assetsDir, "diagram.svg"), "<svg></svg>\n", "utf8");
+
+  const output = path.join(outputDir, "book.html");
+  const result = await runCli(["book", dir, "-o", output, "--title", "Project Book", "--collapsible-sections"]);
+  const html = await readFile(output, "utf8");
+
+  assert.equal(result.exitCode, 0);
+  assert.match(result.stderr, /wrote/);
+  assert.match(result.stderr, /\(2 files\)/);
+  assert.match(html, /Project Book/);
+  assert.match(html, /Root Project/);
+  assert.match(html, /Guide Doc/);
+  assert.match(html, /Usage/);
+  assert.doesNotMatch(html, /Secret Internal Draft/);
+  assert.doesNotMatch(html, /Dependency Docs/);
+  assert.match(html, /href="#usage"/);
+  assert.match(html, /href="#root-project"/);
+  assert.match(html, /src="..\/docs\/assets\/diagram.svg"/);
+  assert.match(html, /mda-section-collapsible/);
+  assert.match(html, /Root footnote/);
+  assert.match(html, /Guide footnote/);
 });
 
 test("cli writes fragment output to stdout", async () => {

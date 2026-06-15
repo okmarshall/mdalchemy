@@ -69,6 +69,39 @@ test("config loader validates and resolves collapsible section settings", async 
   assert.equal(config.html.sections, true);
 });
 
+test("config loader validates and resolves book discovery settings", async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), "mdalchemy-config-"));
+  const configPath = path.join(dir, "mdalchemy.config.json");
+  await writeFile(configPath, JSON.stringify({
+    book: {
+      include: "**/*.md",
+      exclude: [123]
+    }
+  }), "utf8");
+
+  const result = await loadConfig({ cwd: dir });
+
+  assert.equal(result.diagnostics.some((diagnostic) => (
+    diagnostic.code === "MDA_CONFIG_INVALID_TYPE"
+    && diagnostic.message.includes("book.include")
+  )), true);
+  assert.equal(result.diagnostics.some((diagnostic) => (
+    diagnostic.code === "MDA_CONFIG_INVALID_TYPE"
+    && diagnostic.message.includes("book.exclude")
+  )), true);
+
+  const config = resolveConfig({
+    book: {
+      include: ["docs/**/*.md"],
+      exclude: ["docs/private/**"]
+    }
+  });
+
+  assert.deepEqual(config.book.include, ["docs/**/*.md"]);
+  assert.equal(config.book.exclude.includes("node_modules/**"), true);
+  assert.equal(config.book.exclude.includes("docs/private/**"), true);
+});
+
 test("config loader reports unsupported but well-typed extension names", async () => {
   const dir = await mkdtemp(path.join(tmpdir(), "mdalchemy-config-"));
   const configPath = path.join(dir, "mdalchemy.config.json");

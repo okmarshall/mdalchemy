@@ -27,8 +27,9 @@ When this plan says "full Markdown support," it means full CommonMark 0.31.2 sup
 5. Support built-in themes.
 6. Support user-defined themes through config files.
 7. Support nested sections, nested lists, blockquotes, code, links, images, raw HTML behavior, escapes, references, and all CommonMark block and inline constructs.
-8. Keep dependencies minimal and intentional.
-9. Make the project easy to learn from, modify, and extend.
+8. Build a single polished documentation book from a project tree of Markdown files.
+9. Keep dependencies minimal and intentional.
+10. Make the project easy to learn from, modify, and extend.
 
 ## Non-Goals For Version 1
 
@@ -67,8 +68,10 @@ When this plan says "full Markdown support," it means full CommonMark 0.31.2 sup
 8. As a user, I can generate an output file next to the input file when `-o` is omitted.
 9. As a user, I can inspect parsing or rendering warnings in the terminal.
 10. As a user, I can run a conformance test suite to see how close the custom parser is to CommonMark.
-11. As a maintainer, I can add a new built-in theme without changing parser or renderer logic.
-12. As a maintainer, I can add Markdown extensions without contaminating the CommonMark core behavior.
+11. As a user, I can run `mdalchemy book . -o docs.html` and get one linked HTML documentation book from project Markdown files.
+12. As a user, I can exclude draft or internal files from a documentation book with frontmatter or config.
+13. As a maintainer, I can add a new built-in theme without changing parser or renderer logic.
+14. As a maintainer, I can add Markdown extensions without contaminating the CommonMark core behavior.
 
 ## Functional Requirements
 
@@ -85,6 +88,8 @@ When this plan says "full Markdown support," it means full CommonMark 0.31.2 sup
 - Must support `--config <path>`.
 - Must support `--stdout` for piping rendered output.
 - Must support `--strict` to fail on warnings that would otherwise be recoverable.
+- Must support a project-book command that discovers Markdown files recursively and renders one standalone HTML document.
+- Must let users control project-book discovery with include/exclude patterns.
 - Should support `--watch` after the first stable CLI release.
 
 ### Input Handling

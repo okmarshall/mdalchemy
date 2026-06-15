@@ -26,5 +26,9 @@ test("complex example renders to the checked html artifact", async () => {
   const { document } = parseMarkdown(markdown, config.markdown);
   const rendered = await renderDocument(document, { config });
 
-  assert.equal(rendered.content, expected);
+  assert.equal(normalizeLineEndings(rendered.content), normalizeLineEndings(expected));
 });
+
+function normalizeLineEndings(value) {
+  return value.replace(/\r\n/g, "\n");
+}

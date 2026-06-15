@@ -1,8 +1,8 @@
 # Conformance Status
 
-This document records the current implementation boundary. mdalchemy has a working custom parser and renderer, but it should not yet be described as a fully conforming CommonMark implementation.
+This document records the current implementation boundary. mdalchemy has a working custom parser and renderer, and the CommonMark core mode now passes the full official CommonMark 0.31.2 example corpus.
 
-The project target remains CommonMark 0.31.2 core conformance. The current release is a broad vertical slice that makes the full pipeline executable and testable.
+The project target remains CommonMark 0.31.2 core conformance. The current release has a strict corpus gate for that target, with GFM extensions kept opt-in.
 
 ## Implemented In The Current Parser
 
@@ -32,11 +32,9 @@ Inline coverage:
 - Soft breaks.
 - Hard breaks.
 - Backslash escapes.
-- Named and numeric entity references for a small built-in entity set.
+- HTML5 named and numeric entity references.
 - Code spans.
-- Simple emphasis.
-- Simple strong emphasis.
-- Triple delimiter emphasis/strong nesting.
+- CommonMark delimiter-stack emphasis and strong emphasis.
 - Inline links.
 - Full, collapsed, and shortcut reference links.
 - Images.
@@ -68,13 +66,12 @@ Document/rendering coverage:
 - CLI strict mode, which treats warnings as errors.
 - JSON-driven conformance fixture runner for CommonMark 0.31.2 seed fixtures and supported GFM/frontmatter seed fixtures.
 - Official CommonMark 0.31.2 corpus reporting through `npm run test:commonmark`.
+- Strict official CommonMark 0.31.2 corpus verification through `npm run test:commonmark:strict`.
 
 ## Known Gaps
 
-These are the important areas to close before claiming full CommonMark conformance:
+There are no known failures in the official CommonMark 0.31.2 example corpus. Remaining known gaps are outside that strict core-corpus pass:
 
-- Emphasis and strong emphasis still use a hardened simplified delimiter search, not the full CommonMark delimiter stack algorithm.
-- Link parsing still needs CommonMark bracket-stack behavior for nested links, labels, images, and emphasis/link precedence.
 - Source ranges are useful for diagnostics but are approximate in nested virtual lines.
 - GFM extension support covers pipe tables, task lists, strikethrough, footnotes, and literal autolinks, but full upstream GFM fixture coverage has not been vendored yet.
 - PDF and other output formats are not implemented.
@@ -89,18 +86,17 @@ official terminal newline so formatting style does not hide parser behavior.
 Current baseline:
 
 ```text
-CommonMark 0.31.2 corpus: 589/652 examples passed
+CommonMark 0.31.2 corpus: 652/652 examples passed
 ```
 
 Completed official CommonMark sections:
 
 - All block-level sections: tabs, thematic breaks, headings, code blocks, HTML blocks, link reference definitions, paragraphs, blank lines, block quotes, list items, and lists.
-- Inline support sections for backslash escapes, entity and numeric references, code spans, images, autolinks, raw HTML, hard line breaks, soft line breaks, and textual content.
+- All inline sections: backslash escapes, entity and numeric references, code spans, emphasis and strong emphasis, links, images, autolinks, raw HTML, hard line breaks, soft line breaks, and textual content.
 
 Remaining official CommonMark sections:
 
-- Emphasis and strong emphasis: 85/132.
-- Links: 74/90.
+- None.
 
 ## Verification Available Now
 
@@ -111,6 +107,7 @@ npm run typecheck
 npm test
 npm run test:conformance
 npm run test:commonmark
+npm run test:commonmark:strict
 npm run render:example
 ```
 
@@ -123,13 +120,13 @@ The test suite includes:
 - A complex fixture test that verifies `examples/complex-spec.md` renders exactly to `examples/complex-spec.html`.
 - A conformance fixture runner with seed fixture packs in `test/fixtures/conformance`.
 - A full CommonMark corpus report that prints pass/fail counts by section.
+- A strict CommonMark corpus gate that exits non-zero if any official example diverges.
 
 ## Next Conformance Work
 
 Recommended next steps:
 
-1. Use `npm run test:commonmark` before and after every CommonMark parser hardening change.
-2. Replace simplified emphasis parsing with the full delimiter stack algorithm.
-3. Replace greedy link parsing with a CommonMark bracket stack so nested links/images and emphasis/link precedence resolve correctly.
-4. Promote `npm run test:commonmark:strict` into the normal CI/release gate once all 652 examples pass.
-5. Add full supported-GFM fixture packs after deciding which GFM extensions are part of the supported surface.
+1. Keep `npm run test:commonmark:strict` green for every CommonMark parser change.
+2. Add focused seed fixtures whenever a corpus edge case regresses.
+3. Add full supported-GFM fixture packs after deciding which GFM extensions are part of the supported surface.
+4. Continue improving source-range precision where diagnostics need exact nested positions.

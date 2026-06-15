@@ -399,10 +399,10 @@ Algorithm sketch:
 2. Determine left-flanking and right-flanking behavior.
 3. Create text nodes for delimiter characters.
 4. Push potential openers/closers onto delimiter stack.
-5. After scanning, process emphasis delimiters from closers backwards.
+5. Process closing delimiters against previous matching openers, respecting the CommonMark rule of three.
 6. Resolve strong emphasis with two delimiters where possible, otherwise emphasis with one.
 7. Remove used delimiter characters from text nodes.
-8. Wrap intervening nodes in `emphasis` or `strong` nodes.
+8. Wrap intervening nodes in `emphasis` or `strong` nodes and remove enclosed delimiters from the active stack.
 
 Important cases:
 
@@ -612,12 +612,12 @@ Because the renderer may intentionally emit richer standalone HTML, conformance 
 The full-corpus report currently outputs:
 
 ```text
-CommonMark 0.31.2 corpus: 589/652 examples passed
+CommonMark 0.31.2 corpus: 652/652 examples passed
 
 | Section | Passed | Total | First failing examples |
 ```
 
-This makes progress visible even before perfect conformance.
+This keeps conformance visible and gives parser changes a strict regression gate.
 
 ## Parser Milestones
 

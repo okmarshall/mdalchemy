@@ -178,8 +178,8 @@ after parser changes to see section-level pass rates:
 npm run test:commonmark
 ```
 
-`npm run test:commonmark:strict` uses the same corpus as a future all-examples
-gate. It is expected to fail until the known CommonMark gaps are closed.
+`npm run test:commonmark:strict` uses the same corpus as an all-examples gate
+and should stay green for parser changes.
 
 ## 7. Render An Example Markdown File
 

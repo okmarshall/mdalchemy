@@ -1,22 +1,4 @@
-const namedEntities: Record<string, string> = {
-  AElig: "\u00c6",
-  amp: "&",
-  auml: "\u00e4",
-  ClockwiseContourIntegral: "\u2232",
-  copy: "\u00a9",
-  Dcaron: "\u010e",
-  DifferentialD: "\u2146",
-  frac34: "\u00be",
-  gt: ">",
-  HilbertSpace: "\u210b",
-  lt: "<",
-  nbsp: "\u00a0",
-  ngE: "\u2267\u0338",
-  ouml: "\u00f6",
-  quot: "\"",
-  reg: "\u00ae",
-  trade: "\u2122"
-};
+import { namedEntities } from "./entities.generated.js";
 
 export function decodeCharacterReference(entity: string): string | undefined {
   if (entity.startsWith("#x") || entity.startsWith("#X")) {

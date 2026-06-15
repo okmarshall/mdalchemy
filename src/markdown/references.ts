@@ -1,7 +1,5 @@
-import { decodeCharacterReferences } from "./entities.js";
-
 export function normalizeReferenceLabel(label: string): string {
-  return decodeCharacterReferences(label.replace(/\\([!"#$%&'()*+,\-./:;<=>?@\[\\\]^_`{|}~])/g, "$1"))
+  return label
     .trim()
     .replace(/[ \t\r\n]+/g, " ")
     .toLocaleLowerCase()

@@ -10,7 +10,7 @@ The first useful version does not need every Markdown feature. The first stable 
 
 This section is the living implementation tracker. Update it whenever a change adds, removes, or meaningfully changes parser behavior, renderer output, CLI flags, config, theming, examples, or tests.
 
-Parser feature rows track implemented and tested behavior in the current custom parser. Exhaustive CommonMark 0.31.2 edge-case closure remains grouped under the Phase 5 conformance work and should not keep individually implemented parser features marked partial.
+Parser feature rows track implemented and tested behavior in the current custom parser. CommonMark 0.31.2 core behavior is guarded by the strict official corpus command, while extension-specific fixture depth is tracked separately.
 
 Status labels:
 
@@ -25,15 +25,15 @@ Status labels:
 | --- | --- | --- | --- |
 | 0 | Project foundation | `[Done]` | TypeScript project, package metadata, build/test scripts, and CLI entrypoint exist. |
 | 1 | Minimal end-to-end rendering | `[Done]` | Markdown input can render to standalone styled HTML through the CLI and library API. |
-| 2 | Core block parser | `[Done]` | Core block nodes are implemented and covered by parser tests and the complex fixture; exhaustive hard cases remain in Phase 5. |
-| 3 | Inline parser basics | `[Done]` | Current inline syntax is implemented and covered by parser tests and the complex fixture; exhaustive hard cases remain in Phase 5. |
-| 4 | Links, images, and references | `[Done]` | Links, images, autolinks, and references are implemented for current scope with tests; exhaustive destination/title behavior remains in Phase 5. |
-| 5 | CommonMark hard cases | `[Partial]` | Official CommonMark 0.31.2 corpus is vendored and reportable; parser hardening remains before strict conformance. |
+| 2 | Core block parser | `[Done]` | Core block nodes are implemented and covered by parser tests, the complex fixture, and the strict CommonMark corpus. |
+| 3 | Inline parser basics | `[Done]` | Core inline syntax is implemented and covered by parser tests, seed fixtures, and the strict CommonMark corpus. |
+| 4 | Links, images, and references | `[Done]` | Links, images, autolinks, and references are implemented with CommonMark bracket-stack behavior and strict corpus coverage. |
+| 5 | CommonMark hard cases | `[Done]` | Official CommonMark 0.31.2 corpus is vendored and `npm run test:commonmark:strict` passes all 652 examples. |
 | 6 | Document analysis | `[Done]` | Title extraction, heading slugs, duplicate slug suffixes, outline, heading anchors, and TOC are implemented; optional section wrappers remain planned. |
 | 7 | Theming system | `[Done]` | Built-in themes, CSS variables, token resolution, built-in-theme inheritance, custom JSON themes, and token validation are implemented and tested. |
 | 8 | Configuration | `[Done]` | JSON config, discovery, explicit config path, CLI overrides, safe preset, unknown-key warnings, type validation, and supported-extension validation are implemented and tested. |
 | 9 | HTML polish | `[Done]` | Default theme, syntax highlighting, responsive layout, print CSS, images, code blocks, blockquotes, scroll-safe tables, and layout/accessibility checklists are implemented. |
-| 10 | Release hardening | `[Planned]` | Stable CLI/config freeze, strict conformance pass, CI matrix, changelog, license review, and contribution docs remain. |
+| 10 | Release hardening | `[Planned]` | Stable CLI/config freeze, CI matrix, changelog, license review, and contribution docs remain. |
 
 ### Product And CLI
 
@@ -64,21 +64,21 @@ Status labels:
 | Block quotes | `[Done]` | `test/parser.test.mjs`, `examples/complex-spec.md` | Basic, nested, list-containing, fenced-code-containing, and lazy-continuation quotes are covered. |
 | Ordered and bullet lists | `[Done]` | `test/parser.test.mjs`, `examples/complex-spec.md` | Ordered, bullet, nested, tight, loose, and non-1 starts are covered for current parser behavior. |
 | Nested containers | `[Done]` | `test/parser.test.mjs`, `examples/complex-spec.md` | Nested lists and block quotes are covered for current parser behavior. |
-| Raw HTML blocks | `[Done]` | `test/parser.test.mjs`, `examples/complex-spec.md` | Common raw HTML block categories are implemented; exhaustive CommonMark comparison remains Phase 5 work. |
-| Link reference definitions | `[Done]` | `test/parser.test.mjs`, `examples/complex-spec.md` | Add duplicate/reference precedence fixtures. |
+| Raw HTML blocks | `[Done]` | `test/parser.test.mjs`, `examples/complex-spec.md`, `npm run test:commonmark:strict` | Official CommonMark HTML block examples pass. |
+| Link reference definitions | `[Done]` | `test/parser.test.mjs`, `examples/complex-spec.md`, `npm run test:commonmark:strict` | Duplicate/reference precedence and escaped-label behavior are covered by the official corpus and seed fixtures. |
 | Backslash escapes | `[Done]` | `examples/complex-spec.md` | Compare against official escape examples. |
 | Code spans | `[Done]` | `examples/complex-spec.md` | Add whitespace normalization edge cases. |
 | Soft and hard breaks | `[Done]` | `examples/complex-spec.md` | Keep config-driven soft break rendering covered. |
-| Entity references | `[Done]` | `src/markdown/inline-parser.ts`, `examples/complex-spec.md` | Numeric entities and the current named-entity set are implemented; complete named-entity coverage remains Phase 5 work. |
-| Emphasis and strong | `[Done]` | `test/parser.test.mjs`, `examples/complex-spec.md` | Simple emphasis, strong, and triple delimiter nesting are implemented for current parser behavior. |
-| Inline links and titles | `[Done]` | `test/parser.test.mjs`, `examples/complex-spec.md` | Inline links with titles, escaped destinations, and reference links are covered for current parser behavior. |
+| Entity references | `[Done]` | `src/markdown/entities.generated.ts`, `test/fixtures/conformance/commonmark-0.31.2.seed.json`, `npm run test:commonmark:strict` | HTML5 named entities and numeric entities are decoded in CommonMark mode. |
+| Emphasis and strong | `[Done]` | `src/markdown/inline-parser.ts`, `test/fixtures/conformance/commonmark-0.31.2.seed.json`, `npm run test:commonmark:strict` | CommonMark delimiter-stack behavior passes the official emphasis and strong-emphasis examples. |
+| Inline links and titles | `[Done]` | `src/markdown/inline-parser.ts`, `test/fixtures/conformance/commonmark-0.31.2.seed.json`, `npm run test:commonmark:strict` | CommonMark bracket-stack link/image precedence, labels, destinations, and titles pass the official examples. |
 | Images and alt text | `[Done]` | `test/parser.test.mjs`, `test/renderer.test.mjs`, `examples/complex-spec.md` | Inline/reference images and rendered alt text are covered. |
 | URI and email autolinks | `[Done]` | `examples/complex-spec.md` | Add official examples. |
 | Raw HTML inline | `[Done]` | `test/parser.test.mjs`, `examples/complex-spec.md` | Common inline tags are parsed as raw HTML inline nodes. |
-| Source ranges | `[Done]` | `src/core/source.ts`, `test/parser.test.mjs` | Parser nodes carry source ranges for current parsing; precision hardening remains Phase 5 work. |
+| Source ranges | `[Done]` | `src/core/source.ts`, `test/parser.test.mjs` | Parser nodes carry source ranges for current parsing; nested virtual-line precision remains future diagnostic hardening. |
 | Conformance fixture runner | `[Done]` | `test/conformance.test.mjs`, `test/fixtures/conformance` | Strict seed packs remain the fast regression guardrail. |
 | Full CommonMark 0.31.2 fixture corpus | `[Done]` | `test/fixtures/conformance/commonmark-0.31.2.json`, `test/commonmark-corpus-report.mjs`, `npm run test:commonmark` | Official 652-example corpus is vendored and reports pass rates by section. |
-| Full CommonMark 0.31.2 conformance pass | `[Partial]` | `npm run test:commonmark` | Current baseline is 589/652 examples passing; remaining official gaps are emphasis delimiter-stack behavior and nested-link bracket-stack precedence. |
+| Full CommonMark 0.31.2 conformance pass | `[Done]` | `npm run test:commonmark:strict` | Current baseline is 652/652 examples passing. |
 
 ### Extensions
 
@@ -152,7 +152,7 @@ Status labels:
 | Visual/browser verification | `[Done]` | `docs/testing-pipeline.md` | Repeatable desktop and narrow-viewport browser checklist is documented for layout-sensitive changes. |
 | Conformance fixture runner | `[Done]` | `test/conformance.test.mjs`, `test/fixtures/conformance` | Seed packs cover representative CommonMark and supported GFM/frontmatter cases. |
 | Full CommonMark conformance corpus | `[Done]` | `test/fixtures/conformance/commonmark-0.31.2.json`, `npm run test:commonmark` | Official corpus is vendored and section-level reporting is available. |
-| Full CommonMark strict pass | `[Partial]` | `npm run test:commonmark` | Current baseline is 589/652 examples passing; close emphasis/link gaps before enabling strict mode in normal CI. |
+| Full CommonMark strict pass | `[Done]` | `npm run test:commonmark:strict` | The official 652-example CommonMark 0.31.2 corpus passes in strict mode. |
 | Full GFM conformance corpus | `[Planned]` | Conformance docs | Vendor full upstream GFM fixtures after deciding which GFM extensions are in scope. |
 | CI workflow | `[Planned]` | Roadmap only | Add after scripts stabilize. |
 | User README | `[Done]` | `README.md` | README includes current implementation, usage commands, option summary, examples, and planning document links. |
@@ -400,47 +400,37 @@ Support Markdown links and images accurately.
 
 ### Goals
 
-Close gaps against CommonMark. The full official 0.31.2 example corpus is now
-vendored and measurable; this phase is about turning that report into a strict
-pass.
+Close gaps against CommonMark. The full official 0.31.2 example corpus is
+vendored, measurable, and passing in strict mode.
 
 ### Focus Areas
 
-- Emphasis and strong emphasis edge cases.
-- Tabs and indentation expansion.
-- Backslash escapes and hard line breaks.
-- Complete named entity coverage.
-- HTML block categories.
-- Lazy continuation.
-- Paragraph interruption.
-- List item padding.
-- Setext/thematic break ambiguity.
-- Link/image destination and title edge cases.
+- Maintain the strict CommonMark corpus pass as parser changes continue.
+- Keep delimiter-stack emphasis and bracket-stack link/image behavior isolated and readable.
+- Keep HTML5 named entity coverage generated rather than hand-curated.
+- Add targeted regression fixtures for any future corpus or real-document divergence.
+- Preserve extension isolation so GFM behavior does not weaken CommonMark mode.
 
 ### Tasks
 
-- Use `npm run test:commonmark` before and after parser changes.
-- Implement missing HTML block rules.
-- Complete delimiter stack behavior.
-- Complete tab expansion and indentation-sensitive parsing.
-- Expand entity support to the full CommonMark named entity surface.
-- Harden link, image, and reference parsing against the official examples.
-- Improve list and paragraph rules.
-- Track conformance pass rate by section.
+- Use `npm run test:commonmark:strict` before and after CommonMark parser changes.
+- Keep seed fixtures for the historically fragile areas: delimiter stacks, bracket stacks, escaped reference labels, code spans, and entity references.
+- Track any future conformance regression by section before fixing it.
+- Add full supported-GFM fixture coverage after supported extension scope is finalized.
 
 ### Tests
 
 - CommonMark seed fixture runner.
 - Full CommonMark corpus report.
-- Future strict CommonMark corpus gate with `npm run test:commonmark:strict`.
+- Strict CommonMark corpus gate with `npm run test:commonmark:strict`.
 - Regression fixtures for every fixed edge case.
 - AST debug snapshots where useful.
 
 ### Definition Of Done
 
 - Conformance progress is measurable.
-- Remaining gaps are documented by section.
-- `npm run test:commonmark:strict` passes and is safe to add to the normal CI gate.
+- `npm run test:commonmark:strict` passes all 652 official examples.
+- Remaining non-core gaps are documented by area rather than as CommonMark corpus failures.
 
 ## Phase 6: Document Analysis
 
@@ -748,10 +738,9 @@ Impact:
 
 Mitigation:
 
-- Implement simple emphasis first.
-- Isolate delimiter stack.
-- Use CommonMark examples as guide.
-- Document remaining failures by section.
+- Keep the delimiter stack isolated in the inline parser.
+- Keep CommonMark examples and seed fixtures as regression coverage.
+- Run the strict corpus after any inline parser change.
 
 ### Risk: Theming Becomes Too Powerful
 

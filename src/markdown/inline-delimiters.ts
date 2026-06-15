@@ -1,11 +1,46 @@
 import type { InlineNode } from "./ast.js";
 
+export interface EmphasisDelimiterRun {
+  char: "*" | "_";
+  length: number;
+  canOpen: boolean;
+  canClose: boolean;
+}
+
 export function normalizeCodeSpan(raw: string): string {
   const flattened = raw.replace(/[\r\n]+/g, " ");
   if (/^ .*\S.* $/.test(flattened)) {
     return flattened.slice(1, -1);
   }
   return flattened;
+}
+
+export function analyzeEmphasisDelimiterRun(
+  source: string,
+  start: number,
+  char: "*" | "_"
+): EmphasisDelimiterRun {
+  const length = countRunAt(source, start, char);
+  const before = source[start - 1] ?? "";
+  const after = source[start + length] ?? "";
+  const leftFlanking = isLeftFlanking(before, after);
+  const rightFlanking = isRightFlanking(before, after);
+
+  if (char === "*") {
+    return {
+      char,
+      length,
+      canOpen: leftFlanking,
+      canClose: rightFlanking
+    };
+  }
+
+  return {
+    char,
+    length,
+    canOpen: leftFlanking && (!rightFlanking || isPunctuation(before)),
+    canClose: rightFlanking && (!leftFlanking || isPunctuation(after))
+  };
 }
 
 export function canOpenEmphasis(source: string, start: number, length: number, char: "*" | "_"): boolean {

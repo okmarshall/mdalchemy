@@ -9,6 +9,7 @@ The project is a learning-focused implementation. It should build its own Markdo
 The repository now contains a working TypeScript CLI and library:
 
 - Custom Markdown parser with block and inline phases.
+- Full official CommonMark 0.31.2 fixture-corpus pass in core mode.
 - Renderer-neutral AST.
 - HTML standalone and fragment rendering.
 - Built-in `serif`, `sans`, and `technical` themes. The default is `serif`.
@@ -98,6 +99,7 @@ npm run typecheck
 npm test
 npm run test:conformance
 npm run test:commonmark
+npm run test:commonmark:strict
 ```
 
 Render the complex fixture:

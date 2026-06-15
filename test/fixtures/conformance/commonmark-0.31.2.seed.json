@@ -9,6 +9,41 @@
       "expected": "<p>Paragraph with <strong>strong</strong> and <em>emphasis</em>.</p>"
     },
     {
+      "name": "delimiter stack nested strong inside emphasis",
+      "markdown": "*foo __bar *baz bim__ bam*\n",
+      "expected": "<p><em>foo <strong>bar *baz bim</strong> bam</em></p>"
+    },
+    {
+      "name": "unmatched longer code span run remains literal",
+      "markdown": "```foo``\n",
+      "expected": "<p>```foo``</p>"
+    },
+    {
+      "name": "nested links deactivate outer opener",
+      "markdown": "[foo [bar](/uri)](/uri)\n",
+      "expected": "<p>[foo <a href=\"/uri\">bar</a>](/uri)</p>"
+    },
+    {
+      "name": "image label preserves deactivated nested links in alt text",
+      "markdown": "![[[foo](uri1)](uri2)](uri3)\n",
+      "expected": "<p><img src=\"uri3\" alt=\"[foo](uri2)\" /></p>"
+    },
+    {
+      "name": "escaped reference labels match only equivalent raw labels",
+      "markdown": "[bar][foo\\!]\n\n[foo!]: /url\n",
+      "expected": "<p>[bar][foo!]</p>"
+    },
+    {
+      "name": "escaped reference labels match when both sides are escaped",
+      "markdown": "[foo][ref\\[]\n\n[ref\\[]: /uri\n",
+      "expected": "<p><a href=\"/uri\">foo</a></p>"
+    },
+    {
+      "name": "named html5 character references",
+      "markdown": "&frac12; &euro; &rarr;\n",
+      "expected": "<p>\u00bd \u20ac \u2192</p>"
+    },
+    {
       "name": "blockquote lazy continuation",
       "markdown": "> quoted\n> text\n",
       "expected": "<blockquote>\n<p>quoted\ntext</p>\n</blockquote>"

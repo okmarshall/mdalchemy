@@ -837,7 +837,7 @@ function parseReferenceLabel(text: string): { label: string; end: number } | und
       const rawLabel = text.slice(indent + 1, index);
       if (!rawLabel || normalizeReferenceLabel(rawLabel) === "") return undefined;
       return {
-        label: unescapeDestination(rawLabel),
+        label: rawLabel,
         end: index + 2
       };
     }
@@ -878,7 +878,7 @@ function parseReferenceLabelFromLines(
       const rawLabel = [...labelParts, line.text.slice(0, close)].join("\n");
       if (!rawLabel || normalizeReferenceLabel(rawLabel) === "" || /(^|[^\\])\[/.test(rawLabel)) return undefined;
       return {
-        label: unescapeDestination(rawLabel),
+        label: rawLabel,
         remainder: line.text.slice(close + 2),
         remainderLine: index
       };

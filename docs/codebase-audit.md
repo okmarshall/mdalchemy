@@ -72,9 +72,10 @@ Addressed at the runner level. `test/conformance.test.mjs` reads JSON fixture pa
 - Supported GFM/frontmatter extension seed fixtures.
 
 The full official CommonMark 0.31.2 corpus is now vendored at
-`test/fixtures/conformance/commonmark-0.31.2.json` and reportable with
-`npm run test:commonmark`. Full GFM fixture vendoring remains a coverage
-expansion after supported extension scope is finalized.
+`test/fixtures/conformance/commonmark-0.31.2.json`, reportable with
+`npm run test:commonmark`, and enforced with `npm run test:commonmark:strict`.
+Full GFM fixture vendoring remains a coverage expansion after supported
+extension scope is finalized.
 
 ### Generated Artifacts
 
@@ -87,4 +88,5 @@ Run before committing changes:
 ```sh
 npm run typecheck
 npm test
+npm run test:commonmark:strict
 ```

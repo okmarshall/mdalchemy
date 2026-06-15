@@ -15,25 +15,54 @@ import type {
   StrikethroughNode,
   TextNode
 } from "./ast.js";
+import { textContent } from "./ast.js";
 import {
-  canOpenEmphasis,
-  findClosingDelimiter,
+  analyzeEmphasisDelimiterRun,
   mergeAdjacentText,
-  normalizeCodeSpan
+  normalizeCodeSpan,
+  type EmphasisDelimiterRun
 } from "./inline-delimiters.js";
 import { isLiteralAutolinkBoundary, trimLiteralAutolinkCandidate } from "./inline-extensions.js";
-import { findMatchingBracket, readDestination, readTitle, skipSpaces } from "./inline-links.js";
+import { readDestination, readTitle, skipSpaces } from "./inline-links.js";
 import { hasMarkdownExtension, type MarkdownExtension } from "./extensions.js";
-import { textContent } from "./ast.js";
 import { decodeCharacterReference } from "./entities.js";
 import { findHtmlTagEnd, isHtmlInlineLiteral } from "./html.js";
 import { normalizeReferenceLabel } from "./references.js";
 
 const escapable = /[!"#$%&'()*+,\-./:;<=>?@\[\\\]^_`{|}~]/;
-export interface InlineParserOptions {
+
+type DelimiterChar = "*" | "_";
+
+interface InlineParserOptions {
   references?: ReferenceMap;
   baseRange?: SourceRange;
   extensions?: readonly string[] | undefined;
+}
+
+interface Delimiter {
+  char: DelimiterChar;
+  length: number;
+  canOpen: boolean;
+  canClose: boolean;
+  node: TextNode;
+  previous: Delimiter | undefined;
+  next: Delimiter | undefined;
+}
+
+interface BracketMarker {
+  node: TextNode;
+  image: boolean;
+  active: boolean;
+  start: number;
+  contentStart: number;
+  previousDelimiter: Delimiter | undefined;
+}
+
+interface LinkResolution {
+  destination: string;
+  title?: string | undefined;
+  kind: LinkNode["referenceKind"];
+  end: number;
 }
 
 export function parseInlines(source: string, options: InlineParserOptions = {}): InlineNode[] {
@@ -44,6 +73,9 @@ export function parseInlines(source: string, options: InlineParserOptions = {}):
 class InlineParser {
   private index = 0;
   private readonly nodes: InlineNode[] = [];
+  private readonly brackets: BracketMarker[] = [];
+  private firstDelimiter: Delimiter | undefined;
+  private lastDelimiter: Delimiter | undefined;
 
   constructor(
     private readonly source: string,
@@ -58,13 +90,14 @@ class InlineParser {
 
       if (char === "\\" && this.parseEscape()) continue;
       if (char === "`" && this.parseCodeSpan()) continue;
-      if (char === "!" && this.source[this.index + 1] === "[" && this.parseLinkOrImage(true)) continue;
+      if (char === "!" && this.source[this.index + 1] === "[" && this.parseOpenBracket(true)) continue;
       if (char === "[" && this.hasExtension("gfm-footnote") && this.parseFootnoteReference()) continue;
-      if (char === "[" && this.parseLinkOrImage(false)) continue;
+      if (char === "[" && this.parseOpenBracket(false)) continue;
+      if (char === "]" && this.parseCloseBracket()) continue;
       if (char === "<" && this.parseAutolinkOrHtml()) continue;
       if (char === "&" && this.parseEntity()) continue;
       if (char === "~" && this.hasExtension("gfm-strikethrough") && this.parseStrikethrough()) continue;
-      if ((char === "*" || char === "_") && this.parseEmphasis(char)) continue;
+      if ((char === "*" || char === "_") && this.parseEmphasisDelimiter(char)) continue;
       if (this.hasExtension("gfm-literal-autolink") && this.parseLiteralAutolink()) continue;
       if (char === "\n") {
         this.parseLineBreak();
@@ -74,6 +107,7 @@ class InlineParser {
       this.parseText();
     }
 
+    this.processEmphasis(undefined);
     return mergeAdjacentText(this.nodes);
   }
 
@@ -82,7 +116,7 @@ class InlineParser {
     if (next && escapable.test(next)) {
       const start = this.index;
       this.index += 2;
-      this.nodes.push(this.text(next, start, this.index));
+      this.pushText(next, start, this.index);
       return true;
     }
 
@@ -132,45 +166,48 @@ class InlineParser {
     return true;
   }
 
-  private parseLinkOrImage(isImage: boolean): boolean {
+  private parseOpenBracket(image: boolean): boolean {
     const start = this.index;
-    const labelStart = isImage ? start + 2 : start + 1;
-    const labelEnd = findMatchingBracket(this.source, labelStart);
-    if (labelEnd === -1) return false;
-
-    const labelSource = this.source.slice(labelStart, labelEnd);
-    const children = this.parseChildInlines(labelSource, labelStart, labelEnd);
-    let cursor = labelEnd + 1;
-
-    const inline = this.parseInlineDestination(cursor);
-    if (inline) {
-      cursor = inline.end;
-      this.index = cursor;
-      this.nodes.push(
-        isImage
-          ? this.image(start, cursor, inline.destination, inline.title, children, "inline")
-          : this.link(start, cursor, inline.destination, inline.title, children, "inline")
-      );
-      return true;
-    }
-
-    const reference = this.parseReference(cursor, labelSource);
-    if (reference) {
-      this.index = reference.end;
-      this.nodes.push(
-        isImage
-          ? this.image(start, reference.end, reference.destination, reference.title, children, reference.kind)
-          : this.link(start, reference.end, reference.destination, reference.title, children, reference.kind)
-      );
-      return true;
-    }
-
-    return false;
+    const literal = image ? "![" : "[";
+    this.index += literal.length;
+    const node = this.pushText(literal, start, this.index);
+    this.brackets.push({
+      node,
+      image,
+      active: true,
+      start,
+      contentStart: this.index,
+      previousDelimiter: this.lastDelimiter
+    });
+    return true;
   }
 
-  private parseInlineDestination(cursor: number):
-    | { destination: string; title?: string; end: number }
-    | undefined {
+  private parseCloseBracket(): boolean {
+    const start = this.index;
+    this.index += 1;
+    const closerNode = this.pushText("]", start, this.index);
+    const opener = this.brackets[this.brackets.length - 1];
+    if (!opener) return true;
+
+    if (!opener.active) {
+      this.removeBracket(opener);
+      return true;
+    }
+
+    const labelSource = this.source.slice(opener.contentStart, start);
+    const inline = this.parseInlineDestination(this.index);
+    const resolution = inline ?? this.parseReference(this.index, labelSource);
+    if (!resolution) {
+      this.removeBracket(opener);
+      return true;
+    }
+
+    this.index = resolution.end;
+    this.resolveBracket(opener, closerNode, resolution);
+    return true;
+  }
+
+  private parseInlineDestination(cursor: number): LinkResolution | undefined {
     if (this.source[cursor] !== "(") return undefined;
     let index = cursor + 1;
     index = skipSpaces(this.source, index);
@@ -184,45 +221,93 @@ class InlineParser {
       index = skipSpaces(this.source, titleResult.end);
     }
     if (this.source[index] !== ")") return undefined;
-    const result: { destination: string; title?: string; end: number } = {
+    const result: LinkResolution = {
       destination: destinationResult.destination,
+      kind: "inline",
       end: index + 1
     };
     if (title !== undefined) result.title = title;
     return result;
   }
 
-  private parseReference(cursor: number, labelSource: string):
-    | { destination: string; title?: string; kind: LinkNode["referenceKind"]; end: number }
-    | undefined {
-    if (this.source[cursor] === "[") {
-      const end = this.source.indexOf("]", cursor + 1);
-      if (end !== -1) {
-        const explicit = this.source.slice(cursor + 1, end);
-        const normalized = normalizeReferenceLabel(explicit || labelSource);
-        const reference = this.references.get(normalized);
-        if (reference) {
-          const kind = explicit ? "full" : "collapsed";
-          const result: { destination: string; title?: string; kind: LinkNode["referenceKind"]; end: number } = {
-            destination: reference.destination,
-            kind,
-            end: end + 1
-          };
-          if (reference.title !== undefined) result.title = reference.title;
-          return result;
-        }
-      }
+  private parseReference(cursor: number, labelSource: string): LinkResolution | undefined {
+    const explicit = this.readReferenceLabel(cursor);
+    if (explicit) {
+      const normalized = normalizeReferenceLabel(explicit.label || labelSource);
+      const reference = this.references.get(normalized);
+      if (!reference) return undefined;
+
+      const result: LinkResolution = {
+        destination: reference.destination,
+        kind: explicit.label ? "full" : "collapsed",
+        end: explicit.end
+      };
+      if (reference.title !== undefined) result.title = reference.title;
+      return result;
     }
 
     const shortcut = this.references.get(normalizeReferenceLabel(labelSource));
     if (!shortcut) return undefined;
-    const result: { destination: string; title?: string; kind: LinkNode["referenceKind"]; end: number } = {
+    const result: LinkResolution = {
       destination: shortcut.destination,
       kind: "shortcut",
       end: cursor
     };
     if (shortcut.title !== undefined) result.title = shortcut.title;
     return result;
+  }
+
+  private readReferenceLabel(cursor: number): { label: string; end: number } | undefined {
+    if (this.source[cursor] !== "[") return undefined;
+
+    let index = cursor + 1;
+    let length = 0;
+    while (index < this.source.length && length <= 999) {
+      const char = this.source[index] ?? "";
+      if (char === "\\") {
+        index += 2;
+        length += 2;
+        continue;
+      }
+      if (char === "]") {
+        return {
+          label: this.source.slice(cursor + 1, index),
+          end: index + 1
+        };
+      }
+      if (char === "[") return undefined;
+      index += 1;
+      length += 1;
+    }
+
+    return undefined;
+  }
+
+  private resolveBracket(opener: BracketMarker, closerNode: TextNode, resolution: LinkResolution): void {
+    this.processEmphasis(opener.previousDelimiter);
+
+    const openIndex = this.nodes.indexOf(opener.node);
+    const closeIndex = this.nodes.indexOf(closerNode);
+    if (openIndex === -1 || closeIndex === -1 || closeIndex <= openIndex) {
+      this.removeBracket(opener);
+      return;
+    }
+
+    const rawChildren = this.nodes.slice(openIndex + 1, closeIndex);
+    this.removeDelimitersForNodes(rawChildren);
+    this.removeBracketsForNodes(rawChildren);
+    const children = mergeAdjacentText(rawChildren);
+
+    const node = opener.image
+      ? this.image(opener.start, resolution.end, resolution.destination, resolution.title, children, resolution.kind)
+      : this.link(opener.start, resolution.end, resolution.destination, resolution.title, children, resolution.kind);
+
+    this.nodes.splice(openIndex, closeIndex - openIndex + 1, node);
+    this.removeBracket(opener);
+
+    if (!opener.image) {
+      this.deactivateEarlierLinkOpeners();
+    }
   }
 
   private parseAutolinkOrHtml(): boolean {
@@ -280,61 +365,21 @@ class InlineParser {
     if (!entity) return false;
 
     const value = decodeCharacterReference(entity);
-
     if (!value) return false;
+
     this.index += match[0].length;
-    this.nodes.push(this.text(value, start, this.index));
+    this.pushText(value, start, this.index);
     return true;
   }
 
-  private parseEmphasis(char: "*" | "_"): boolean {
+  private parseEmphasisDelimiter(char: DelimiterChar): boolean {
     const start = this.index;
-    const runLength = this.countRunAt(start, char);
-    const delimiterLength = runLength >= 3 ? 3 : runLength >= 2 ? 2 : 1;
-    const delimiter = char.repeat(delimiterLength);
-
-    if (!canOpenEmphasis(this.source, start, delimiterLength, char)) {
-      return false;
+    const run = analyzeEmphasisDelimiterRun(this.source, start, char);
+    this.index += run.length;
+    const node = this.pushText(this.source.slice(start, this.index), start, this.index);
+    if (run.canOpen || run.canClose) {
+      this.pushDelimiter(run, node);
     }
-
-    const close = findClosingDelimiter(this.source, delimiter, start + delimiterLength);
-    if (close === -1) return false;
-
-    const innerSource = this.source.slice(start + delimiterLength, close);
-    const children = this.parseChildInlines(innerSource, start + delimiterLength, close);
-    this.index = close + delimiterLength;
-
-    if (delimiterLength === 3) {
-      const strong: StrongNode = {
-        type: "strong",
-        children,
-        range: this.range(start + 1, this.index - 1)
-      };
-      const emphasis: EmphasisNode = {
-        type: "emphasis",
-        children: [strong],
-        range: this.range(start, this.index)
-      };
-      this.nodes.push(emphasis);
-      return true;
-    }
-
-    if (delimiterLength === 2) {
-      const node: StrongNode = {
-        type: "strong",
-        children,
-        range: this.range(start, this.index)
-      };
-      this.nodes.push(node);
-      return true;
-    }
-
-    const node: EmphasisNode = {
-      type: "emphasis",
-      children,
-      range: this.range(start, this.index)
-    };
-    this.nodes.push(node);
     return true;
   }
 
@@ -423,24 +468,16 @@ class InlineParser {
   private parseText(): void {
     const start = this.index;
     while (this.index < this.source.length) {
-      const char = this.source[this.index] ?? "";
       if (this.hasExtension("gfm-literal-autolink") && this.literalAutolinkCanParseAt(this.index)) break;
-      if ("\\`![<&*_~ \n".includes(char)) {
-        if (char === " " || (char !== "\n" && !this.specialCanParseAt(this.index))) {
-          this.index += char === "`" ? this.countRunAt(this.index, "`") : 1;
-          continue;
-        }
-        break;
-      }
-      this.index += 1;
+      if (this.specialCanParseAt(this.index)) break;
+      this.index += this.source[this.index] === "`" ? this.countRunAt(this.index, "`") : 1;
     }
 
     if (this.index === start) {
-      const char = this.source[this.index] ?? "";
-      this.index += char === "*" || char === "_" ? this.countRunAt(this.index, char) : 1;
+      this.index += 1;
     }
 
-    this.nodes.push(this.text(this.source.slice(start, this.index), start, this.index));
+    this.pushText(this.source.slice(start, this.index), start, this.index);
   }
 
   private specialCanParseAt(index: number): boolean {
@@ -455,11 +492,197 @@ class InlineParser {
     }
     if (char === "!" && this.source[index + 1] === "[") return true;
     if (char === "[") return true;
+    if (char === "]") return true;
     if (char === "<") return this.source.indexOf(">", index + 1) !== -1;
     if (char === "&") return /^&(#x[0-9A-Fa-f]+|#X[0-9A-Fa-f]+|#[0-9]+|[A-Za-z][A-Za-z0-9]+);/.test(this.source.slice(index));
     if (char === "*" || char === "_") return true;
     if (char === "~") return this.hasExtension("gfm-strikethrough") && this.source.startsWith("~~", index);
+    if (char === "\n") return true;
     return false;
+  }
+
+  private processEmphasis(stackBottom: Delimiter | undefined): void {
+    const bottom = stackBottom && this.hasDelimiter(stackBottom) ? stackBottom : undefined;
+    let closer = this.nextCloser(bottom);
+
+    while (closer) {
+      const opener = this.findMatchingOpener(closer, bottom);
+      if (!opener) {
+        const next = closer.next;
+        if (!closer.canOpen) {
+          this.removeDelimiter(closer);
+        }
+        closer = nextCloserFrom(next);
+        continue;
+      }
+
+      closer = this.applyEmphasis(opener, closer);
+    }
+  }
+
+  private nextCloser(bottom: Delimiter | undefined): Delimiter | undefined {
+    return nextCloserFrom(bottom ? bottom.next : this.firstDelimiter);
+  }
+
+  private findMatchingOpener(closer: Delimiter, bottom: Delimiter | undefined): Delimiter | undefined {
+    let opener = closer.previous;
+    while (opener && opener !== bottom) {
+      if (this.delimitersCanMatch(opener, closer)) return opener;
+      opener = opener.previous;
+    }
+    return undefined;
+  }
+
+  private delimitersCanMatch(opener: Delimiter, closer: Delimiter): boolean {
+    if (opener.char !== closer.char || !opener.canOpen) return false;
+    if ((opener.canClose || closer.canOpen) && (opener.length + closer.length) % 3 === 0) {
+      return opener.length % 3 === 0 && closer.length % 3 === 0;
+    }
+    return true;
+  }
+
+  private applyEmphasis(opener: Delimiter, closer: Delimiter): Delimiter | undefined {
+    const useDelimiters = opener.length >= 2 && closer.length >= 2 ? 2 : 1;
+    const openIndex = this.nodes.indexOf(opener.node);
+    const closeIndex = this.nodes.indexOf(closer.node);
+    const next = closer.next;
+    if (openIndex === -1 || closeIndex === -1 || closeIndex <= openIndex) {
+      return nextCloserFrom(next);
+    }
+
+    const rawChildren = this.nodes.slice(openIndex + 1, closeIndex);
+    this.removeDelimitersForNodes(rawChildren);
+    const children = mergeAdjacentText(rawChildren);
+
+    opener.length -= useDelimiters;
+    closer.length -= useDelimiters;
+    opener.node.value = opener.node.value.slice(0, opener.node.value.length - useDelimiters);
+    closer.node.value = closer.node.value.slice(useDelimiters);
+
+    const node: EmphasisNode | StrongNode = useDelimiters === 2
+      ? {
+          type: "strong",
+          children,
+          range: {
+            start: opener.node.range.start,
+            end: closer.node.range.end
+          }
+        }
+      : {
+          type: "emphasis",
+          children,
+          range: {
+            start: opener.node.range.start,
+            end: closer.node.range.end
+          }
+        };
+
+    const replacement: InlineNode[] = [];
+    if (opener.node.value) replacement.push(opener.node);
+    replacement.push(node);
+    if (closer.node.value) replacement.push(closer.node);
+    this.nodes.splice(openIndex, closeIndex - openIndex + 1, ...replacement);
+
+    if (opener.length === 0) {
+      this.removeDelimiter(opener);
+    }
+    if (closer.length === 0) {
+      this.removeDelimiter(closer);
+      return nextCloserFrom(next);
+    }
+
+    return closer.canClose ? closer : nextCloserFrom(next);
+  }
+
+  private pushDelimiter(run: EmphasisDelimiterRun, node: TextNode): void {
+    const delimiter: Delimiter = {
+      char: run.char,
+      length: run.length,
+      canOpen: run.canOpen,
+      canClose: run.canClose,
+      node,
+      previous: this.lastDelimiter,
+      next: undefined
+    };
+    if (this.lastDelimiter) {
+      this.lastDelimiter.next = delimiter;
+    } else {
+      this.firstDelimiter = delimiter;
+    }
+    this.lastDelimiter = delimiter;
+  }
+
+  private hasDelimiter(delimiter: Delimiter): boolean {
+    let current = this.firstDelimiter;
+    while (current) {
+      if (current === delimiter) return true;
+      current = current.next;
+    }
+    return false;
+  }
+
+  private removeDelimiter(delimiter: Delimiter): void {
+    if (delimiter.previous) {
+      delimiter.previous.next = delimiter.next;
+    } else if (this.firstDelimiter === delimiter) {
+      this.firstDelimiter = delimiter.next;
+    }
+
+    if (delimiter.next) {
+      delimiter.next.previous = delimiter.previous;
+    } else if (this.lastDelimiter === delimiter) {
+      this.lastDelimiter = delimiter.previous;
+    }
+
+    delimiter.previous = undefined;
+    delimiter.next = undefined;
+  }
+
+  private removeDelimitersForNodes(nodes: readonly InlineNode[]): void {
+    const nodeSet = new Set(nodes);
+    let delimiter = this.firstDelimiter;
+    while (delimiter) {
+      const next = delimiter.next;
+      if (nodeSet.has(delimiter.node)) {
+        this.removeDelimiter(delimiter);
+      }
+      delimiter = next;
+    }
+  }
+
+  private removeBracketsForNodes(nodes: readonly InlineNode[]): void {
+    const nodeSet = new Set(nodes);
+    for (let index = this.brackets.length - 1; index >= 0; index -= 1) {
+      const bracket = this.brackets[index];
+      if (bracket && nodeSet.has(bracket.node)) {
+        this.brackets.splice(index, 1);
+      }
+    }
+  }
+
+  private removeBracket(bracket: BracketMarker): void {
+    const index = this.brackets.indexOf(bracket);
+    if (index !== -1) {
+      this.brackets.splice(index, 1);
+    }
+  }
+
+  private deactivateEarlierLinkOpeners(): void {
+    for (const bracket of this.brackets) {
+      if (!bracket.image) {
+        bracket.active = false;
+      }
+    }
+  }
+
+  private pushText(value: string, start: number, end: number): TextNode {
+    const node: TextNode = {
+      type: "text",
+      value,
+      range: this.range(start, end)
+    };
+    this.nodes.push(node);
+    return node;
   }
 
   private parseChildInlines(source: string, start: number, end: number): InlineNode[] {
@@ -505,14 +728,6 @@ class InlineParser {
       cursor = index + count;
     }
     return -1;
-  }
-
-  private text(value: string, start: number, end: number): TextNode {
-    return {
-      type: "text",
-      value,
-      range: this.range(start, end)
-    };
   }
 
   private hardBreak(start: number, end: number): HardBreakNode {
@@ -583,4 +798,12 @@ class InlineParser {
       }
     };
   }
+}
+
+function nextCloserFrom(delimiter: Delimiter | undefined): Delimiter | undefined {
+  let current = delimiter;
+  while (current && !current.canClose) {
+    current = current.next;
+  }
+  return current;
 }

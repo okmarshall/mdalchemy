@@ -42,6 +42,7 @@ Status labels:
 | CLI help and version flags | `[Done]` | `src/cli/args.ts`, `src/cli/main.ts`, `test/cli.test.mjs` | `mdalchemy help` and `mdalchemy help theme` are covered; keep help text synced with new flags. |
 | Render Markdown file to HTML file | `[Done]` | `test/cli.test.mjs` | Add more end-to-end fixtures as features grow. |
 | Project documentation book command | `[Done]` | `src/cli/book-command.ts`, `src/book/book-builder.ts`, `src/book/discovery.ts`, `test/cli.test.mjs` | `mdalchemy book [root]` recursively discovers Markdown, applies include/exclude controls, supports frontmatter opt-out, rewrites cross-file Markdown links into same-page anchors, and emits one standalone HTML book. |
+| VS Code extension commands | `[Done]` | `package.json`, `src/vscode/extension.ts`, `docs/vscode-extension.md` | Extension users can generate HTML from an open Markdown file or generate `mdalchemy-book.html` from a selected Explorer folder, then preview the result in a webview. |
 | Default output path inference | `[Done]` | `src/io/files.ts` | Keep behavior documented in CLI docs. |
 | `--stdout` output | `[Done]` | `src/cli/main.ts`, `test/cli.test.mjs` | `--stdout` and `--output` are mutually exclusive. |
 | `--fragment` output | `[Done]` | `test/renderer.test.mjs`, `test/cli.test.mjs` | Keep fragment behavior available for piping and conformance use. |

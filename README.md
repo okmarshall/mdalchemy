@@ -23,7 +23,7 @@ The repository now contains a working TypeScript CLI and library:
 - Theme token validation for custom themes.
 - Heading anchors, table of contents generation, optional section wrappers, and optional collapsible sections.
 - Project documentation books through `mdalchemy book`, with recursive Markdown discovery, frontmatter opt-out, and cross-file links rewritten into one standalone HTML document.
-- VS Code extension command for generating a sibling HTML file from the current Markdown file and previewing it in an integrated webview.
+- VS Code extension commands for generating a sibling HTML file from a Markdown file or a recursive project documentation book from a folder, with integrated webview previews.
 - Node built-in test runner coverage.
 - Complex Markdown smoke fixture plus checked HTML output.
 
@@ -59,9 +59,11 @@ Build one standalone documentation book from a project Markdown tree:
 mdalchemy book . -o project-docs.html
 ```
 
-When installed as a VS Code extension, run `mdalchemy: Generate HTML Preview`
-from a Markdown editor to write a sibling `.html` file and open the rendered
-document in a VS Code webview.
+When installed as a VS Code extension, run `mdalchemy: Generate HTML` from a
+Markdown editor to write a sibling `.html` file and open the rendered document
+in a VS Code webview. Right-click a folder in the Explorer and run
+`mdalchemy: Generate HTML Book` to recursively build `mdalchemy-book.html` from
+the folder's Markdown files.
 
 Show CLI help:
 

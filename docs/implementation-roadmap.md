@@ -90,6 +90,7 @@ Status labels:
 | Footnotes | `[Done]` | `src/markdown/parser.ts`, `src/render/html/footnotes.ts`, `test/parser.test.mjs`, `test/renderer.test.mjs`, `test/fixtures/conformance/gfm-supported.seed.json` | Basic rendering and repeated-reference backrefs are covered. |
 | Frontmatter | `[Done]` | `src/markdown/parser.ts`, `test/parser.test.mjs`, `test/renderer.test.mjs` | Keep metadata separate from CommonMark core parsing. |
 | Literal autolinks | `[Done]` | `src/markdown/inline-parser.ts`, `test/parser.test.mjs`, `test/renderer.test.mjs`, `test/fixtures/conformance/gfm-supported.seed.json` | URI, email, and trailing punctuation trimming are covered. |
+| Tagfilter | `[Done]` | `src/render/html/inline-renderer.ts`, `test/fixtures/conformance/gfm-supported.seed.json`, `npm run test:gfm:strict` | Disallowed GFM raw HTML tags are filtered when `gfm-tagfilter` is enabled. |
 
 ### Rendering And Document Features
 
@@ -151,7 +152,7 @@ Status labels:
 | Conformance fixture runner | `[Done]` | `test/conformance.test.mjs`, `test/fixtures/conformance` | Seed packs cover representative CommonMark and supported GFM/frontmatter cases. |
 | Full CommonMark conformance corpus | `[Done]` | `test/fixtures/conformance/commonmark-0.31.2.json`, `npm run test:commonmark` | Official corpus is vendored and section-level reporting is available. |
 | Full CommonMark strict pass | `[Done]` | `npm run test:commonmark:strict` | The official 652-example CommonMark 0.31.2 corpus passes in strict mode. |
-| Full GFM conformance corpus | `[Planned]` | Conformance docs | Vendor full upstream GFM fixtures after deciding which GFM extensions are in scope. |
+| Full GFM conformance corpus | `[Done]` | `test/fixtures/conformance/gfm-0.29.json`, `test/gfm-corpus-report.mjs`, `npm run test:gfm:strict` | Official enabled GFM 0.29 corpus has 0 unexpected failures; 9 emphasis examples are accepted CommonMark-version differences because core targets CommonMark 0.31.2. |
 | CI workflow | `[Planned]` | Roadmap only | Add after scripts stabilize. |
 | User README | `[Done]` | `README.md` | README includes current implementation, usage commands, option summary, examples, and planning document links. |
 | Contribution guide | `[Planned]` | Roadmap only | Add before broader collaboration. |

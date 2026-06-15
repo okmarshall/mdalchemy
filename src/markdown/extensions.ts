@@ -3,7 +3,8 @@ export const gfmMarkdownExtensions = [
   "gfm-task-list",
   "gfm-strikethrough",
   "gfm-footnote",
-  "gfm-literal-autolink"
+  "gfm-literal-autolink",
+  "gfm-tagfilter"
 ] as const;
 
 export const supportedMarkdownExtensions = [

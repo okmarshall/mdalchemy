@@ -213,7 +213,7 @@ These are explicitly outside the CommonMark core unless added behind an extensio
 - Task list items. Implemented as `gfm-task-list`.
 - Strikethrough. Implemented as `gfm-strikethrough`.
 - Autolink literal extension. Implemented as `gfm-literal-autolink`.
-- Disallowed raw HTML filtering.
+- Disallowed raw HTML filtering. Implemented as `gfm-tagfilter`.
 - Footnotes. Implemented as `gfm-footnote`.
 - Definition lists.
 - Frontmatter. Implemented as `frontmatter`.

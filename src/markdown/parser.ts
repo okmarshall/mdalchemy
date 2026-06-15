@@ -296,7 +296,7 @@ class BlockParser {
       if (!line || isBlankLine(line.text)) break;
       if (countIndentColumns(line.text) >= 4) break;
       if (isParagraphInterrupt(line.text)) break;
-      const cells = splitTableRow(line.text);
+      const cells = splitTableRow(line.text, { requirePipe: false });
       if (!cells) break;
       rows.push(normalizeTableCells(cells, tableAlignments.length).map((raw, column) => (
         this.tableCell(line, raw, tableAlignments[column] ?? null, false)

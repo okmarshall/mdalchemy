@@ -197,6 +197,8 @@ title: Hidden Metadata
 
 Literal links: www.example.com and person@example.com.
 
+Raw HTML: <title>hidden</title>.
+
 Footnote reference.[^demo]
 
 [^demo]: Footnote body with **strong** text.
@@ -208,7 +210,8 @@ Footnote reference.[^demo]
         "gfm-task-list",
         "gfm-strikethrough",
         "gfm-footnote",
-        "gfm-literal-autolink"
+        "gfm-literal-autolink",
+        "gfm-tagfilter"
       ]
     },
     html: {
@@ -224,6 +227,7 @@ Footnote reference.[^demo]
   assert.match(rendered.content, /<del>old text<\/del>/);
   assert.match(rendered.content, /href="http:\/\/www.example.com"/);
   assert.match(rendered.content, /href="mailto:person@example.com"/);
+  assert.match(rendered.content, /&lt;title>hidden&lt;\/title>/);
   assert.match(rendered.content, /class="mda-footnotes"/);
   assert.match(rendered.content, /role="doc-endnotes"/);
   assert.match(rendered.content, /Footnote body with <strong>strong<\/strong> text/);

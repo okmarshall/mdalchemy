@@ -16,7 +16,7 @@ The repository now contains a working TypeScript CLI and library:
 - Built-in syntax highlighting for JS/TS, C#, JSON, HTML/XML, CSS, shell, and Markdown fences.
 - JSON config loading with CLI overrides, unknown-key warnings, type validation, and strict-mode diagnostics.
 - Safe mode for raw HTML and unsafe URLs.
-- GFM pipe tables, task lists, strikethrough, footnotes, and literal autolinks through `--gfm` or `markdown.extensions`, with scroll-safe HTML output for wide tables.
+- GFM pipe tables, task lists, strikethrough, footnotes, literal autolinks, and tagfilter through `--gfm` or `markdown.extensions`, with scroll-safe HTML output for wide tables.
 - Optional leading YAML-style frontmatter parsing through `--frontmatter` or `markdown.extensions`.
 - Theme token validation for custom themes.
 - Heading anchors, table of contents generation, and optional section wrappers.
@@ -84,7 +84,7 @@ Useful options:
 | `--config <path>` | Load a specific config file. |
 | `--safe` | Escape raw HTML and reject unsafe URLs. |
 | `--strict` | Treat warnings as errors. |
-| `--gfm` | Enable supported GFM extensions: pipe tables, task lists, strikethrough, footnotes, and literal autolinks. |
+| `--gfm` | Enable supported GFM extensions: pipe tables, task lists, strikethrough, footnotes, literal autolinks, and tagfilter. |
 | `--frontmatter` | Parse a leading YAML-style frontmatter block and omit it from visible HTML. |
 | `--toc` / `--no-toc` | Force table of contents on or off. |
 | `--sections` / `--no-sections` | Force heading-derived section wrappers on or off. |
@@ -107,6 +107,8 @@ npm test
 npm run test:conformance
 npm run test:commonmark
 npm run test:commonmark:strict
+npm run test:gfm
+npm run test:gfm:strict
 ```
 
 Render the complex fixture:
@@ -154,6 +156,7 @@ GitHub Flavored Markdown extensions can be enabled with `--gfm` or this config. 
       "gfm-strikethrough",
       "gfm-footnote",
       "gfm-literal-autolink",
+      "gfm-tagfilter",
       "frontmatter"
     ]
   }

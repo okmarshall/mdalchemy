@@ -125,12 +125,23 @@ function renderBlock(block: BlockNode, context: RenderContext, parentList?: List
 }
 
 function renderTable(table: TableNode, context: RenderContext): string {
+  if (context.commonmarkCompatible) return renderCompatibleTable(table, context);
+
   const header = table.header.map((cell) => renderTableCell(cell, context, "th")).join("");
   const rows = table.rows.map((row) => (
     `<tr>${row.map((cell) => renderTableCell(cell, context, "td")).join("")}</tr>`
   )).join("\n");
   const body = rows ? `\n<tbody>\n${rows}\n</tbody>` : "";
   return `<div class="mda-table-scroll" role="region" aria-label="Scrollable table" tabindex="0">\n<table>\n<thead>\n<tr>${header}</tr>\n</thead>${body}\n</table>\n</div>`;
+}
+
+function renderCompatibleTable(table: TableNode, context: RenderContext): string {
+  const header = table.header.map((cell) => renderCompatibleTableCell(cell, context, "th")).join("\n");
+  const rows = table.rows.map((row) => (
+    `<tr>\n${row.map((cell) => renderCompatibleTableCell(cell, context, "td")).join("\n")}\n</tr>`
+  )).join("\n");
+  const body = rows ? `\n<tbody>\n${rows}\n</tbody>` : "";
+  return `<table>\n<thead>\n<tr>\n${header}\n</tr>\n</thead>${body}\n</table>`;
 }
 
 function renderBlockQuote(children: BlockNode[], context: RenderContext): string {
@@ -141,6 +152,11 @@ function renderBlockQuote(children: BlockNode[], context: RenderContext): string
 
 function renderTableCell(cell: TableCellNode, context: RenderContext, tag: "th" | "td"): string {
   const alignment = cell.alignment ? ` style="text-align: ${cell.alignment}"` : "";
+  return `<${tag}${alignment}>${renderInlines(cell.children, context)}</${tag}>`;
+}
+
+function renderCompatibleTableCell(cell: TableCellNode, context: RenderContext, tag: "th" | "td"): string {
+  const alignment = cell.alignment ? ` align="${cell.alignment}"` : "";
   return `<${tag}${alignment}>${renderInlines(cell.children, context)}</${tag}>`;
 }
 

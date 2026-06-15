@@ -22,7 +22,11 @@ import {
   normalizeCodeSpan,
   type EmphasisDelimiterRun
 } from "./inline-delimiters.js";
-import { isLiteralAutolinkBoundary, trimLiteralAutolinkCandidate } from "./inline-extensions.js";
+import {
+  isLiteralAutolinkBoundary,
+  trimLiteralAutolinkCandidate,
+  trimLiteralEmailAutolinkCandidate
+} from "./inline-extensions.js";
 import { readDestination, readTitle, skipSpaces } from "./inline-links.js";
 import { hasMarkdownExtension, type MarkdownExtension } from "./extensions.js";
 import { decodeCharacterReference } from "./entities.js";
@@ -405,7 +409,7 @@ class InlineParser {
     if (!isLiteralAutolinkBoundary(this.source, start)) return false;
 
     const rest = this.source.slice(start);
-    const uriMatch = /^(?:https?:\/\/[^\s<]+|www\.[^\s<]+)/i.exec(rest);
+    const uriMatch = /^(?:(?:https?|ftp):\/\/[^\s<]+|www\.[^\s<]+)/i.exec(rest);
     if (uriMatch?.[0]) {
       const label = trimLiteralAutolinkCandidate(uriMatch[0]);
       if (!label) return false;
@@ -421,9 +425,9 @@ class InlineParser {
       return true;
     }
 
-    const emailMatch = /^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+/.exec(rest);
+    const emailMatch = /^[A-Za-z0-9._+-]+@[A-Za-z0-9_-]+(?:\.[A-Za-z0-9_-]+)+/.exec(rest);
     if (!emailMatch?.[0]) return false;
-    const label = trimLiteralAutolinkCandidate(emailMatch[0]);
+    const label = trimLiteralEmailAutolinkCandidate(emailMatch[0]);
     if (!label) return false;
     this.index = start + label.length;
     const node: AutoLinkNode = {
@@ -696,8 +700,8 @@ class InlineParser {
   private literalAutolinkCanParseAt(index: number): boolean {
     if (!isLiteralAutolinkBoundary(this.source, index)) return false;
     const rest = this.source.slice(index);
-    return /^(?:https?:\/\/|www\.)/i.test(rest)
-      || /^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+/.test(rest);
+    return /^(?:(?:https?|ftp):\/\/|www\.)/i.test(rest)
+      || /^[A-Za-z0-9._+-]+@[A-Za-z0-9_-]+(?:\.[A-Za-z0-9_-]+)+/.test(rest);
   }
 
   private hasExtension(extension: MarkdownExtension): boolean {

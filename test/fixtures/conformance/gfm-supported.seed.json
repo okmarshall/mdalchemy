@@ -7,6 +7,7 @@
     "gfm-strikethrough",
     "gfm-footnote",
     "gfm-literal-autolink",
+    "gfm-tagfilter",
     "frontmatter"
   ],
   "fixtures": [
@@ -39,6 +40,11 @@
       "name": "frontmatter omitted",
       "markdown": "---\ntitle: Hidden\n---\n\nVisible body.\n",
       "expected": "<p>Visible body.</p>"
+    },
+    {
+      "name": "tagfilter escapes disallowed raw html",
+      "markdown": "<strong> <title> <style> <em>\n\n<blockquote>\n  <xmp> is disallowed. <XMP> is also disallowed.\n</blockquote>\n",
+      "expected": "<p><strong> &lt;title> &lt;style> <em></p>\n<blockquote>\n  &lt;xmp> is disallowed. &lt;XMP> is also disallowed.\n</blockquote>"
     },
     {
       "name": "footnotes",

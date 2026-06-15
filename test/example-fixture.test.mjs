@@ -15,6 +15,7 @@ test("complex example renders to the checked html artifact", async () => {
         "gfm-strikethrough",
         "gfm-footnote",
         "gfm-literal-autolink",
+        "gfm-tagfilter",
         "frontmatter"
       ]
     },

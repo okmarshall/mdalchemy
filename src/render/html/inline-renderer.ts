@@ -1,4 +1,5 @@
 import type { InlineNode } from "../../markdown/ast.js";
+import { hasMarkdownExtension } from "../../markdown/extensions.js";
 import { escapeAttribute, escapeText, safeUrl } from "./escape.js";
 import { renderFootnoteReference } from "./footnotes.js";
 import type { RenderContext } from "./types.js";
@@ -8,14 +9,25 @@ export function renderInlines(nodes: InlineNode[], context: RenderContext): stri
 }
 
 export function renderRawHtml(value: string, context: RenderContext): string {
+  const renderedValue = hasMarkdownExtension(context.config.markdown.extensions, "gfm-tagfilter")
+    ? applyGfmTagFilter(value)
+    : value;
+
   switch (context.config.html.rawHtml) {
     case "allow":
-      return value;
+      return renderedValue;
     case "strip":
       return "";
     case "escape":
-      return escapeText(value);
+      return escapeText(renderedValue);
   }
+}
+
+function applyGfmTagFilter(value: string): string {
+  return value.replace(
+    /<\/?(?:title|textarea|style|xmp|iframe|noembed|noframes|script|plaintext)(?=[\s>/])/gi,
+    (tag) => `&lt;${tag.slice(1)}`
+  );
 }
 
 function renderInline(node: InlineNode, context: RenderContext): string {

@@ -2,7 +2,7 @@
 
 This document records the current implementation boundary. mdalchemy has a working custom parser and renderer, and the CommonMark core mode now passes the full official CommonMark 0.31.2 example corpus.
 
-The project target remains CommonMark 0.31.2 core conformance. The current release has a strict corpus gate for that target, with GFM extensions kept opt-in.
+The project target remains CommonMark 0.31.2 core conformance. The current release has a strict corpus gate for that target, with GFM extensions kept opt-in and guarded by the official GFM 0.29 fixture corpus.
 
 ## Implemented In The Current Parser
 
@@ -41,6 +41,7 @@ Inline coverage:
 - URI and email autolinks.
 - GFM strikethrough when the `gfm-strikethrough` extension is enabled.
 - GFM literal autolinks when the `gfm-literal-autolink` extension is enabled.
+- GFM tagfilter raw HTML filtering when the `gfm-tagfilter` extension is enabled.
 - GFM footnote references when the `gfm-footnote` extension is enabled.
 - Raw HTML inline tags.
 
@@ -68,13 +69,15 @@ Document/rendering coverage:
 - JSON-driven conformance fixture runner for CommonMark 0.31.2 seed fixtures and supported GFM/frontmatter seed fixtures.
 - Official CommonMark 0.31.2 corpus reporting through `npm run test:commonmark`.
 - Strict official CommonMark 0.31.2 corpus verification through `npm run test:commonmark:strict`.
+- Official GFM 0.29 corpus reporting through `npm run test:gfm`.
+- Strict official GFM 0.29 unexpected-failure verification through `npm run test:gfm:strict`.
 
 ## Known Gaps
 
 There are no known failures in the official CommonMark 0.31.2 example corpus. Remaining known gaps are outside that strict core-corpus pass:
 
 - Source ranges are useful for diagnostics but are approximate in nested virtual lines.
-- GFM extension support covers pipe tables, task lists, strikethrough, footnotes, and literal autolinks with representative seed fixtures, but full upstream GFM fixture coverage has not been vendored yet.
+- Full exact GFM 0.29 core conformance would require a legacy CommonMark 0.29 emphasis mode. mdalchemy intentionally keeps CommonMark 0.31.2 semantics in core mode; the GFM strict report therefore accepts nine documented emphasis differences from the older GFM baseline.
 
 ## Full CommonMark Corpus Baseline
 
@@ -98,6 +101,38 @@ Remaining official CommonMark sections:
 
 - None.
 
+## Full GFM Corpus Baseline
+
+The repository vendors the official enabled GFM 0.29 example corpus at
+`test/fixtures/conformance/gfm-0.29.json`. It is extracted from the
+`github/cmark-gfm` `test/spec.txt` source with
+`test/fixtures/conformance/extract-gfm-corpus.mjs`.
+
+The report command maps each official example tag to the matching mdalchemy
+extension:
+
+- `table` -> `gfm-table`.
+- `strikethrough` -> `gfm-strikethrough`.
+- `autolink` -> `gfm-literal-autolink`.
+- `tagfilter` -> `gfm-tagfilter`.
+
+Current baseline:
+
+```text
+GFM 0.29 corpus: 661/670 examples matched exactly; 9 accepted CommonMark-version differences; 0 unexpected failures
+```
+
+Official GFM extension sections currently have no unexpected failures:
+
+- Tables: 8/8 exact.
+- Strikethrough: 2/2 exact.
+- Autolinks extension: 11/11 exact.
+- Disallowed Raw HTML/tagfilter: 1/1 exact.
+
+The official cmark-gfm fixture runner marks the task list examples as
+`disabled`, so they are omitted from the enabled 670-example corpus. mdalchemy
+keeps task list behavior covered in `test/fixtures/conformance/gfm-supported.seed.json`.
+
 ## Verification Available Now
 
 Run:
@@ -108,6 +143,8 @@ npm test
 npm run test:conformance
 npm run test:commonmark
 npm run test:commonmark:strict
+npm run test:gfm
+npm run test:gfm:strict
 npm run render:example
 ```
 
@@ -121,6 +158,8 @@ The test suite includes:
 - A conformance fixture runner with seed fixture packs in `test/fixtures/conformance`.
 - A full CommonMark corpus report that prints pass/fail counts by section.
 - A strict CommonMark corpus gate that exits non-zero if any official example diverges.
+- A full GFM corpus report that prints exact, accepted, and unexpected counts by section.
+- A strict GFM corpus gate that exits non-zero for unexpected failures.
 
 ## Next Conformance Work
 
@@ -128,5 +167,5 @@ Recommended next steps:
 
 1. Keep `npm run test:commonmark:strict` green for every CommonMark parser change.
 2. Add focused seed fixtures whenever a corpus edge case regresses.
-3. Add full supported-GFM fixture packs after deciding whether to mirror the whole upstream GFM suite or keep a documented supported subset.
+3. Keep GFM accepted differences limited to CommonMark-version mismatches, not extension behavior.
 4. Continue improving source-range precision where diagnostics need exact nested positions.

@@ -1,6 +1,11 @@
 import type { TableAlignment } from "./ast.js";
 
-export function splitTableRow(text: string): string[] | undefined {
+export interface SplitTableRowOptions {
+  requirePipe?: boolean | undefined;
+}
+
+export function splitTableRow(text: string, options: SplitTableRowOptions = {}): string[] | undefined {
+  const requirePipe = options.requirePipe ?? true;
   const cells: string[] = [];
   let current = "";
   let codeFenceLength = 0;
@@ -10,10 +15,12 @@ export function splitTableRow(text: string): string[] | undefined {
     const char = text[index];
 
     if (char === "\\") {
-      current += char;
       if (index + 1 < text.length) {
-        current += text[index + 1];
+        const next = text[index + 1];
+        current += next === "|" ? "|" : `${char}${next}`;
         index += 1;
+      } else {
+        current += char;
       }
       continue;
     }
@@ -41,7 +48,7 @@ export function splitTableRow(text: string): string[] | undefined {
   }
 
   cells.push(current.trim());
-  if (!sawPipe) return undefined;
+  if (!sawPipe && requirePipe) return undefined;
 
   if (cells[0] === "") cells.shift();
   if (cells[cells.length - 1] === "") cells.pop();
@@ -50,7 +57,7 @@ export function splitTableRow(text: string): string[] | undefined {
 
 export function parseTableAlignment(value: string): TableAlignment | undefined {
   const trimmed = value.trim();
-  if (!/^:?-{3,}:?$/.test(trimmed)) return undefined;
+  if (!/^:?-+:?$/.test(trimmed)) return undefined;
   const left = trimmed.startsWith(":");
   const right = trimmed.endsWith(":");
   if (left && right) return "center";

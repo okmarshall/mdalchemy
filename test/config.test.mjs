@@ -68,6 +68,7 @@ test("config loader accepts the implemented extension names", async () => {
         "gfm-strikethrough",
         "gfm-footnote",
         "gfm-literal-autolink",
+        "gfm-tagfilter",
         "frontmatter"
       ]
     }

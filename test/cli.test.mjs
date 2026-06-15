@@ -61,6 +61,8 @@ title: Hidden Metadata
 
 Literal link: https://example.com/docs.
 
+Raw HTML: <title>Filtered</title>.
+
 Footnote reference.[^demo]
 
 [^demo]: Footnote body.
@@ -74,6 +76,7 @@ Footnote reference.[^demo]
   assert.match(html, /type="checkbox" disabled checked/);
   assert.match(html, /<del>old text<\/del>/);
   assert.match(html, /href="https:\/\/example.com\/docs"/);
+  assert.match(html, /&lt;title>Filtered&lt;\/title>/);
   assert.match(html, /class="mda-footnotes"/);
 });
 

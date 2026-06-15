@@ -74,8 +74,9 @@ Addressed at the runner level. `test/conformance.test.mjs` reads JSON fixture pa
 The full official CommonMark 0.31.2 corpus is now vendored at
 `test/fixtures/conformance/commonmark-0.31.2.json`, reportable with
 `npm run test:commonmark`, and enforced with `npm run test:commonmark:strict`.
-Full GFM fixture vendoring remains a coverage expansion after supported
-extension scope is finalized.
+The official enabled GFM 0.29 corpus is now vendored at
+`test/fixtures/conformance/gfm-0.29.json`, reportable with `npm run test:gfm`,
+and enforced for unexpected failures with `npm run test:gfm:strict`.
 
 ### Generated Artifacts
 

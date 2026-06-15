@@ -24,6 +24,8 @@ The package should expose at least these baseline scripts:
     "test:conformance": "npm run build && node --test test/conformance.test.mjs",
     "test:commonmark": "npm run build && node test/commonmark-corpus-report.mjs",
     "test:commonmark:strict": "npm run build && node test/commonmark-corpus-report.mjs --strict",
+    "test:gfm": "npm run build && node test/gfm-corpus-report.mjs",
+    "test:gfm:strict": "npm run build && node test/gfm-corpus-report.mjs --strict",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "render:example": "npm run build && node dist/cli/main.js examples/complex-spec.md -o examples/complex-spec.html --toc --gfm --frontmatter"
   }
@@ -40,8 +42,9 @@ Run the checks in this order:
 4. Run fixture tests.
 5. Run conformance seed fixtures.
 6. Run the full CommonMark corpus report when changing parser behavior.
-7. Render a representative Markdown file.
-8. Compare the generated HTML with the expected output.
+7. Run the full GFM corpus report when changing extension behavior.
+8. Render a representative Markdown file.
+9. Compare the generated HTML with the expected output.
 
 This order catches fast structural failures before slower parser and renderer
 fixtures.
@@ -181,7 +184,22 @@ npm run test:commonmark
 `npm run test:commonmark:strict` uses the same corpus as an all-examples gate
 and should stay green for parser changes.
 
-## 7. Render An Example Markdown File
+## 7. Run Full GFM Corpus Report
+
+The repository also vendors the official enabled GFM 0.29 corpus in
+`test/fixtures/conformance/gfm-0.29.json`. Use this report before and after
+GFM extension changes to see section-level exact, accepted, and unexpected
+failure counts:
+
+```sh
+npm run test:gfm
+```
+
+`npm run test:gfm:strict` exits non-zero on unexpected failures. The report
+accepts the documented CommonMark-version emphasis differences between the
+GFM 0.29 baseline and mdalchemy's CommonMark 0.31.2 core target.
+
+## 8. Render An Example Markdown File
 
 The repository includes a broad Markdown smoke fixture at
 `examples/complex-spec.md`. It intentionally exercises many CommonMark features
@@ -227,7 +245,7 @@ node dist/cli/main.js examples/complex-spec.md --stdout --fragment --gfm --front
 Fragment output should omit the standalone HTML shell and theme CSS so parser
 and renderer mappings are easier to diff.
 
-## 8. Compare HTML Output
+## 9. Compare HTML Output
 
 Use a plain unified diff for deterministic HTML snapshots:
 
@@ -255,7 +273,7 @@ If whitespace-only diffs become noisy, prefer improving renderer formatting or
 the fixture comparison helper over weakening the fixture. HTML snapshots should
 remain useful to read in code review.
 
-## 9. Browser Layout Verification
+## 10. Browser Layout Verification
 
 Run browser checks for visual or layout-sensitive changes, especially changes to
 themes, page width, code blocks, tables, images, the table of contents, or mobile
@@ -294,7 +312,7 @@ Minimum narrow viewport checks, using a width around `390px`:
 Record the checked viewport sizes and any notable measurements in the change
 summary when layout changes are intentional.
 
-## 10. Accessibility Checklist
+## 11. Accessibility Checklist
 
 Run this checklist whenever renderer structure or theme CSS changes:
 

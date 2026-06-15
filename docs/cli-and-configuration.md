@@ -217,6 +217,7 @@ gfm-task-list
 gfm-strikethrough
 gfm-footnote
 gfm-literal-autolink
+gfm-tagfilter
 frontmatter
 ```
 

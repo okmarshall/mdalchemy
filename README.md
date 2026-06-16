@@ -11,7 +11,7 @@ The project is a learning-focused implementation. It should build its own Markdo
 When installed as a VS Code extension, mdalchemy adds:
 
 - `mdalchemy: Preview HTML`: open a temporary live HTML preview beside a Markdown editor.
-- In-preview `Save HTML`: render the current Markdown state and write the sibling `.html` file.
+- Preview title-bar `Save Preview HTML`: render the current Markdown state and write the sibling `.html` file.
 - `mdalchemy: Generate HTML`: write a sibling standalone HTML file immediately.
 - `mdalchemy: Generate HTML Book`: recursively build one standalone HTML documentation book from a folder of Markdown files.
 
@@ -72,9 +72,9 @@ mdalchemy book . -o project-docs.html
 
 When installed as a VS Code extension, run `mdalchemy: Preview HTML` from a
 Markdown editor to open a temporary live HTML preview that updates as you edit.
-Use the in-preview `Save HTML` button or `mdalchemy: Save Preview HTML` when
-you want to render the current Markdown state and persist it. Run
-`mdalchemy: Generate HTML` to write a sibling
+Use the `Save Preview HTML` button in the preview title bar when you want to
+render the current Markdown state and persist it. Run `mdalchemy: Generate HTML`
+to write a sibling
 `.html` file immediately and open the rendered document in a VS Code webview.
 Right-click a folder in the Explorer and run
 `mdalchemy: Generate HTML Book` to recursively build `mdalchemy-book.html` from

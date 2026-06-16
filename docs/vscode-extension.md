@@ -15,9 +15,9 @@ mdalchemy: Preview HTML
 This opens a temporary live HTML preview beside the editor. The preview renders
 through the same mdalchemy pipeline as generated files, but it does not write an
 HTML file to disk. As you edit the Markdown document in VS Code, mdalchemy
-debounces changes and updates the preview panel. The preview includes a
-`Save HTML` button for rendering the current editor state and writing the
-standard sibling HTML file.
+debounces changes and updates the preview panel. The preview title bar includes
+`Save Preview HTML` for rendering the current editor state and writing the
+standard sibling HTML file, near VS Code's native editor actions.
 
 When the live preview panel is active, run:
 
@@ -80,9 +80,8 @@ VS Code as well.
 `mdalchemy: Preview HTML` follows the same render steps, but keeps the generated
 HTML in the webview only. It watches the open editor for Markdown changes and
 the workspace-root `mdalchemy.config.json` / `.mdalchemyrc.json` files for config
-changes. The in-preview `Save HTML` button and `mdalchemy: Save Preview HTML`
-command render the current editor state, update the preview, and persist that
-HTML to disk.
+changes. The preview title-bar `Save Preview HTML` action renders the current
+editor state, updates the preview, and persists that HTML to disk.
 
 ## Book Behavior
 

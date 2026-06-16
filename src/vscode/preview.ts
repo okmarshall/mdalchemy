@@ -1,7 +1,6 @@
-import { randomBytes } from "node:crypto";
 import path from "node:path";
 import * as vscode from "vscode";
-import { prepareHtmlForWebview, type WebviewAction, type WebviewHtmlOptions } from "./webview-html.js";
+import { prepareHtmlForWebview } from "./webview-html.js";
 
 export interface PreviewOptions {
   context: vscode.ExtensionContext;
@@ -15,8 +14,6 @@ export interface PreviewOptions {
 export interface PreviewPanelOptions {
   context: vscode.ExtensionContext;
   viewType?: string;
-  enableScripts?: boolean;
-  actions?: readonly WebviewAction[];
   title: string;
   localResourceRoot: vscode.Uri;
   resourceBaseDirectory: string;
@@ -29,7 +26,6 @@ export interface PreviewPanel {
   dispose(): void;
   onDidDispose(listener: () => void): vscode.Disposable;
   onDidChangeViewState(listener: (event: vscode.WebviewPanelOnDidChangeViewStateEvent) => void): vscode.Disposable;
-  onDidReceiveMessage(listener: (message: unknown) => void): vscode.Disposable;
 }
 
 export function showPreview(options: PreviewOptions): void {
@@ -43,13 +39,12 @@ export function showPreview(options: PreviewOptions): void {
 }
 
 export function createPreviewPanel(options: PreviewPanelOptions): PreviewPanel {
-  const actionNonce = options.actions && options.actions.length > 0 ? createNonce() : undefined;
   const panel = vscode.window.createWebviewPanel(
     options.viewType ?? "mdalchemyPreview",
     options.title,
     vscode.ViewColumn.Beside,
     {
-      enableScripts: options.enableScripts ?? false,
+      enableScripts: false,
       localResourceRoots: [
         options.localResourceRoot,
         options.context.extensionUri
@@ -60,29 +55,17 @@ export function createPreviewPanel(options: PreviewPanelOptions): PreviewPanel {
   return {
     webviewPanel: panel,
     update: (html, title) => {
-      const webviewOptions: WebviewHtmlOptions = {
+      panel.webview.html = prepareHtmlForWebview(html, {
         cspSource: panel.webview.cspSource,
         mapLocalResource: (reference) => mapLocalResourceReference(reference, options.resourceBaseDirectory, panel.webview)
-      };
-      if (actionNonce && options.actions) {
-        webviewOptions.actions = {
-          nonce: actionNonce,
-          actions: options.actions
-        };
-      }
-      panel.webview.html = prepareHtmlForWebview(html, webviewOptions);
+      });
       if (title) panel.title = title;
     },
     reveal: () => panel.reveal(vscode.ViewColumn.Beside),
     dispose: () => panel.dispose(),
     onDidDispose: (listener) => panel.onDidDispose(listener),
-    onDidChangeViewState: (listener) => panel.onDidChangeViewState(listener),
-    onDidReceiveMessage: (listener) => panel.webview.onDidReceiveMessage(listener)
+    onDidChangeViewState: (listener) => panel.onDidChangeViewState(listener)
   };
-}
-
-function createNonce(): string {
-  return randomBytes(16).toString("base64");
 }
 
 function mapLocalResourceReference(reference: string, sourceDirectory: string, webview: vscode.Webview): string | undefined {

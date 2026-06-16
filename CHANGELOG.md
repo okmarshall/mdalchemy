@@ -13,8 +13,8 @@ created.
 - VS Code `Preview HTML` command for temporary live HTML previews without
   writing an output file.
 - Reusable watch-render controller for debounced live preview updates, with a
-  VS Code `Save Preview HTML` action and in-preview button for rendering the
-  current Markdown state and persisting it as HTML.
+  VS Code preview title-bar `Save Preview HTML` action for rendering the current
+  Markdown state and persisting it as HTML.
 
 ## 1.1.0 - 2026-06-15
 

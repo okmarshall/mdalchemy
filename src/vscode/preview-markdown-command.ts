@@ -7,8 +7,6 @@ import { resolveMarkdownDocument } from "./markdown-document.js";
 import { renderMarkdownDocumentToHtml, type MarkdownRenderResult } from "./markdown-renderer.js";
 import { createPreviewPanel, type PreviewPanel } from "./preview.js";
 
-const saveHtmlCommand = "save-html";
-
 let activePreviewSession: MarkdownHtmlPreviewSession | undefined;
 
 export async function previewMarkdownHtml(
@@ -64,14 +62,6 @@ class MarkdownHtmlPreviewSession {
     this.panel = createPreviewPanel({
       context,
       viewType: "mdalchemyLivePreview",
-      enableScripts: true,
-      actions: [
-        {
-          id: saveHtmlCommand,
-          label: "Save HTML",
-          title: "Render the current Markdown state and save it as HTML"
-        }
-      ],
       title: `mdalchemy Preview: ${path.basename(this.sourcePath)}`,
       localResourceRoot: workspaceFolder?.uri ?? vscode.Uri.file(sourceDirectory),
       resourceBaseDirectory: sourceDirectory
@@ -89,13 +79,6 @@ class MarkdownHtmlPreviewSession {
       this.panel.onDidDispose(() => this.dispose()),
       this.panel.onDidChangeViewState(() => {
         if (this.panel.webviewPanel.active) activePreviewSession = this;
-      }),
-      this.panel.onDidReceiveMessage((message) => {
-        if (isWebviewCommand(message, saveHtmlCommand)) {
-          void this.saveCurrentHtml().catch((error: unknown) => {
-            vscode.window.showErrorMessage(error instanceof Error ? error.message : String(error));
-          });
-        }
       }),
       vscode.workspace.onDidChangeTextDocument((event) => {
         if (event.document.uri.toString() === this.document.uri.toString()) {
@@ -158,13 +141,6 @@ class MarkdownHtmlPreviewSession {
       watcher.onDidDelete(rerender)
     ];
   }
-}
-
-function isWebviewCommand(message: unknown, command: string): boolean {
-  return typeof message === "object"
-    && message !== null
-    && "command" in message
-    && message.command === command;
 }
 
 function renderStatusHtml(title: string, detail = ""): string {

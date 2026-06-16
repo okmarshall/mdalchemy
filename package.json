@@ -72,7 +72,7 @@
       "editor/title": [
         {
           "command": "mdalchemy.savePreviewHtml",
-          "when": "webviewId == 'mdalchemyLivePreview'",
+          "when": "activeWebviewPanelId == 'mdalchemyLivePreview'",
           "group": "navigation@1"
         },
         {

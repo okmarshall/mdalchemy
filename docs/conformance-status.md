@@ -60,7 +60,7 @@ Document/rendering coverage:
 - Semantic, scroll-safe HTML table rendering for GFM pipe tables.
 - Accessible disabled-checkbox rendering for GFM task list items.
 - Endnote rendering for referenced GFM footnotes.
-- Lightweight syntax highlighting for JS/TS, C#, JSON, HTML/XML, CSS, shell, and Markdown code fences.
+- Lightweight syntax highlighting for JS/TS, C#, Python, Java, Go, Rust, SQL, YAML, Dockerfile, PowerShell, diff, JSON, HTML/XML, CSS, shell, and Markdown code fences.
 - Built-in theme CSS.
 - User theme loading through config or CLI theme path.
 - Theme token validation for unknown tokens, unsafe CSS fragments, color-like tokens, length-like tokens, and font stack emptiness.

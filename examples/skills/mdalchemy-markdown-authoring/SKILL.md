@@ -154,6 +154,15 @@ mdalchemy has lightweight built-in syntax highlighting for these language labels
 
 - JavaScript and TypeScript: `js`, `jsx`, `mjs`, `cjs`, `ts`, `tsx`, `javascript`, `typescript`.
 - C#: `cs`, `c#`, `csharp`.
+- Python: `py`, `python`.
+- Java: `java`.
+- Go: `go`, `golang`.
+- Rust: `rs`, `rust`.
+- SQL: `sql`.
+- YAML: `yaml`, `yml`.
+- Dockerfile: `dockerfile`, `docker`.
+- PowerShell: `powershell`, `ps1`, `pwsh`.
+- Diffs and patches: `diff`, `patch`.
 - JSON: `json`, `jsonc`.
 - HTML/XML/SVG: `html`, `xml`, `svg`.
 - CSS/SCSS: `css`, `scss`.

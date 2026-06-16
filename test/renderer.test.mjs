@@ -271,13 +271,174 @@ Footnote reference.[^demo]
 });
 
 test("highlights C# fenced code blocks", async () => {
-  const markdown = "```csharp\npublic sealed class Demo\n{\n    public string Render() => \"ok\";\n}\n```\n";
+  const markdown = "```csharp\n[Fact(DisplayName = \"renders records\")]\npublic sealed record Demo(string Value)\n{\n    public string Render() => Value.Trim();\n}\n```\n";
   const { document } = parseMarkdown(markdown);
   const config = resolveConfig({}, { overrides: { html: { fragment: true } } });
   const rendered = await renderDocument(document, { config });
 
   assert.match(rendered.content, /language-csharp/);
+  assert.match(rendered.content, /mda-syntax-attribute">\[Fact\(DisplayName = &quot;renders records&quot;\)\]/);
   assert.match(rendered.content, /mda-syntax-keyword">public/);
+  assert.match(rendered.content, /mda-syntax-keyword">record/);
   assert.match(rendered.content, /mda-syntax-function">Render/);
-  assert.match(rendered.content, /mda-syntax-string">&quot;ok&quot;/);
+  assert.match(rendered.content, /mda-syntax-function">Trim/);
 });
+
+const expandedSyntaxHighlightCases = [
+  {
+    name: "Python",
+    language: "python",
+    source: `@task
+def render(value: str) -> str:
+    # keep the rendered output tidy
+    return f"{value.strip()}"`,
+    checks: [
+      /language-python/,
+      /mda-syntax-attribute">@task/,
+      /mda-syntax-keyword">def/,
+      /mda-syntax-builtin">str/,
+      /mda-syntax-comment"># keep the rendered output tidy/
+    ]
+  },
+  {
+    name: "Java",
+    language: "java",
+    source: `@Deprecated
+public final class Demo {
+    public String render(String value) {
+        return value.trim();
+    }
+}`,
+    checks: [
+      /language-java/,
+      /mda-syntax-attribute">@Deprecated/,
+      /mda-syntax-keyword">public/,
+      /mda-syntax-builtin">String/,
+      /mda-syntax-function">render/
+    ]
+  },
+  {
+    name: "Go",
+    language: "go",
+    source: `package main
+
+func render(value string) string {
+    return strings.TrimSpace(value)
+}`,
+    checks: [
+      /language-go/,
+      /mda-syntax-keyword">package/,
+      /mda-syntax-keyword">func/,
+      /mda-syntax-builtin">string/,
+      /mda-syntax-function">render/
+    ]
+  },
+  {
+    name: "Rust",
+    language: "rust",
+    source: `#[derive(Debug)]
+pub fn render(value: &str) -> String {
+    println!("{}", value);
+    value.trim().to_string()
+}`,
+    checks: [
+      /language-rust/,
+      /mda-syntax-attribute">#\[derive\(Debug\)\]/,
+      /mda-syntax-keyword">pub/,
+      /mda-syntax-builtin">str/,
+      /mda-syntax-function">println!/
+    ]
+  },
+  {
+    name: "SQL",
+    language: "sql",
+    source: `SELECT status, COUNT(*) AS total
+FROM reports
+WHERE status = 'ready' AND total >= 1
+GROUP BY status;`,
+    checks: [
+      /language-sql/,
+      /mda-syntax-keyword">SELECT/,
+      /mda-syntax-function">COUNT/,
+      /mda-syntax-string">'ready'/,
+      /mda-syntax-number">1/
+    ]
+  },
+  {
+    name: "YAML",
+    language: "yaml",
+    source: `name: demo
+enabled: true
+items:
+  - &default readable
+copy: *default`,
+    checks: [
+      /language-yaml/,
+      /mda-syntax-property">name/,
+      /mda-syntax-property">enabled/,
+      /mda-syntax-keyword">true/,
+      /mda-syntax-attribute">&amp;default/
+    ]
+  },
+  {
+    name: "Dockerfile",
+    language: "dockerfile",
+    source: `FROM node:24
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+CMD ["npm", "start"]`,
+    checks: [
+      /language-dockerfile/,
+      /mda-syntax-keyword">FROM/,
+      /mda-syntax-number">24/,
+      /mda-syntax-keyword">RUN/,
+      /mda-syntax-string">&quot;npm&quot;/
+    ]
+  },
+  {
+    name: "PowerShell",
+    language: "powershell",
+    source: `param([string]$Name)
+Write-Host "Hello $Name"
+if ($Name -eq "demo") { return }`,
+    checks: [
+      /language-powershell/,
+      /mda-syntax-keyword">param/,
+      /mda-syntax-property">\$Name/,
+      /mda-syntax-function">Write-Host/,
+      /mda-syntax-operator">-eq/
+    ]
+  },
+  {
+    name: "diff",
+    language: "diff",
+    source: `diff --git a/guide.md b/guide.md
+@@ -1,2 +1,2 @@
+-old heading
++new heading`,
+    checks: [
+      /language-diff/,
+      /mda-syntax-keyword">diff --git/,
+      /mda-syntax-keyword">@@ -1,2 \+1,2 @@/,
+      /mda-syntax-operator">-old heading/,
+      /mda-syntax-string">\+new heading/
+    ]
+  }
+];
+
+for (const syntaxCase of expandedSyntaxHighlightCases) {
+  test(`highlights ${syntaxCase.name} fenced code blocks`, async () => {
+    const rendered = await renderMarkdown(fencedCodeBlock(syntaxCase.language, syntaxCase.source), {
+      config: resolveConfig({}, { overrides: { html: { fragment: true } } })
+    });
+
+    for (const check of syntaxCase.checks) {
+      assert.match(rendered.content, check);
+    }
+  });
+}
+
+function fencedCodeBlock(language, source) {
+  return `\`\`\`${language}\n${source}\n\`\`\`\n`;
+}

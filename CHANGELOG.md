@@ -5,6 +5,12 @@ created.
 
 ## Unreleased
 
+### Added
+
+- Expanded dependency-free syntax highlighting for Python, Java, Go, Rust, SQL,
+  YAML, Dockerfile, PowerShell, and diff fences, with broader C# attribute and
+  record coverage.
+
 ## 1.1.0 - 2026-06-15
 
 ### Added

@@ -77,6 +77,11 @@ src/
       escape.ts
       html-renderer.ts
       syntax-highlight.ts
+      syntax/
+        engine.ts
+        languages.ts
+        registry.ts
+        types.ts
   theme/
     theme.ts
   index.ts

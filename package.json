@@ -71,6 +71,11 @@
     "menus": {
       "editor/title": [
         {
+          "command": "mdalchemy.savePreviewHtml",
+          "when": "webviewId == 'mdalchemyLivePreview'",
+          "group": "navigation@1"
+        },
+        {
           "command": "mdalchemy.previewMarkdownHtml",
           "when": "resourceLangId == markdown",
           "group": "navigation@29"
@@ -108,13 +113,6 @@
           "command": "mdalchemy.renderFolderToBook",
           "when": "explorerResourceIsFolder",
           "group": "navigation"
-        }
-      ],
-      "webview/title": [
-        {
-          "command": "mdalchemy.savePreviewHtml",
-          "when": "webviewId == 'mdalchemyLivePreview'",
-          "group": "navigation@1"
         }
       ]
     }

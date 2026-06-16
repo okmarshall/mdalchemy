@@ -52,10 +52,8 @@ test("VS Code manifest contributes polished file and folder commands", async () 
     ),
     true
   );
-
-  const webviewTitleMenu = packageJson.contributes.menus["webview/title"];
   assert.equal(
-    webviewTitleMenu.some((item) =>
+    editorTitleMenu.some((item) =>
       item.command === "mdalchemy.savePreviewHtml"
       && item.when === "webviewId == 'mdalchemyLivePreview'"
     ),

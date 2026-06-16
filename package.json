@@ -1,7 +1,7 @@
 {
   "name": "mdalchemy",
   "version": "1.1.0",
-  "description": "A modern TypeScript CLI for turning Markdown into beautiful human-readable HTML.",
+  "description": "Preview and generate polished HTML from Markdown in VS Code or the mdalchemy CLI.",
   "displayName": "mdalchemy",
   "publisher": "okmarshall",
   "homepage": "https://github.com/okmarshall/mdalchemy#readme",
@@ -18,14 +18,37 @@
   "types": "./dist/index.d.ts",
   "categories": [
     "Visualization",
+    "Formatters",
     "Other"
   ],
+  "galleryBanner": {
+    "color": "#111923",
+    "theme": "dark"
+  },
   "extensionKind": [
     "workspace"
   ],
   "activationEvents": [],
   "contributes": {
     "commands": [
+      {
+        "command": "mdalchemy.previewMarkdownHtml",
+        "title": "Preview HTML",
+        "category": "mdalchemy",
+        "icon": {
+          "light": "./media/html-preview-light.svg",
+          "dark": "./media/html-preview-dark.svg"
+        }
+      },
+      {
+        "command": "mdalchemy.savePreviewHtml",
+        "title": "Save Preview HTML",
+        "category": "mdalchemy",
+        "icon": {
+          "light": "./media/html-light.svg",
+          "dark": "./media/html-dark.svg"
+        }
+      },
       {
         "command": "mdalchemy.renderMarkdownToHtml",
         "title": "Generate HTML",
@@ -48,6 +71,11 @@
     "menus": {
       "editor/title": [
         {
+          "command": "mdalchemy.previewMarkdownHtml",
+          "when": "resourceLangId == markdown",
+          "group": "navigation@29"
+        },
+        {
           "command": "mdalchemy.renderMarkdownToHtml",
           "when": "resourceLangId == markdown",
           "group": "navigation@30"
@@ -55,12 +83,22 @@
       ],
       "editor/context": [
         {
+          "command": "mdalchemy.previewMarkdownHtml",
+          "when": "resourceLangId == markdown",
+          "group": "navigation"
+        },
+        {
           "command": "mdalchemy.renderMarkdownToHtml",
           "when": "resourceLangId == markdown",
           "group": "navigation"
         }
       ],
       "explorer/context": [
+        {
+          "command": "mdalchemy.previewMarkdownHtml",
+          "when": "resourceExtname == .md || resourceExtname == .markdown",
+          "group": "navigation"
+        },
         {
           "command": "mdalchemy.renderMarkdownToHtml",
           "when": "resourceExtname == .md || resourceExtname == .markdown",
@@ -70,6 +108,13 @@
           "command": "mdalchemy.renderFolderToBook",
           "when": "explorerResourceIsFolder",
           "group": "navigation"
+        }
+      ],
+      "webview/title": [
+        {
+          "command": "mdalchemy.savePreviewHtml",
+          "when": "webviewId == 'mdalchemyLivePreview'",
+          "group": "navigation@1"
         }
       ]
     }
@@ -119,6 +164,12 @@
   "keywords": [
     "markdown",
     "html",
+    "markdown-preview",
+    "html-preview",
+    "documentation",
+    "vscode",
+    "commonmark",
+    "gfm",
     "typescript",
     "cli"
   ],

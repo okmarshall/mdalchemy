@@ -82,6 +82,8 @@ src/
         languages.ts
         registry.ts
         types.ts
+  watch/
+    watch-render-session.ts
   theme/
     theme.ts
   index.ts

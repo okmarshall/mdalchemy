@@ -34,6 +34,7 @@ Status labels:
 | 8 | Configuration | `[Done]` | JSON config, discovery, explicit config path, CLI overrides, safe preset, unknown-key warnings, type validation, and supported-extension validation are implemented and tested. |
 | 9 | HTML polish | `[Done]` | Default theme, syntax highlighting, responsive layout, print CSS, images, code blocks, blockquotes, scroll-safe tables, and layout/accessibility checklists are implemented. |
 | 10 | Release hardening | `[Done]` | Node 24 cross-platform CI, packed install smoke, package metadata, pack dry-run script, MIT license, changelog, contribution docs, release docs, and tag-triggered npm release automation are in place. The first publish still requires npm trusted-publisher setup on npmjs.com. |
+| 11 | Authoring workflow polish | `[Planned]` | Next focus: watch mode, preview-only temporary HTML, config/theme generators, better config-location UX, and expanded syntax highlighting. |
 
 ### Product And CLI
 
@@ -47,7 +48,10 @@ Status labels:
 | `--stdout` output | `[Done]` | `src/cli/main.ts`, `test/cli.test.mjs` | `--stdout` and `--output` are mutually exclusive. |
 | `--fragment` output | `[Done]` | `test/renderer.test.mjs`, `test/cli.test.mjs` | Keep fragment behavior available for piping and conformance use. |
 | `--format html` | `[Done]` | `src/cli/args.ts`, `src/config/config-loader.ts` | Keep unsupported format errors clear. |
-| Watch mode | `[Deferred]` | CLI docs describe future behavior | Implement after normal render pipeline is stable. |
+| Watch mode | `[Planned]` | CLI docs describe future behavior | Add `--watch` for file rendering and project books. Watch input Markdown, config files, theme files, and local assets where practical; debounce renders; preserve current diagnostics and exit behavior for the initial render. |
+| Temporary HTML output | `[Planned]` | VS Code preview currently writes persistent HTML output | Add preview-only temporary HTML generation for VS Code and possibly CLI. Users should be able to view rendered HTML without creating or dirtying a project `.html` file. |
+| Config init command | `[Planned]` | Config schema and example config exist | Add commands such as `mdalchemy config init`, `mdalchemy config print-defaults`, and VS Code command integration to create a documented starter config. |
+| Theme init command | `[Planned]` | Theme tokens, built-ins, validation, and example theme exist | Add commands such as `mdalchemy theme init`, `mdalchemy theme init --extends serif`, and `mdalchemy theme validate <path>` to help users create custom themes safely. |
 | Theme subcommands | `[Done]` | `src/cli/main.ts`, `src/cli/theme-command.ts`, `test/cli.test.mjs` | Extra subcommand arguments are usage errors. |
 | Diagnostics and exit codes | `[Done]` | `src/core/diagnostics.ts`, `src/cli/main.ts`, `test/cli.test.mjs` | Usage, input, config, theme, render, and output failures have stable exit codes. |
 
@@ -113,6 +117,7 @@ Status labels:
 | Images | `[Done]` | `examples/complex-spec.md` | Add image safety and broken path notes if needed. |
 | Lightweight syntax highlighting | `[Done]` | `src/render/html/syntax-highlight.ts`, `test/renderer.test.mjs` | Add language fixtures when highlighter expands. |
 | C# syntax highlighting | `[Done]` | `test/renderer.test.mjs` | Add additional C# constructs as regressions appear. |
+| Expanded syntax highlighting | `[Planned]` | Current highlighter covers JS/TS, C#, JSON, HTML/XML, CSS, shell, and Markdown fences | Expand supported languages and coverage depth. Candidate next languages: Python, Java, Go, Rust, SQL, YAML, Dockerfile, PowerShell, and diff. Add fixture-based tests per language and keep the implementation lightweight unless a dependency review approves a grammar engine. |
 
 ### Theming And HTML Polish
 
@@ -124,6 +129,7 @@ Status labels:
 | Theme token model | `[Done]` | `src/theme/theme.ts` | Freeze token names before 1.0. |
 | CSS variable generation | `[Done]` | `src/theme/theme.ts` | Add snapshot-style tests if CSS churn grows. |
 | User theme JSON loading | `[Done]` | `test/renderer.test.mjs`, `examples/themes/warm-report.json` | Add invalid-file tests. |
+| Theme scaffolding commands | `[Planned]` | Built-in themes and token validation exist | Generate starter theme JSON from built-in themes, include comments through docs rather than JSON comments, and optionally render a sample preview after generation. |
 | Theme inheritance | `[Done]` | `src/theme/theme.ts`, `docs/rendering-and-theming.md` | Current scope is documented: user themes can extend built-in themes; custom-to-custom inheritance is not implemented. |
 | Theme validation | `[Done]` | `src/theme/theme.ts`, `test/renderer.test.mjs` | Unknown tokens warn; invalid token types, unsafe CSS fragments, and invalid color/length/font values report errors. |
 | Responsive page layout | `[Done]` | `src/theme/theme.ts` | Keep browser checks for layout-sensitive changes. |
@@ -138,6 +144,7 @@ Status labels:
 | Defaults | `[Done]` | `defaultConfig` | Add tests when defaults change. |
 | Config discovery | `[Done]` | `mdalchemy.config.json`, `.mdalchemyrc.json` lookup | Document exact discovery order as current behavior. |
 | Explicit `--config` | `[Done]` | `src/config/config-loader.ts` | Add CLI integration test if behavior changes. |
+| User-defined config locations | `[Planned]` | CLI has `--config`; VS Code currently loads from workspace/file-root cwd | Broaden config-location UX: document explicit CLI path behavior, add VS Code prompted/remembered config path support, and consider workspace setting support for teams that centralize mdalchemy config outside the rendered folder. |
 | CLI override precedence | `[Done]` | `cliOverrides`, `resolveConfig` | Add focused tests for every override. |
 | Safe preset | `[Done]` | `--safe`, `resolveConfig` | Add CLI integration coverage. |
 | Strict mode | `[Done]` | `src/cli/main.ts`, `test/cli.test.mjs` | Warnings are treated as errors and return exit code `6`. |
@@ -173,6 +180,60 @@ Status labels:
 - When marking `[Done]`, include code evidence and at least one test, fixture, or documented manual verification path.
 - Keep sensitive or project-specific sample names out of checked fixtures and docs.
 - Keep `docs/conformance-status.md` focused on Markdown/CommonMark correctness; keep this roadmap focused on implementation and product status.
+
+## Next Feature Set
+
+This is the current post-`1.1.0` planning batch. These items are intended to make mdalchemy feel smoother in daily authoring workflows, especially inside VS Code, without broadening output format scope.
+
+### Planned Priorities
+
+1. **Preview-only temporary HTML generation**
+   - Add a VS Code path that renders to an ephemeral file or webview-only document rather than writing a sibling `.html` file.
+   - Keep the existing persistent `Generate HTML` command, but add an explicit preview command or prompt option so users can choose between durable output and temporary preview.
+   - Consider temp file lifecycle rules: clean up on panel close where possible, avoid deleting user-selected output, and use predictable names for debugging.
+   - Add tests around path handling and command behavior where possible, plus manual extension-host verification.
+
+2. **Watch mode**
+   - CLI: support `mdalchemy input.md --watch` and `mdalchemy book . --watch`.
+   - VS Code: optionally use watch behavior to refresh preview-only HTML on save.
+   - Watch Markdown inputs, config files, theme files, and included project-book files.
+   - Debounce filesystem changes and avoid overlapping renders.
+   - Surface diagnostics without noisy repeated terminal output.
+
+3. **User-defined config file location**
+   - Preserve existing `--config` behavior.
+   - Add clearer docs and tests for explicit config paths.
+   - Add VS Code support for choosing or remembering a config file location.
+   - Consider a workspace setting such as `mdalchemy.configPath` for teams with a shared repo config.
+
+4. **Config generation commands**
+   - Add `mdalchemy config init` to write a starter `mdalchemy.config.json`.
+   - Add `mdalchemy config print-defaults` for stdout/template workflows.
+   - Add `--force` and collision diagnostics.
+   - Mirror this in VS Code with a command to create a config in the workspace root.
+
+5. **Theme generation commands**
+   - Add `mdalchemy theme init <path>` to generate a starter theme.
+   - Support `--extends serif|sans|technical`.
+   - Add `mdalchemy theme validate <path>` for fast feedback.
+   - Consider `mdalchemy theme preview <path>` later if it can reuse the existing fixture render path.
+
+6. **Expanded syntax highlighting**
+   - Add language fixtures and coverage before adding broad syntax rules.
+   - Expand C# coverage first because it is a known user priority.
+   - Add practical common documentation languages next: Python, Java, Go, Rust, SQL, YAML, Dockerfile, PowerShell, and diff.
+   - Revisit whether a small dependency is justified only after the lightweight highlighter reaches its natural limit.
+
+### Candidate Killer Features To Discuss
+
+These are not committed scope yet. They should be reviewed before implementation.
+
+- **Live VS Code HTML preview**: a preview panel that updates as the Markdown document changes or saves, using temporary output by default.
+- **Searchable project books**: generated project books with client-side search over headings and body text.
+- **Book navigation sidebar**: a persistent generated navigation rail for project-book output, separate from the current table of contents.
+- **Config/theme gallery command**: choose from polished starter profiles like technical report, design doc, release notes, API notes, and engineering RFC.
+- **Mermaid diagram support**: render fenced Mermaid diagrams into the HTML output. This would need a careful dependency/security review before committing.
+- **Broken-link and missing-asset report**: an optional diagnostics mode for project books that reports unresolved Markdown links, images, and local assets.
 
 ## Phase 0: Project Foundation
 

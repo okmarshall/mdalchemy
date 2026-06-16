@@ -9,10 +9,32 @@ theme, and project-book pipeline used by the command line.
 When a Markdown file is open, run:
 
 ```text
+mdalchemy: Preview HTML
+```
+
+This opens a temporary live HTML preview beside the editor. The preview renders
+through the same mdalchemy pipeline as generated files, but it does not write an
+HTML file to disk. As you edit the Markdown document in VS Code, mdalchemy
+debounces changes and updates the preview panel. The preview title bar includes
+`Save Preview HTML` for rendering the current editor state and writing the
+standard sibling HTML file, near VS Code's native editor actions.
+
+When the live preview panel is active, run:
+
+```text
+mdalchemy: Save Preview HTML
+```
+
+This renders the current Markdown state and writes it to the standard sibling
+HTML path, for example `README.md -> README.html`.
+
+To write HTML immediately without opening a temporary live preview, run:
+
+```text
 mdalchemy: Generate HTML
 ```
 
-This command is available from:
+The Markdown preview and generate commands are available from:
 
 - The Command Palette.
 - The Markdown editor title menu.
@@ -54,6 +76,12 @@ README.md -> README.html
 
 The generated file is a normal standalone HTML artifact and can be opened outside
 VS Code as well.
+
+`mdalchemy: Preview HTML` follows the same render steps, but keeps the generated
+HTML in the webview only. It watches the open editor for Markdown changes and
+the workspace-root `mdalchemy.config.json` / `.mdalchemyrc.json` files for config
+changes. The preview title-bar `Save Preview HTML` action renders the current
+editor state, updates the preview, and persists that HTML to disk.
 
 ## Book Behavior
 
@@ -109,7 +137,7 @@ npm run build
 
 Open the repository in VS Code and run the `Run mdalchemy Extension` launch
 configuration. In the Extension Development Host, open a Markdown file and run
-`mdalchemy: Generate HTML`, or right-click a folder and run
+`mdalchemy: Preview HTML` or `mdalchemy: Generate HTML`, or right-click a folder and run
 `mdalchemy: Generate HTML Book`.
 
 The VS Code extension entry point is `src/vscode/extension.ts`. The package

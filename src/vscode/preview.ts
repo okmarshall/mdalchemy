@@ -11,10 +11,37 @@ export interface PreviewOptions {
   html: string;
 }
 
+export interface PreviewPanelOptions {
+  context: vscode.ExtensionContext;
+  viewType?: string;
+  title: string;
+  localResourceRoot: vscode.Uri;
+  resourceBaseDirectory: string;
+}
+
+export interface PreviewPanel {
+  readonly webviewPanel: vscode.WebviewPanel;
+  update(html: string, title?: string): void;
+  reveal(): void;
+  dispose(): void;
+  onDidDispose(listener: () => void): vscode.Disposable;
+  onDidChangeViewState(listener: (event: vscode.WebviewPanelOnDidChangeViewStateEvent) => void): vscode.Disposable;
+}
+
 export function showPreview(options: PreviewOptions): void {
+  const preview = createPreviewPanel({
+    context: options.context,
+    title: `mdalchemy: ${options.sourceLabel}`,
+    localResourceRoot: options.localResourceRoot,
+    resourceBaseDirectory: options.resourceBaseDirectory
+  });
+  preview.update(options.html, `mdalchemy: ${vscode.workspace.asRelativePath(options.outputUri, false)}`);
+}
+
+export function createPreviewPanel(options: PreviewPanelOptions): PreviewPanel {
   const panel = vscode.window.createWebviewPanel(
-    "mdalchemyPreview",
-    `mdalchemy: ${options.sourceLabel}`,
+    options.viewType ?? "mdalchemyPreview",
+    options.title,
     vscode.ViewColumn.Beside,
     {
       enableScripts: false,
@@ -24,11 +51,21 @@ export function showPreview(options: PreviewOptions): void {
       ]
     }
   );
-  panel.webview.html = prepareHtmlForWebview(options.html, {
-    cspSource: panel.webview.cspSource,
-    mapLocalResource: (reference) => mapLocalResourceReference(reference, options.resourceBaseDirectory, panel.webview)
-  });
-  panel.title = `mdalchemy: ${vscode.workspace.asRelativePath(options.outputUri, false)}`;
+
+  return {
+    webviewPanel: panel,
+    update: (html, title) => {
+      panel.webview.html = prepareHtmlForWebview(html, {
+        cspSource: panel.webview.cspSource,
+        mapLocalResource: (reference) => mapLocalResourceReference(reference, options.resourceBaseDirectory, panel.webview)
+      });
+      if (title) panel.title = title;
+    },
+    reveal: () => panel.reveal(vscode.ViewColumn.Beside),
+    dispose: () => panel.dispose(),
+    onDidDispose: (listener) => panel.onDidDispose(listener),
+    onDidChangeViewState: (listener) => panel.onDidChangeViewState(listener)
+  };
 }
 
 function mapLocalResourceReference(reference: string, sourceDirectory: string, webview: vscode.Webview): string | undefined {

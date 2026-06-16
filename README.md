@@ -2,9 +2,20 @@
 
 [![npm version](https://img.shields.io/npm/v/mdalchemy.svg)](https://www.npmjs.com/package/mdalchemy)
 
-mdalchemy is a modern TypeScript CLI that converts Markdown files into polished, human-readable standalone HTML.
+mdalchemy previews and generates polished, human-readable HTML from Markdown in VS Code or from the command line.
 
 The project is a learning-focused implementation. It should build its own Markdown parser, keep dependencies minimal, and make each stage of the pipeline understandable: input, parsing, document model, rendering, theming, and CLI orchestration.
+
+## VS Code Features
+
+When installed as a VS Code extension, mdalchemy adds:
+
+- `mdalchemy: Preview HTML`: open a temporary live HTML preview beside a Markdown editor.
+- Preview title-bar `Save Preview HTML`: render the current Markdown state and write the sibling `.html` file.
+- `mdalchemy: Generate HTML`: write a sibling standalone HTML file immediately.
+- `mdalchemy: Generate HTML Book`: recursively build one standalone HTML documentation book from a folder of Markdown files.
+
+The live preview updates as you edit, uses the same custom parser and themes as the CLI, supports the configured GFM/frontmatter behavior, and keeps generated HTML off disk until you choose to save it.
 
 ## Current Implementation
 
@@ -23,7 +34,7 @@ The repository now contains a working TypeScript CLI and library:
 - Theme token validation for custom themes.
 - Heading anchors, table of contents generation, optional section wrappers, and optional collapsible sections.
 - Project documentation books through `mdalchemy book`, with recursive Markdown discovery, frontmatter opt-out, and cross-file links rewritten into one standalone HTML document.
-- VS Code extension commands for generating a sibling HTML file from a Markdown file or a recursive project documentation book from a folder, with integrated webview previews.
+- VS Code extension commands for live previewing Markdown as temporary HTML, saving the current preview state, generating a sibling HTML file, or building a recursive project documentation book from a folder, with integrated webview previews.
 - Node built-in test runner coverage.
 - Complex Markdown smoke fixture plus checked HTML output.
 
@@ -59,9 +70,13 @@ Build one standalone documentation book from a project Markdown tree:
 mdalchemy book . -o project-docs.html
 ```
 
-When installed as a VS Code extension, run `mdalchemy: Generate HTML` from a
-Markdown editor to write a sibling `.html` file and open the rendered document
-in a VS Code webview. Right-click a folder in the Explorer and run
+When installed as a VS Code extension, run `mdalchemy: Preview HTML` from a
+Markdown editor to open a temporary live HTML preview that updates as you edit.
+Use the `Save Preview HTML` button in the preview title bar when you want to
+render the current Markdown state and persist it. Run `mdalchemy: Generate HTML`
+to write a sibling
+`.html` file immediately and open the rendered document in a VS Code webview.
+Right-click a folder in the Explorer and run
 `mdalchemy: Generate HTML Book` to recursively build `mdalchemy-book.html` from
 the folder's Markdown files. Running the book command from the Command Palette
 opens a guided flow for folder, theme, section, table-of-contents, and output
@@ -157,7 +172,8 @@ mdalchemy:
 ## Known Limitations
 
 - HTML is the only supported output format for v1.
-- Watch mode is not implemented.
+- CLI watch mode is not implemented yet. The VS Code live preview already uses
+  mdalchemy's reusable debounced watch-render controller.
 - Config discovery only checks the current working directory for
   `mdalchemy.config.json` and `.mdalchemyrc.json`.
 - The syntax highlighter is lightweight and intentionally smaller than a full

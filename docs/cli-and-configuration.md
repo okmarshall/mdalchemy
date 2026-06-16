@@ -532,7 +532,10 @@ Path handling:
 
 ## Watch Mode Future
 
-Watch mode should be deferred until normal rendering is stable.
+CLI watch mode is still deferred until normal rendering is stable. The shared
+watch-render controller already powers the VS Code live HTML preview, so future
+CLI work should reuse that controller rather than inventing a second debounce
+and render lifecycle.
 
 Future command:
 

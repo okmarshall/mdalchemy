@@ -34,7 +34,7 @@ Status labels:
 | 8 | Configuration | `[Done]` | JSON config, discovery, explicit config path, CLI overrides, safe preset, unknown-key warnings, type validation, and supported-extension validation are implemented and tested. |
 | 9 | HTML polish | `[Done]` | Default theme, syntax highlighting, responsive layout, print CSS, images, code blocks, blockquotes, scroll-safe tables, and layout/accessibility checklists are implemented. |
 | 10 | Release hardening | `[Done]` | Node 24 cross-platform CI, packed install smoke, package metadata, pack dry-run script, MIT license, changelog, contribution docs, release docs, and tag-triggered npm release automation are in place. The first publish still requires npm trusted-publisher setup on npmjs.com. |
-| 11 | Authoring workflow polish | `[Planned]` | Next focus: watch mode, preview-only temporary HTML, config/theme generators, and better config-location UX. |
+| 11 | Authoring workflow polish | `[Planned]` | VS Code preview-only HTML and the shared watch-render controller are implemented. Next focus: CLI watch flags, config/theme generators, and better config-location UX. |
 
 ### Product And CLI
 
@@ -43,13 +43,13 @@ Status labels:
 | CLI help and version flags | `[Done]` | `src/cli/args.ts`, `src/cli/main.ts`, `test/cli.test.mjs` | `mdalchemy help` and `mdalchemy help theme` are covered; keep help text synced with new flags. |
 | Render Markdown file to HTML file | `[Done]` | `test/cli.test.mjs` | Add more end-to-end fixtures as features grow. |
 | Project documentation book command | `[Done]` | `src/cli/book-command.ts`, `src/book/book-builder.ts`, `src/book/discovery.ts`, `test/cli.test.mjs` | `mdalchemy book [root]` recursively discovers Markdown, applies include/exclude controls, supports frontmatter opt-out, rewrites cross-file Markdown links into same-page anchors, and emits one standalone HTML book. |
-| VS Code extension commands | `[Done]` | `package.json`, `src/vscode/extension.ts`, `src/vscode/book-options.ts`, `docs/vscode-extension.md`, `test/vscode-book-options.test.mjs` | Extension users can generate HTML from an open Markdown file, generate `mdalchemy-book.html` from a selected Explorer folder with defaults, or launch the book command from the Command Palette for prompted folder/theme/section/TOC/output settings. |
+| VS Code extension commands | `[Done]` | `package.json`, `src/vscode/extension.ts`, `src/vscode/preview-markdown-command.ts`, `src/vscode/book-options.ts`, `docs/vscode-extension.md`, `test/vscode-manifest.test.mjs`, `test/vscode-book-options.test.mjs` | Extension users can live-preview Markdown without writing HTML, save the latest preview, generate HTML from an open Markdown file, generate `mdalchemy-book.html` from a selected Explorer folder with defaults, or launch the book command from the Command Palette for prompted folder/theme/section/TOC/output settings. |
 | Default output path inference | `[Done]` | `src/io/files.ts` | Keep behavior documented in CLI docs. |
 | `--stdout` output | `[Done]` | `src/cli/main.ts`, `test/cli.test.mjs` | `--stdout` and `--output` are mutually exclusive. |
 | `--fragment` output | `[Done]` | `test/renderer.test.mjs`, `test/cli.test.mjs` | Keep fragment behavior available for piping and conformance use. |
 | `--format html` | `[Done]` | `src/cli/args.ts`, `src/config/config-loader.ts` | Keep unsupported format errors clear. |
-| Watch mode | `[Planned]` | CLI docs describe future behavior | Add `--watch` for file rendering and project books. Watch input Markdown, config files, theme files, and local assets where practical; debounce renders; preserve current diagnostics and exit behavior for the initial render. |
-| Temporary HTML output | `[Planned]` | VS Code preview currently writes persistent HTML output | Add preview-only temporary HTML generation for VS Code and possibly CLI. Users should be able to view rendered HTML without creating or dirtying a project `.html` file. |
+| Watch mode | `[Partial]` | `src/watch/watch-render-session.ts`, `test/watch-render-session.test.mjs`, `src/vscode/preview-markdown-command.ts` | Shared debounced watch-render controller and VS Code live preview usage are implemented. CLI `--watch` for file rendering and project books remains planned. |
+| Temporary HTML output | `[Done]` | `src/vscode/preview-markdown-command.ts`, `package.json`, `docs/vscode-extension.md` | VS Code `Preview HTML` renders into a temporary live webview without writing HTML; the preview title-bar `Save Preview HTML` action renders the current Markdown state and persists it on demand. |
 | Config init command | `[Planned]` | Config schema and example config exist | Add commands such as `mdalchemy config init`, `mdalchemy config print-defaults`, and VS Code command integration to create a documented starter config. |
 | Theme init command | `[Planned]` | Theme tokens, built-ins, validation, and example theme exist | Add commands such as `mdalchemy theme init`, `mdalchemy theme init --extends serif`, and `mdalchemy theme validate <path>` to help users create custom themes safely. |
 | Theme subcommands | `[Done]` | `src/cli/main.ts`, `src/cli/theme-command.ts`, `test/cli.test.mjs` | Extra subcommand arguments are usage errors. |
@@ -187,32 +187,26 @@ This is the current post-`1.1.0` planning batch. These items are intended to mak
 
 ### Planned Priorities
 
-1. **Preview-only temporary HTML generation**
-   - Add a VS Code path that renders to an ephemeral file or webview-only document rather than writing a sibling `.html` file.
-   - Keep the existing persistent `Generate HTML` command, but add an explicit preview command or prompt option so users can choose between durable output and temporary preview.
-   - Consider temp file lifecycle rules: clean up on panel close where possible, avoid deleting user-selected output, and use predictable names for debugging.
-   - Add tests around path handling and command behavior where possible, plus manual extension-host verification.
-
-2. **Watch mode**
+1. **Watch mode**
    - CLI: support `mdalchemy input.md --watch` and `mdalchemy book . --watch`.
-   - VS Code: optionally use watch behavior to refresh preview-only HTML on save.
+   - VS Code: live preview uses the shared watch-render controller to refresh preview-only HTML as the editor changes.
    - Watch Markdown inputs, config files, theme files, and included project-book files.
    - Debounce filesystem changes and avoid overlapping renders.
    - Surface diagnostics without noisy repeated terminal output.
 
-3. **User-defined config file location**
+2. **User-defined config file location**
    - Preserve existing `--config` behavior.
    - Add clearer docs and tests for explicit config paths.
    - Add VS Code support for choosing or remembering a config file location.
    - Consider a workspace setting such as `mdalchemy.configPath` for teams with a shared repo config.
 
-4. **Config generation commands**
+3. **Config generation commands**
    - Add `mdalchemy config init` to write a starter `mdalchemy.config.json`.
    - Add `mdalchemy config print-defaults` for stdout/template workflows.
    - Add `--force` and collision diagnostics.
    - Mirror this in VS Code with a command to create a config in the workspace root.
 
-5. **Theme generation commands**
+4. **Theme generation commands**
    - Add `mdalchemy theme init <path>` to generate a starter theme.
    - Support `--extends serif|sans|technical`.
    - Add `mdalchemy theme validate <path>` for fast feedback.
@@ -223,12 +217,14 @@ This is the current post-`1.1.0` planning batch. These items are intended to mak
 - **Expanded syntax highlighting** now covers Python, Java, Go, Rust, SQL,
   YAML, Dockerfile, PowerShell, and diff in addition to the existing language
   set, with expanded C# fixtures and a modular highlighter registry.
+- **VS Code preview-only HTML** now renders Markdown into a temporary live
+  webview, watches editor/config changes through the shared watch-render
+  controller, and can persist the current Markdown state on demand.
 
 ### Candidate Killer Features To Discuss
 
 These are not committed scope yet. They should be reviewed before implementation.
 
-- **Live VS Code HTML preview**: a preview panel that updates as the Markdown document changes or saves, using temporary output by default.
 - **Searchable project books**: generated project books with client-side search over headings and body text.
 - **Book navigation sidebar**: a persistent generated navigation rail for project-book output, separate from the current table of contents.
 - **Config/theme gallery command**: choose from polished starter profiles like technical report, design doc, release notes, API notes, and engineering RFC.

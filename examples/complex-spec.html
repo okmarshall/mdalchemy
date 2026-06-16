@@ -673,6 +673,48 @@ are implemented exactly.</p>
         <span class="mda-syntax-keyword">return</span> markdown<span class="mda-syntax-punctuation">.</span><span class="mda-syntax-function">Trim</span><span class="mda-syntax-punctuation">(</span><span class="mda-syntax-punctuation">)</span><span class="mda-syntax-punctuation">;</span>
     <span class="mda-syntax-punctuation">}</span>
 <span class="mda-syntax-punctuation">}</span></code></pre>
+<p>Expanded syntax highlighting examples:</p>
+<pre data-language="python"><code class="language-python"><span class="mda-syntax-attribute">@task</span>
+<span class="mda-syntax-keyword">def</span> <span class="mda-syntax-function">render</span><span class="mda-syntax-punctuation">(</span>value<span class="mda-syntax-operator">:</span> <span class="mda-syntax-builtin">str</span><span class="mda-syntax-punctuation">)</span> <span class="mda-syntax-operator">-&gt;</span> <span class="mda-syntax-builtin">str</span><span class="mda-syntax-operator">:</span>
+    <span class="mda-syntax-comment"># keep the rendered output tidy</span>
+    <span class="mda-syntax-keyword">return</span> <span class="mda-syntax-string">f&quot;{value.strip()}&quot;</span></code></pre>
+<pre data-language="java"><code class="language-java"><span class="mda-syntax-attribute">@Deprecated</span>
+<span class="mda-syntax-keyword">public</span> <span class="mda-syntax-keyword">final</span> <span class="mda-syntax-keyword">class</span> Demo <span class="mda-syntax-punctuation">{</span>
+    <span class="mda-syntax-keyword">public</span> <span class="mda-syntax-builtin">String</span> <span class="mda-syntax-function">render</span><span class="mda-syntax-punctuation">(</span><span class="mda-syntax-builtin">String</span> value<span class="mda-syntax-punctuation">)</span> <span class="mda-syntax-punctuation">{</span>
+        <span class="mda-syntax-keyword">return</span> value<span class="mda-syntax-punctuation">.</span><span class="mda-syntax-function">trim</span><span class="mda-syntax-punctuation">(</span><span class="mda-syntax-punctuation">)</span><span class="mda-syntax-punctuation">;</span>
+    <span class="mda-syntax-punctuation">}</span>
+<span class="mda-syntax-punctuation">}</span></code></pre>
+<pre data-language="go"><code class="language-go"><span class="mda-syntax-keyword">package</span> main
+
+<span class="mda-syntax-keyword">func</span> <span class="mda-syntax-function">render</span><span class="mda-syntax-punctuation">(</span>value <span class="mda-syntax-builtin">string</span><span class="mda-syntax-punctuation">)</span> <span class="mda-syntax-builtin">string</span> <span class="mda-syntax-punctuation">{</span>
+    <span class="mda-syntax-keyword">return</span> strings<span class="mda-syntax-punctuation">.</span><span class="mda-syntax-function">TrimSpace</span><span class="mda-syntax-punctuation">(</span>value<span class="mda-syntax-punctuation">)</span>
+<span class="mda-syntax-punctuation">}</span></code></pre>
+<pre data-language="rust"><code class="language-rust"><span class="mda-syntax-attribute">#[derive(Debug)]</span>
+<span class="mda-syntax-keyword">pub</span> <span class="mda-syntax-keyword">fn</span> <span class="mda-syntax-function">render</span><span class="mda-syntax-punctuation">(</span>value<span class="mda-syntax-operator">:</span> <span class="mda-syntax-operator">&amp;</span><span class="mda-syntax-builtin">str</span><span class="mda-syntax-punctuation">)</span> <span class="mda-syntax-operator">-&gt;</span> <span class="mda-syntax-builtin">String</span> <span class="mda-syntax-punctuation">{</span>
+    <span class="mda-syntax-function">println!</span><span class="mda-syntax-punctuation">(</span><span class="mda-syntax-string">&quot;{}&quot;</span><span class="mda-syntax-punctuation">,</span> value<span class="mda-syntax-punctuation">)</span><span class="mda-syntax-punctuation">;</span>
+    value<span class="mda-syntax-punctuation">.</span><span class="mda-syntax-function">trim</span><span class="mda-syntax-punctuation">(</span><span class="mda-syntax-punctuation">)</span><span class="mda-syntax-punctuation">.</span><span class="mda-syntax-function">to_string</span><span class="mda-syntax-punctuation">(</span><span class="mda-syntax-punctuation">)</span>
+<span class="mda-syntax-punctuation">}</span></code></pre>
+<pre data-language="sql"><code class="language-sql"><span class="mda-syntax-keyword">SELECT</span> status<span class="mda-syntax-punctuation">,</span> <span class="mda-syntax-function">COUNT</span><span class="mda-syntax-punctuation">(</span><span class="mda-syntax-operator">*</span><span class="mda-syntax-punctuation">)</span> <span class="mda-syntax-keyword">AS</span> total
+<span class="mda-syntax-keyword">FROM</span> reports
+<span class="mda-syntax-keyword">WHERE</span> status <span class="mda-syntax-operator">=</span> <span class="mda-syntax-string">'ready'</span> <span class="mda-syntax-keyword">AND</span> total <span class="mda-syntax-operator">&gt;=</span> <span class="mda-syntax-number">1</span>
+<span class="mda-syntax-keyword">GROUP</span> <span class="mda-syntax-keyword">BY</span> status<span class="mda-syntax-punctuation">;</span></code></pre>
+<pre data-language="yaml"><code class="language-yaml"><span class="mda-syntax-property">name</span><span class="mda-syntax-operator">:</span> demo
+<span class="mda-syntax-property">enabled</span><span class="mda-syntax-operator">:</span> <span class="mda-syntax-keyword">true</span>
+<span class="mda-syntax-property">items</span><span class="mda-syntax-operator">:</span>
+  <span class="mda-syntax-operator">-</span> <span class="mda-syntax-attribute">&amp;default</span> readable
+<span class="mda-syntax-property">copy</span><span class="mda-syntax-operator">:</span> <span class="mda-syntax-attribute">*default</span></code></pre>
+<pre data-language="dockerfile"><code class="language-dockerfile"><span class="mda-syntax-keyword">FROM</span> node<span class="mda-syntax-operator">:</span><span class="mda-syntax-number">24</span>
+<span class="mda-syntax-keyword">WORKDIR</span> /app
+<span class="mda-syntax-keyword">COPY</span> package*<span class="mda-syntax-punctuation">.</span>json <span class="mda-syntax-punctuation">.</span>/
+<span class="mda-syntax-keyword">RUN</span> npm ci
+<span class="mda-syntax-keyword">CMD</span> <span class="mda-syntax-punctuation">[</span><span class="mda-syntax-string">&quot;npm&quot;</span><span class="mda-syntax-punctuation">,</span> <span class="mda-syntax-string">&quot;start&quot;</span><span class="mda-syntax-punctuation">]</span></code></pre>
+<pre data-language="powershell"><code class="language-powershell"><span class="mda-syntax-keyword">param</span><span class="mda-syntax-punctuation">(</span><span class="mda-syntax-punctuation">[</span>string<span class="mda-syntax-punctuation">]</span><span class="mda-syntax-property">$Name</span><span class="mda-syntax-punctuation">)</span>
+<span class="mda-syntax-function">Write-Host</span> <span class="mda-syntax-string">&quot;Hello $Name&quot;</span>
+<span class="mda-syntax-keyword">if</span> <span class="mda-syntax-punctuation">(</span><span class="mda-syntax-property">$Name</span> <span class="mda-syntax-operator">-eq</span> <span class="mda-syntax-string">&quot;demo&quot;</span><span class="mda-syntax-punctuation">)</span> <span class="mda-syntax-punctuation">{</span> <span class="mda-syntax-keyword">return</span> <span class="mda-syntax-punctuation">}</span></code></pre>
+<pre data-language="diff"><code class="language-diff"><span class="mda-syntax-keyword">diff --git a/guide.md b/guide.md</span>
+<span class="mda-syntax-keyword">@@ -1,2 +1,2 @@</span>
+<span class="mda-syntax-operator">-old heading</span>
+<span class="mda-syntax-string">+new heading</span></code></pre>
 <pre data-language="html"><code class="language-html"><span class="mda-syntax-tag">&lt;div</span><span class="mda-syntax-attribute"> class</span><span class="mda-syntax-punctuation">=</span><span class="mda-syntax-string">&quot;from-fence&quot;</span><span class="mda-syntax-punctuation">&gt;</span>
   Fenced HTML is code, not raw HTML.
 <span class="mda-syntax-tag">&lt;/div</span><span class="mda-syntax-punctuation">&gt;</span></code></pre>

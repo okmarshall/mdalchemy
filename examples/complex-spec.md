@@ -140,6 +140,76 @@ public sealed class MarkdownRenderer
 }
 ```
 
+Expanded syntax highlighting examples:
+
+```python
+@task
+def render(value: str) -> str:
+    # keep the rendered output tidy
+    return f"{value.strip()}"
+```
+
+```java
+@Deprecated
+public final class Demo {
+    public String render(String value) {
+        return value.trim();
+    }
+}
+```
+
+```go
+package main
+
+func render(value string) string {
+    return strings.TrimSpace(value)
+}
+```
+
+```rust
+#[derive(Debug)]
+pub fn render(value: &str) -> String {
+    println!("{}", value);
+    value.trim().to_string()
+}
+```
+
+```sql
+SELECT status, COUNT(*) AS total
+FROM reports
+WHERE status = 'ready' AND total >= 1
+GROUP BY status;
+```
+
+```yaml
+name: demo
+enabled: true
+items:
+  - &default readable
+copy: *default
+```
+
+```dockerfile
+FROM node:24
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+CMD ["npm", "start"]
+```
+
+```powershell
+param([string]$Name)
+Write-Host "Hello $Name"
+if ($Name -eq "demo") { return }
+```
+
+```diff
+diff --git a/guide.md b/guide.md
+@@ -1,2 +1,2 @@
+-old heading
++new heading
+```
+
 ~~~html
 <div class="from-fence">
   Fenced HTML is code, not raw HTML.

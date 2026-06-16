@@ -15,7 +15,7 @@ The repository now contains a working TypeScript CLI and library:
 - Renderer-neutral AST.
 - HTML standalone and fragment rendering.
 - Built-in `serif`, `sans`, and `technical` themes. The default is `serif`.
-- Built-in syntax highlighting for JS/TS, C#, JSON, HTML/XML, CSS, shell, and Markdown fences.
+- Built-in syntax highlighting for JS/TS, C#, Python, Java, Go, Rust, SQL, YAML, Dockerfile, PowerShell, diff, JSON, HTML/XML, CSS, shell, and Markdown fences.
 - JSON config loading with CLI overrides, unknown-key warnings, type validation, and strict-mode diagnostics.
 - Safe mode for raw HTML and unsafe URLs.
 - GFM pipe tables, task lists, strikethrough, footnotes, literal autolinks, and tagfilter through `--gfm` or `markdown.extensions`, with scroll-safe HTML output for wide tables.

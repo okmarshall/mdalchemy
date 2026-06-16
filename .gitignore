@@ -37,6 +37,7 @@ pnpm-debug.log*
 # Generated mdalchemy output
 *.generated.html
 *.generated.pdf
+*.vsix
 examples/*.warm.html
 .mdalchemy-cache/
 

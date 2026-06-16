@@ -34,7 +34,7 @@ Status labels:
 | 8 | Configuration | `[Done]` | JSON config, discovery, explicit config path, CLI overrides, safe preset, unknown-key warnings, type validation, and supported-extension validation are implemented and tested. |
 | 9 | HTML polish | `[Done]` | Default theme, syntax highlighting, responsive layout, print CSS, images, code blocks, blockquotes, scroll-safe tables, and layout/accessibility checklists are implemented. |
 | 10 | Release hardening | `[Done]` | Node 24 cross-platform CI, packed install smoke, package metadata, pack dry-run script, MIT license, changelog, contribution docs, release docs, and tag-triggered npm release automation are in place. The first publish still requires npm trusted-publisher setup on npmjs.com. |
-| 11 | Authoring workflow polish | `[Planned]` | Next focus: watch mode, preview-only temporary HTML, config/theme generators, better config-location UX, and expanded syntax highlighting. |
+| 11 | Authoring workflow polish | `[Planned]` | Next focus: watch mode, preview-only temporary HTML, config/theme generators, and better config-location UX. |
 
 ### Product And CLI
 
@@ -115,9 +115,9 @@ Status labels:
 | Section wrappers | `[Done]` | `src/render/html/block-renderer.ts`, `src/cli/args.ts`, `test/renderer.test.mjs`, `test/cli.test.mjs` | `html.sections` plus `--sections` / `--no-sections` render heading-derived nested sections outside CommonMark-compatible output. |
 | Collapsible sections | `[Done]` | `src/render/html/block-renderer.ts`, `src/theme/css.ts`, `src/cli/args.ts`, `test/renderer.test.mjs`, `test/cli.test.mjs` | `html.collapsibleSections` plus `--collapsible-sections` / `--no-collapsible-sections` add native expanded-by-default details controls to heading-derived sections. |
 | Images | `[Done]` | `examples/complex-spec.md` | Add image safety and broken path notes if needed. |
-| Lightweight syntax highlighting | `[Done]` | `src/render/html/syntax-highlight.ts`, `test/renderer.test.mjs` | Add language fixtures when highlighter expands. |
-| C# syntax highlighting | `[Done]` | `test/renderer.test.mjs` | Add additional C# constructs as regressions appear. |
-| Expanded syntax highlighting | `[Planned]` | Current highlighter covers JS/TS, C#, JSON, HTML/XML, CSS, shell, and Markdown fences | Expand supported languages and coverage depth. Candidate next languages: Python, Java, Go, Rust, SQL, YAML, Dockerfile, PowerShell, and diff. Add fixture-based tests per language and keep the implementation lightweight unless a dependency review approves a grammar engine. |
+| Lightweight syntax highlighting | `[Done]` | `src/render/html/syntax-highlight.ts`, `src/render/html/syntax/*`, `test/renderer.test.mjs` | Keep language fixtures focused on practical documentation examples. |
+| C# syntax highlighting | `[Done]` | `test/renderer.test.mjs` | C# keywords, records, attributes with arguments, built-ins, functions, numbers, comments, strings, operators, and punctuation are covered by the lightweight renderer highlighter. Add additional constructs as regressions appear. |
+| Expanded syntax highlighting | `[Done]` | `src/render/html/syntax/languages.ts`, `test/renderer.test.mjs`, `examples/complex-spec.md` | Dependency-free registry now covers JS/TS, C#, Python, Java, Go, Rust, SQL, YAML, Dockerfile, PowerShell, diff, JSON, HTML/XML, CSS, shell, and Markdown fences. Revisit whether a small dependency is justified only if the lightweight highlighter reaches its natural limit. |
 
 ### Theming And HTML Polish
 
@@ -218,11 +218,11 @@ This is the current post-`1.1.0` planning batch. These items are intended to mak
    - Add `mdalchemy theme validate <path>` for fast feedback.
    - Consider `mdalchemy theme preview <path>` later if it can reuse the existing fixture render path.
 
-6. **Expanded syntax highlighting**
-   - Add language fixtures and coverage before adding broad syntax rules.
-   - Expand C# coverage first because it is a known user priority.
-   - Add practical common documentation languages next: Python, Java, Go, Rust, SQL, YAML, Dockerfile, PowerShell, and diff.
-   - Revisit whether a small dependency is justified only after the lightweight highlighter reaches its natural limit.
+### Completed From This Batch
+
+- **Expanded syntax highlighting** now covers Python, Java, Go, Rust, SQL,
+  YAML, Dockerfile, PowerShell, and diff in addition to the existing language
+  set, with expanded C# fixtures and a modular highlighter registry.
 
 ### Candidate Killer Features To Discuss
 

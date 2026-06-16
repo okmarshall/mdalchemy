@@ -329,7 +329,7 @@ syntax.tag
 syntax.attribute
 ```
 
-The HTML renderer includes lightweight syntax highlighting for JS/TS, C#, JSON, HTML/XML, CSS, shell, and Markdown fences. These syntax tokens control the generated token span colors.
+The HTML renderer includes lightweight syntax highlighting for JS/TS, C#, Python, Java, Go, Rust, SQL, YAML, Dockerfile, PowerShell, diff, JSON, HTML/XML, CSS, shell, and Markdown fences. These syntax tokens control the generated token span colors.
 
 ## CSS Variable Mapping
 

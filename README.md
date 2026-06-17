@@ -174,6 +174,10 @@ output also groups TOC entries by folder structure by default so project and
 package boundaries are visible without changing the main document body. Opt a
 file out of a project book with leading frontmatter:
 
+Standalone HTML includes bottom-right document shortcuts. `Go to top` is always
+available, and documents with collapsible sections or collapsible TOCs also show
+`Collapse all` and `Expand all`.
+
 ```yaml
 ---
 mdalchemy:

@@ -181,7 +181,9 @@ mdalchemy:
   assert.match(html, /<details class="mda-toc-details"><summary class="mda-toc-summary"><span class="mda-toc-label">docs<\/span><\/summary>/);
   assert.match(html, /<a href="#guide-doc">Guide Doc<\/a>/);
   assert.doesNotMatch(html, /<h2 id="docs">docs<\/h2>/);
-  assert.match(html, /<a class="mda-back-to-top" href="#top">Go to top<\/a>/);
+  assert.match(html, /<a class="mda-floating-action mda-back-to-top" href="#top">Go to top<\/a>/);
+  assert.match(html, /data-mda-collapse-all>Collapse all<\/button>/);
+  assert.match(html, /data-mda-expand-all>Expand all<\/button>/);
   assert.match(html, /mda-section-collapsible/);
   assert.match(html, /Root footnote/);
   assert.match(html, /Guide footnote/);

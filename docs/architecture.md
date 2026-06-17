@@ -50,14 +50,21 @@ The pipeline should remain explicit in code. Each phase should have clear inputs
 src/
   book/
     book-builder.ts
+    composer.ts
     discovery.ts
     frontmatter.ts
+    link-rewriter.ts
+    toc.ts
+    types.ts
   cli/
     args.ts
     book-command.ts
+    help.ts
     main.ts
+    options.ts
   config/
     config-loader.ts
+    config-options.ts
     config-schema.ts
   core/
     diagnostics.ts
@@ -74,6 +81,8 @@ src/
     references.ts
   render/
     html/
+      document-actions.ts
+      document-shell.ts
       escape.ts
       html-renderer.ts
       syntax-highlight.ts
@@ -85,6 +94,21 @@ src/
   watch/
     watch-render-session.ts
   theme/
+    css.ts
+    css/
+      block.ts
+      code.ts
+      floating-actions.ts
+      footnotes.ts
+      heading-anchors.ts
+      layout.ts
+      media.ts
+      print.ts
+      responsive.ts
+      sections.ts
+      tables.ts
+      toc.ts
+      typography.ts
     theme.ts
   index.ts
 ```
@@ -100,6 +124,8 @@ Owns command-line behavior only.
 Responsibilities:
 
 - Parse arguments.
+- Share option metadata, conflicts, and help rows across top-level and book
+  commands.
 - Load config.
 - Determine input and output paths.
 - Call the library pipeline.
@@ -127,6 +153,8 @@ Responsibilities:
 - Read leading frontmatter metadata used by the book builder.
 - Compose multiple parsed documents into one renderer-neutral document.
 - Create one section per included file.
+- Build optional folder-aware book TOC trees without changing the composed
+  document body.
 - Rewrite links between included Markdown files to same-page anchors.
 - Rewrite relative image paths to remain valid from the final output location.
 - Prefix footnote labels per file so repeated labels do not collide.
@@ -136,6 +164,11 @@ Should not:
 - Render HTML directly.
 - Own theme behavior.
 - Change single-file rendering semantics.
+
+`book-builder.ts` is intentionally a thin public entry point. Composition,
+folder-aware TOC construction, link/asset rewriting, and shared book types live
+in separate modules so new project-book behavior can usually land without
+editing the entire feature.
 
 ### `config`
 
@@ -153,6 +186,9 @@ Should not:
 
 - Access parser state.
 - Render output.
+
+Config option descriptors live in `src/config/config-options.ts`. Add new config
+fields there first so shape validation and default resolution stay in sync.
 
 ### `core`
 
@@ -211,6 +247,11 @@ Responsibilities:
 - Provide HTML renderer.
 - Keep renderer-specific escaping and templates isolated.
 
+Standalone document shortcut controls live in `src/render/html/document-actions.ts`.
+The VS Code webview imports the generated control-script marker from that module
+when applying its script nonce, so control markup and CSP behavior stay coupled
+through code rather than string conventions.
+
 ### `theme`
 
 Owns theme representation and CSS generation.
@@ -227,6 +268,10 @@ Should not:
 
 - Parse Markdown.
 - Decide document structure.
+
+`src/theme/css.ts` is a concatenator. Feature-specific stylesheet fragments live
+under `src/theme/css/`, which keeps layout, sections, TOC, floating actions,
+syntax/code, tables, print, and responsive rules independently maintainable.
 
 ### `io`
 

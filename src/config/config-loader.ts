@@ -6,6 +6,16 @@ import {
   type MdalchemyConfig,
   type ResolvedConfig
 } from "./config-schema.js";
+import {
+  configSectionFieldTypes,
+  configSectionKeys,
+  configSections,
+  expectedConfigTypeLabel,
+  matchesConfigFieldType,
+  resolvedConfigSection,
+  topLevelConfigKeys,
+  type ConfigFieldType
+} from "./config-options.js";
 import { isSupportedMarkdownExtension } from "../markdown/extensions.js";
 
 export interface ConfigLoadOptions {
@@ -73,39 +83,10 @@ export function resolveConfig(
   const fileBook = isRecord(config.book) ? config.book : {};
   const resolved: ResolvedConfig = {
     version: defaultConfig.version,
-    output: {
-      format: stringOr(fileOutput["format"], defaultConfig.output.format) as "html",
-      standalone: booleanOr(fileOutput["standalone"], defaultConfig.output.standalone),
-      createDirs: booleanOr(fileOutput["createDirs"], defaultConfig.output.createDirs)
-    },
-    markdown: {
-      profile: stringOr(fileMarkdown["profile"], defaultConfig.markdown.profile) as "commonmark",
-      extensions: stringArrayOr(fileMarkdown["extensions"], defaultConfig.markdown.extensions)
-    },
-    html: {
-      lang: stringOr(fileHtml["lang"], defaultConfig.html.lang),
-      rawHtml: stringOr(fileHtml["rawHtml"], defaultConfig.html.rawHtml) as "allow" | "escape" | "strip",
-      safeUrls: booleanOr(fileHtml["safeUrls"], defaultConfig.html.safeUrls),
-      headingAnchors: booleanOr(fileHtml["headingAnchors"], defaultConfig.html.headingAnchors),
-      sections: booleanOr(fileHtml["sections"], defaultConfig.html.sections),
-      collapsibleSections: booleanOr(fileHtml["collapsibleSections"], defaultConfig.html.collapsibleSections),
-      tableOfContents: tableOfContentsOr(fileHtml["tableOfContents"], defaultConfig.html.tableOfContents),
-      collapsibleTableOfContents: booleanOr(
-        fileHtml["collapsibleTableOfContents"],
-        defaultConfig.html.collapsibleTableOfContents
-      ),
-      tocDepth: numberOr(fileHtml["tocDepth"], defaultConfig.html.tocDepth),
-      softBreak: stringOr(fileHtml["softBreak"], defaultConfig.html.softBreak) as "newline" | "space" | "br",
-      fragment: booleanOr(fileHtml["fragment"], defaultConfig.html.fragment),
-      title: stringOr(fileHtml["title"], defaultConfig.html.title)
-    },
-    book: {
-      include: stringArrayOr(fileBook["include"], defaultConfig.book.include),
-      exclude: fileBook["exclude"] === undefined
-        ? defaultConfig.book.exclude
-        : uniqueStrings([...defaultConfig.book.exclude, ...stringArrayOr(fileBook["exclude"], [])]),
-      folderStructure: booleanOr(fileBook["folderStructure"], defaultConfig.book.folderStructure)
-    },
+    output: resolvedConfigSection("output", fileOutput, defaultConfig.output),
+    markdown: resolvedConfigSection("markdown", fileMarkdown, defaultConfig.markdown),
+    html: resolvedConfigSection("html", fileHtml, defaultConfig.html),
+    book: resolvedConfigSection("book", fileBook, defaultConfig.book),
     theme: typeof config.theme === "string" || isRecord(config.theme) ? config.theme : defaultConfig.theme,
     strict: options.strict ?? defaultConfig.strict
   };
@@ -198,28 +179,9 @@ function validateConfig(config: ResolvedConfig): Diagnostic[] {
   return diagnostics;
 }
 
-const topLevelKeys = new Set(["version", "output", "markdown", "html", "book", "theme"]);
-const outputKeys = new Set(["format", "standalone", "createDirs"]);
-const markdownKeys = new Set(["profile", "extensions"]);
-const bookKeys = new Set(["include", "exclude", "folderStructure"]);
-const htmlKeys = new Set([
-  "lang",
-  "rawHtml",
-  "safeUrls",
-  "headingAnchors",
-  "sections",
-  "collapsibleSections",
-  "tableOfContents",
-  "collapsibleTableOfContents",
-  "tocDepth",
-  "softBreak",
-  "fragment",
-  "title"
-]);
-
 function validateConfigShape(config: Record<string, unknown>): Diagnostic[] {
   const diagnostics: Diagnostic[] = [];
-  warnUnknownKeys(config, topLevelKeys, "", diagnostics);
+  warnUnknownKeys(config, topLevelConfigKeys, "", diagnostics);
 
   const version = config["version"];
   if (version !== undefined && typeof version !== "number") {
@@ -232,34 +194,15 @@ function validateConfigShape(config: Record<string, unknown>): Diagnostic[] {
     });
   }
 
-  validateSection(config["output"], "output", outputKeys, diagnostics, {
-    format: "string",
-    standalone: "boolean",
-    createDirs: "boolean"
-  });
-  validateSection(config["markdown"], "markdown", markdownKeys, diagnostics, {
-    profile: "string",
-    extensions: "string[]"
-  });
-  validateSection(config["book"], "book", bookKeys, diagnostics, {
-    include: "string[]",
-    exclude: "string[]",
-    folderStructure: "boolean"
-  });
-  validateSection(config["html"], "html", htmlKeys, diagnostics, {
-    lang: "string",
-    rawHtml: "string",
-    safeUrls: "boolean",
-    headingAnchors: "boolean",
-    sections: "boolean",
-    collapsibleSections: "boolean",
-    tableOfContents: "boolean-or-auto",
-    collapsibleTableOfContents: "boolean",
-    tocDepth: "number",
-    softBreak: "string",
-    fragment: "boolean",
-    title: "string"
-  });
+  for (const section of configSections) {
+    validateSection(
+      config[section.name],
+      section.name,
+      configSectionKeys(section),
+      diagnostics,
+      configSectionFieldTypes(section)
+    );
+  }
 
   if (config["theme"] !== undefined && typeof config["theme"] !== "string" && !isRecord(config["theme"])) {
     diagnostics.push(invalidType("theme", "a built-in theme name, theme path, or theme object"));
@@ -273,7 +216,7 @@ function validateSection(
   pathPrefix: string,
   allowedKeys: Set<string>,
   diagnostics: Diagnostic[],
-  fieldTypes: Record<string, "string" | "boolean" | "number" | "string[]" | "boolean-or-auto">
+  fieldTypes: Record<string, ConfigFieldType>
 ): void {
   if (value === undefined) return;
   if (!isRecord(value)) {
@@ -286,8 +229,8 @@ function validateSection(
     const fieldValue = value[key];
     if (fieldValue === undefined) continue;
     const fullPath = `${pathPrefix}.${key}`;
-    if (!matchesExpectedType(fieldValue, expected)) {
-      diagnostics.push(invalidType(fullPath, expectedLabel(expected)));
+    if (!matchesConfigFieldType(fieldValue, expected)) {
+      diagnostics.push(invalidType(fullPath, expectedConfigTypeLabel(expected)));
     }
   }
 }
@@ -308,36 +251,6 @@ function warnUnknownKeys(
   }
 }
 
-function matchesExpectedType(value: unknown, expected: "string" | "boolean" | "number" | "string[]" | "boolean-or-auto"): boolean {
-  switch (expected) {
-    case "string":
-      return typeof value === "string";
-    case "boolean":
-      return typeof value === "boolean";
-    case "number":
-      return typeof value === "number";
-    case "string[]":
-      return Array.isArray(value) && value.every((item) => typeof item === "string");
-    case "boolean-or-auto":
-      return typeof value === "boolean" || value === "auto";
-  }
-}
-
-function expectedLabel(expected: "string" | "boolean" | "number" | "string[]" | "boolean-or-auto"): string {
-  switch (expected) {
-    case "string":
-      return "a string";
-    case "boolean":
-      return "a boolean";
-    case "number":
-      return "a number";
-    case "string[]":
-      return "an array of strings";
-    case "boolean-or-auto":
-      return "a boolean or \"auto\"";
-  }
-}
-
 function invalidType(pathName: string, expected: string): Diagnostic {
   return {
     severity: "error",
@@ -352,24 +265,4 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function uniqueStrings(values: string[]): string[] {
   return [...new Set(values)];
-}
-
-function stringOr(value: unknown, fallback: string): string {
-  return typeof value === "string" ? value : fallback;
-}
-
-function booleanOr(value: unknown, fallback: boolean): boolean {
-  return typeof value === "boolean" ? value : fallback;
-}
-
-function numberOr(value: unknown, fallback: number): number {
-  return typeof value === "number" ? value : fallback;
-}
-
-function stringArrayOr(value: unknown, fallback: string[]): string[] {
-  return Array.isArray(value) && value.every((item) => typeof item === "string") ? value : fallback;
-}
-
-function tableOfContentsOr(value: unknown, fallback: boolean | "auto"): boolean | "auto" {
-  return typeof value === "boolean" || value === "auto" ? value : fallback;
 }

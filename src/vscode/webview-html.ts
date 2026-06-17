@@ -1,4 +1,5 @@
 import { randomBytes } from "node:crypto";
+import { documentControlScriptAttribute } from "../render/html/document-actions.js";
 
 export interface WebviewHtmlOptions {
   cspSource: string;
@@ -48,10 +49,18 @@ function isLocalResourceReference(reference: string): boolean {
 }
 
 function addControlScriptNonce(html: string, nonce: string): string {
-  return html.replace(/<script\b((?=[^>]*\bdata-mda-control-script\b)[^>]*)>/gi, (match, attributes: string) => {
+  const controlScriptPattern = new RegExp(
+    `<script\\b((?=[^>]*\\b${escapeRegExp(documentControlScriptAttribute)}\\b)[^>]*)>`,
+    "gi"
+  );
+  return html.replace(controlScriptPattern, (match, attributes: string) => {
     if (/\bnonce\s*=/.test(attributes)) return match;
     return `<script nonce="${escapeAttribute(nonce)}"${attributes}>`;
   });
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 function escapeAttribute(value: string): string {

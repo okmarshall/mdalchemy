@@ -1,12 +1,29 @@
 import path from "node:path";
-import { parseArgs } from "node:util";
 import { formatDiagnostic } from "../core/diagnostics.js";
 import { loadConfig } from "../config/config-loader.js";
-import { gfmMarkdownExtensions, type ResolvedConfig } from "../config/config-schema.js";
+import type { ResolvedConfig } from "../config/config-schema.js";
 import { inferFormat, writeOutputFile } from "../io/files.js";
 import { renderProjectBook } from "../book/book-builder.js";
 import { resolveTheme } from "../theme/theme.js";
-import { CliUsageError } from "./args.js";
+import { renderBookHelp } from "./help.js";
+import {
+  bookCliConflicts,
+  bookCliOptions,
+  bookMarkdownCliExtensions,
+  booleanPairValue,
+  CliUsageError,
+  commonCliConflicts,
+  flagValue,
+  htmlCliConflicts,
+  htmlCliOverridesFromSelections,
+  htmlCliSelectionsFromValues,
+  parseCliArgValues,
+  stringArrayValue,
+  stringValue,
+  uniqueStrings,
+  validateCliConflicts,
+  validateHtmlFormat
+} from "./options.js";
 
 interface BookCliArgs {
   root: string;
@@ -144,134 +161,53 @@ export async function handleBookCommand(argv: string[]): Promise<number> {
 }
 
 function parseBookCliArgs(argv: string[]): BookCliArgs {
-  const parsed = parseBookArgValues(argv);
-  if (!parsed.values.help) {
-    const format = parsed.values.format;
-    if (format !== undefined && format !== "html") {
-      throw new CliUsageError(`Unsupported format "${format}". Only html is implemented.`);
-    }
+  const parsed = parseCliArgValues(argv, bookCliOptions);
+  const format = stringValue(parsed.values, "format");
+  if (!flagValue(parsed.values, "help")) {
+    validateHtmlFormat(format);
     if (parsed.positionals.length > 1) {
       throw new CliUsageError(`Unexpected argument "${parsed.positionals[1]}". mdalchemy book accepts one root directory.`);
     }
-    if (parsed.values.stdout && parsed.values.output) {
-      throw new CliUsageError("Use either --stdout or --output, not both.");
-    }
-    if (parsed.values.toc && parsed.values["no-toc"]) {
-      throw new CliUsageError("Use either --toc or --no-toc, not both.");
-    }
-    if (parsed.values["collapsible-toc"] && parsed.values["no-collapsible-toc"]) {
-      throw new CliUsageError("Use either --collapsible-toc or --no-collapsible-toc, not both.");
-    }
-    if (parsed.values.sections && parsed.values["no-sections"]) {
-      throw new CliUsageError("Use either --sections or --no-sections, not both.");
-    }
-    if (parsed.values["collapsible-sections"] && parsed.values["no-collapsible-sections"]) {
-      throw new CliUsageError("Use either --collapsible-sections or --no-collapsible-sections, not both.");
-    }
-    if (parsed.values["no-sections"] && parsed.values["collapsible-sections"]) {
-      throw new CliUsageError("Use either --no-sections or --collapsible-sections, not both.");
-    }
-    if (parsed.values["folder-structure"] && parsed.values["no-folder-structure"]) {
-      throw new CliUsageError("Use either --folder-structure or --no-folder-structure, not both.");
-    }
+    validateCliConflicts(parsed.values, commonCliConflicts);
+    validateCliConflicts(parsed.values, htmlCliConflicts);
+    validateCliConflicts(parsed.values, bookCliConflicts);
   }
 
+  const htmlSelections = htmlCliSelectionsFromValues(parsed.values);
   return {
     root: parsed.positionals[0] ?? ".",
-    output: parsed.values.output,
-    format: parsed.values.format as "html" | undefined,
-    theme: parsed.values.theme,
-    configPath: parsed.values.config,
-    stdout: Boolean(parsed.values.stdout),
-    strict: Boolean(parsed.values.strict),
-    safe: Boolean(parsed.values.safe),
-    fragment: Boolean(parsed.values.fragment),
-    gfm: Boolean(parsed.values.gfm),
-    frontmatter: Boolean(parsed.values.frontmatter),
-    title: parsed.values.title,
-    toc: parsed.values.toc === true ? true : parsed.values["no-toc"] === true ? false : undefined,
-    collapsibleToc: parsed.values["collapsible-toc"] === true
-      ? true
-      : parsed.values["no-collapsible-toc"] === true
-        ? false
-        : undefined,
-    sections: parsed.values.sections === true ? true : parsed.values["no-sections"] === true ? false : undefined,
-    collapsibleSections: parsed.values["collapsible-sections"] === true
-      ? true
-      : parsed.values["no-collapsible-sections"] === true
-        ? false
-        : undefined,
-    folderStructure: parsed.values["folder-structure"] === true
-      ? true
-      : parsed.values["no-folder-structure"] === true
-        ? false
-        : undefined,
-    include: stringArray(parsed.values.include),
-    exclude: stringArray(parsed.values.exclude),
-    help: Boolean(parsed.values.help),
-    debug: Boolean(parsed.values.debug)
+    output: stringValue(parsed.values, "output"),
+    format: format as "html" | undefined,
+    theme: stringValue(parsed.values, "theme"),
+    configPath: stringValue(parsed.values, "config"),
+    stdout: flagValue(parsed.values, "stdout"),
+    strict: flagValue(parsed.values, "strict"),
+    safe: flagValue(parsed.values, "safe"),
+    fragment: htmlSelections.fragment,
+    gfm: flagValue(parsed.values, "gfm"),
+    frontmatter: flagValue(parsed.values, "frontmatter"),
+    title: htmlSelections.title,
+    toc: htmlSelections.toc,
+    collapsibleToc: htmlSelections.collapsibleToc,
+    sections: htmlSelections.sections,
+    collapsibleSections: htmlSelections.collapsibleSections,
+    folderStructure: booleanPairValue(parsed.values, "folder-structure", "no-folder-structure"),
+    include: stringArrayValue(parsed.values, "include"),
+    exclude: stringArrayValue(parsed.values, "exclude"),
+    help: flagValue(parsed.values, "help"),
+    debug: flagValue(parsed.values, "debug")
   };
 }
 
-function parseBookArgValues(argv: string[]) {
-  try {
-    return parseArgs({
-      args: argv,
-      allowPositionals: true,
-      options: {
-        output: { type: "string", short: "o" },
-        format: { type: "string" },
-        theme: { type: "string" },
-        config: { type: "string" },
-        stdout: { type: "boolean" },
-        strict: { type: "boolean" },
-        safe: { type: "boolean" },
-        fragment: { type: "boolean" },
-        gfm: { type: "boolean" },
-        frontmatter: { type: "boolean" },
-        title: { type: "string" },
-        toc: { type: "boolean" },
-        "no-toc": { type: "boolean" },
-        "collapsible-toc": { type: "boolean" },
-        "no-collapsible-toc": { type: "boolean" },
-        sections: { type: "boolean" },
-        "no-sections": { type: "boolean" },
-        "collapsible-sections": { type: "boolean" },
-        "no-collapsible-sections": { type: "boolean" },
-        "folder-structure": { type: "boolean" },
-        "no-folder-structure": { type: "boolean" },
-        include: { type: "string", multiple: true },
-        exclude: { type: "string", multiple: true },
-        help: { type: "boolean", short: "h" },
-        debug: { type: "boolean" }
-      }
-    });
-  } catch (error) {
-    throw new CliUsageError(error instanceof Error ? error.message : String(error));
-  }
-}
-
 function bookCliOverrides(args: BookCliArgs): Partial<ResolvedConfig> {
-  const html: Partial<ResolvedConfig["html"]> = {};
+  const html = htmlCliOverridesFromSelections(args);
   const book: Partial<ResolvedConfig["book"]> = {};
-  if (args.fragment) html.fragment = true;
-  if (args.title) html.title = args.title;
-  if (args.toc !== undefined) html.tableOfContents = args.toc;
-  if (args.collapsibleToc !== undefined) html.collapsibleTableOfContents = args.collapsibleToc;
-  if (args.sections !== undefined) html.sections = args.sections;
-  if (args.sections === false) html.collapsibleSections = false;
-  if (args.collapsibleSections !== undefined) {
-    html.collapsibleSections = args.collapsibleSections;
-    if (args.collapsibleSections) html.sections = true;
-  }
   if (args.folderStructure !== undefined) book.folderStructure = args.folderStructure;
 
-  const extensions = uniqueStrings([
-    ...gfmMarkdownExtensions,
-    "frontmatter",
-    ...(args.gfm ? gfmMarkdownExtensions : []),
-    ...(args.frontmatter ? ["frontmatter"] : [])
-  ]);
+  const extensions = bookMarkdownCliExtensions({
+    gfm: args.gfm,
+    frontmatter: args.frontmatter
+  });
 
   const overrides: Partial<ResolvedConfig> = {
     strict: args.strict,
@@ -288,54 +224,4 @@ function bookCliOverrides(args: BookCliArgs): Partial<ResolvedConfig> {
   return overrides;
 }
 
-function stringArray(value: unknown): string[] {
-  if (Array.isArray(value)) return value.filter((item): item is string => typeof item === "string");
-  return typeof value === "string" ? [value] : [];
-}
-
-function uniqueStrings(values: readonly string[]): string[] {
-  return [...new Set(values)];
-}
-
-export const bookHelpText = `Usage:
-  mdalchemy book [root] [options]
-
-Build a single HTML documentation book from a project Markdown tree.
-
-Project:
-      --include <pattern>  Include Markdown paths; repeatable
-      --exclude <pattern>  Exclude paths or directories; repeatable
-      --folder-structure   Group book TOC entries by traversed folders
-      --no-folder-structure
-                           Render a flat file list in the book TOC
-
-Output:
-  -o, --output <path>      Write standalone HTML to a file
-      --stdout             Write rendered HTML to stdout
-      --fragment           Render an HTML fragment instead of a full document
-      --format <format>    Output format; only html is implemented
-
-Markdown:
-      --gfm                Supported GFM extensions are enabled for books
-      --frontmatter        Frontmatter parsing is enabled for books
-
-HTML:
-      --theme <name|path>  Built-in theme name or theme JSON file
-      --title <title>      Override book title
-      --toc                Force table of contents on
-      --no-toc             Disable table of contents
-      --collapsible-toc    Add native expand/collapse controls to table of contents items
-      --no-collapsible-toc Disable table of contents expand/collapse controls
-      --sections           Wrap heading-led content in section elements
-      --no-sections        Disable section wrappers
-      --collapsible-sections
-                           Add native expand/collapse controls to sections
-      --no-collapsible-sections
-                           Disable section expand/collapse controls
-
-Safety and diagnostics:
-      --config <path>      Config file
-      --safe               Escape raw HTML and reject unsafe URLs
-      --strict             Treat warnings as errors
-      --debug              Show extra diagnostics
-  -h, --help               Show help`;
+export const bookHelpText = renderBookHelp();

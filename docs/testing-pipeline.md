@@ -19,7 +19,7 @@ The package should expose at least these baseline scripts:
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "test": "npm run build && node --test test/*.test.mjs",
-    "test:unit": "npm run build && node --test test/parser.test.mjs test/renderer.test.mjs test/cli.test.mjs",
+    "test:unit": "npm run build && node --test test/parser.test.mjs test/renderer-*.test.mjs test/cli-*.test.mjs",
     "test:fixtures": "npm run build && node --test test/example-fixture.test.mjs",
     "test:conformance": "npm run build && node --test test/conformance.test.mjs",
     "test:commonmark": "npm run build && node test/commonmark-corpus-report.mjs",
@@ -111,6 +111,8 @@ Unit tests should cover small modules with narrow inputs and outputs:
 - Safe URL handling.
 - Config merging and validation.
 - Theme token validation.
+- Renderer shell, TOC/section, block, theme, extension, and syntax behavior.
+- CLI render, book, help, and error behavior.
 
 Preferred command today:
 
@@ -136,6 +138,17 @@ Expected result:
 - Failures identify the module and behavior that regressed.
 - Parser edge cases discovered during implementation get a focused regression
   test in addition to any broad fixture coverage.
+
+The broad renderer and CLI suites are intentionally split by behavior area:
+
+- `test/renderer-shell.test.mjs`
+- `test/renderer-toc-sections.test.mjs`
+- `test/renderer-blocks.test.mjs`
+- `test/renderer-theme.test.mjs`
+- `test/renderer-extensions-syntax.test.mjs`
+- `test/cli-render.test.mjs`
+- `test/cli-book.test.mjs`
+- `test/cli-errors.test.mjs`
 
 ## 4. Run Fixture Tests
 

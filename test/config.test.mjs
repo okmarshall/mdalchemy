@@ -72,7 +72,8 @@ test("config loader validates and resolves collapsible section settings", async 
   const configPath = path.join(dir, "mdalchemy.config.json");
   await writeFile(configPath, JSON.stringify({
     html: {
-      collapsibleSections: "yes"
+      collapsibleSections: "yes",
+      collapsibleTableOfContents: "yes"
     }
   }), "utf8");
 
@@ -82,14 +83,20 @@ test("config loader validates and resolves collapsible section settings", async 
     diagnostic.code === "MDA_CONFIG_INVALID_TYPE"
     && diagnostic.message.includes("html.collapsibleSections")
   )), true);
+  assert.equal(result.diagnostics.some((diagnostic) => (
+    diagnostic.code === "MDA_CONFIG_INVALID_TYPE"
+    && diagnostic.message.includes("html.collapsibleTableOfContents")
+  )), true);
 
   const config = resolveConfig({
     html: {
-      collapsibleSections: true
+      collapsibleSections: true,
+      collapsibleTableOfContents: true
     }
   });
 
   assert.equal(config.html.collapsibleSections, true);
+  assert.equal(config.html.collapsibleTableOfContents, true);
   assert.equal(config.html.sections, true);
 });
 
@@ -99,7 +106,8 @@ test("config loader validates and resolves book discovery settings", async () =>
   await writeFile(configPath, JSON.stringify({
     book: {
       include: "**/*.md",
-      exclude: [123]
+      exclude: [123],
+      folderStructure: "yes"
     }
   }), "utf8");
 
@@ -113,17 +121,23 @@ test("config loader validates and resolves book discovery settings", async () =>
     diagnostic.code === "MDA_CONFIG_INVALID_TYPE"
     && diagnostic.message.includes("book.exclude")
   )), true);
+  assert.equal(result.diagnostics.some((diagnostic) => (
+    diagnostic.code === "MDA_CONFIG_INVALID_TYPE"
+    && diagnostic.message.includes("book.folderStructure")
+  )), true);
 
   const config = resolveConfig({
     book: {
       include: ["docs/**/*.md"],
-      exclude: ["docs/private/**"]
+      exclude: ["docs/private/**"],
+      folderStructure: false
     }
   });
 
   assert.deepEqual(config.book.include, ["docs/**/*.md"]);
   assert.equal(config.book.exclude.includes("node_modules/**"), true);
   assert.equal(config.book.exclude.includes("docs/private/**"), true);
+  assert.equal(config.book.folderStructure, false);
 });
 
 test("config loader reports unsupported but well-typed extension names", async () => {

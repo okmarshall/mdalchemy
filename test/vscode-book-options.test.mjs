@@ -3,6 +3,7 @@ import path from "node:path";
 import test from "node:test";
 import {
   buildBookConfigOverrides,
+  defaultBookConfigOverrides,
   defaultBookOutputPath,
   normalizeBookOutputPath
 } from "../dist/vscode/book-options.js";
@@ -16,27 +17,53 @@ test("VS Code book options resolve default and prompted output paths", () => {
   assert.throws(() => normalizeBookOutputPath(rootPath, "book.pdf"), /only generate .html or .htm/);
 });
 
+test("VS Code book options default to collapsible TOCs and folder structure", () => {
+  assert.deepEqual(defaultBookConfigOverrides(), {
+    html: {
+      collapsibleTableOfContents: true
+    },
+    book: {
+      folderStructure: true
+    }
+  });
+});
+
 test("VS Code book options map prompt selections to config overrides", () => {
   assert.deepEqual(
     buildBookConfigOverrides({
       sectionMode: "config",
-      tocMode: "config"
+      tocMode: "config",
+      collapsibleToc: true,
+      folderStructure: true
     }),
-    {}
+    {
+      html: {
+        collapsibleTableOfContents: true
+      },
+      book: {
+        folderStructure: true
+      }
+    }
   );
 
   assert.deepEqual(
     buildBookConfigOverrides({
       theme: "technical",
       sectionMode: "collapsible",
-      tocMode: "on"
+      tocMode: "on",
+      collapsibleToc: true,
+      folderStructure: true
     }),
     {
       theme: "technical",
       html: {
         tableOfContents: true,
+        collapsibleTableOfContents: true,
         sections: true,
         collapsibleSections: true
+      },
+      book: {
+        folderStructure: true
       }
     }
   );
@@ -44,13 +71,19 @@ test("VS Code book options map prompt selections to config overrides", () => {
   assert.deepEqual(
     buildBookConfigOverrides({
       sectionMode: "none",
-      tocMode: "off"
+      tocMode: "off",
+      collapsibleToc: false,
+      folderStructure: false
     }),
     {
       html: {
         tableOfContents: false,
+        collapsibleTableOfContents: false,
         sections: false,
         collapsibleSections: false
+      },
+      book: {
+        folderStructure: false
       }
     }
   );

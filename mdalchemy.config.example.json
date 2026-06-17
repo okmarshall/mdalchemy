@@ -25,12 +25,14 @@
     "sections": false,
     "collapsibleSections": false,
     "tableOfContents": "auto",
+    "collapsibleTableOfContents": false,
     "tocDepth": 3,
     "softBreak": "newline"
   },
   "book": {
     "include": ["**/*.md", "**/*.markdown"],
-    "exclude": [".git/**", "node_modules/**", "dist/**", "build/**", "coverage/**", ".next/**", "out/**"]
+    "exclude": [".git/**", "node_modules/**", "dist/**", "build/**", "coverage/**", ".next/**", "out/**"],
+    "folderStructure": true
   },
   "theme": "./examples/themes/warm-report.json"
 }

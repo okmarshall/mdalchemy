@@ -99,6 +99,7 @@ test("cli exposes top-level and theme help", async () => {
   assert.match(help.stdout, /Usage:/);
   assert.match(help.stdout, /mdalchemy book \[root\]/);
   assert.match(help.stdout, /Markdown:/);
+  assert.match(help.stdout, /--collapsible-toc/);
   assert.match(help.stdout, /Safety and diagnostics:/);
 
   const noisyHelp = await runCli(["--help", "--stdout", "-o", "ignored.html", "--format", "pdf"]);
@@ -114,6 +115,7 @@ test("cli exposes top-level and theme help", async () => {
   assert.equal(bookHelp.exitCode, 0);
   assert.match(bookHelp.stdout, /mdalchemy book \[root\]/);
   assert.match(bookHelp.stdout, /--include <pattern>/);
+  assert.match(bookHelp.stdout, /--folder-structure/);
 });
 
 test("cli builds a project documentation book from a markdown tree", async () => {
@@ -160,7 +162,7 @@ mdalchemy:
   await writeFile(path.join(assetsDir, "diagram.svg"), "<svg></svg>\n", "utf8");
 
   const output = path.join(outputDir, "book.html");
-  const result = await runCli(["book", dir, "-o", output, "--title", "Project Book", "--collapsible-sections"]);
+  const result = await runCli(["book", dir, "-o", output, "--title", "Project Book", "--toc", "--collapsible-toc", "--collapsible-sections"]);
   const html = await readFile(output, "utf8");
 
   assert.equal(result.exitCode, 0);
@@ -175,9 +177,20 @@ mdalchemy:
   assert.match(html, /href="#usage"/);
   assert.match(html, /href="#root-project"/);
   assert.match(html, /src="..\/docs\/assets\/diagram.svg"/);
+  assert.match(html, /<a href="#project-book">Project Book<\/a>/);
+  assert.match(html, /<details class="mda-toc-details"><summary class="mda-toc-summary"><span class="mda-toc-label">docs<\/span><\/summary>/);
+  assert.match(html, /<a href="#guide-doc">Guide Doc<\/a>/);
+  assert.doesNotMatch(html, /<h2 id="docs">docs<\/h2>/);
+  assert.match(html, /<a class="mda-back-to-top" href="#top">Go to top<\/a>/);
   assert.match(html, /mda-section-collapsible/);
   assert.match(html, /Root footnote/);
   assert.match(html, /Guide footnote/);
+
+  const flat = await runCli(["book", dir, "--stdout", "--fragment", "--title", "Project Book", "--no-folder-structure"]);
+
+  assert.equal(flat.exitCode, 0);
+  assert.doesNotMatch(flat.stdout, /<span class="mda-toc-label">docs<\/span>/);
+  assert.match(flat.stdout, /<h2 id="guide-doc">/);
 });
 
 test("cli writes fragment output to stdout", async () => {
@@ -274,9 +287,11 @@ test("cli returns usage errors for invalid argument combinations", async () => {
     { args: [input, "extra.md"], message: /Unexpected argument "extra.md"/ },
     { args: [input, "--stdout", "-o", path.join(dir, "out.html")], message: /Use either --stdout or --output/ },
     { args: [input, "--toc", "--no-toc"], message: /Use either --toc or --no-toc/ },
+    { args: [input, "--collapsible-toc", "--no-collapsible-toc"], message: /Use either --collapsible-toc or --no-collapsible-toc/ },
     { args: [input, "--sections", "--no-sections"], message: /Use either --sections or --no-sections/ },
     { args: [input, "--collapsible-sections", "--no-collapsible-sections"], message: /Use either --collapsible-sections or --no-collapsible-sections/ },
     { args: [input, "--no-sections", "--collapsible-sections"], message: /Use either --no-sections or --collapsible-sections/ },
+    { args: ["book", dir, "--folder-structure", "--no-folder-structure"], message: /Use either --folder-structure or --no-folder-structure/ },
     { args: ["theme", "list", "serif"], message: /theme list does not accept arguments/ }
   ];
 

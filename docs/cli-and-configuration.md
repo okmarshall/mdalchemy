@@ -61,6 +61,8 @@ HTML:
 --title <title>           Override document title.
 --toc                     Force table of contents on.
 --no-toc                  Disable table of contents.
+--collapsible-toc         Add native expand/collapse controls to TOC items.
+--no-collapsible-toc      Disable table of contents expand/collapse controls.
 --sections                Wrap heading-led content in section elements.
 --no-sections             Disable section wrappers.
 --collapsible-sections    Add native expand/collapse controls to sections.
@@ -95,6 +97,7 @@ Book command:
 mdalchemy book [root]
 mdalchemy book . -o project-docs.html
 mdalchemy book . --include "**/README.md" --exclude "docs/private/**"
+mdalchemy book . --toc --collapsible-toc --no-folder-structure
 mdalchemy help book
 ```
 
@@ -115,6 +118,8 @@ Book-specific options:
 ```text
 --include <pattern>       Include Markdown paths; repeatable.
 --exclude <pattern>       Exclude paths or directories; repeatable.
+--folder-structure        Group book TOC entries by traversed folders.
+--no-folder-structure     Render a flat file list in the book TOC.
 ```
 
 Default include patterns:
@@ -207,9 +212,11 @@ Invalid command combinations:
 - More than one input path is a usage error.
 - `--stdout` and `--output` together are a usage error.
 - `--toc` and `--no-toc` together are a usage error.
+- `--collapsible-toc` and `--no-collapsible-toc` together are a usage error.
 - `--sections` and `--no-sections` together are a usage error.
 - `--collapsible-sections` and `--no-collapsible-sections` together are a usage error.
 - `--no-sections` and `--collapsible-sections` together are a usage error.
+- `--folder-structure` and `--no-folder-structure` together are a usage error.
 - Theme subcommands reject unexpected extra arguments.
 
 ## Format Inference
@@ -286,12 +293,14 @@ Versioned config:
     "sections": false,
     "collapsibleSections": false,
     "tableOfContents": "auto",
+    "collapsibleTableOfContents": false,
     "tocDepth": 3,
     "softBreak": "newline"
   },
   "book": {
     "include": ["**/*.md", "**/*.markdown"],
-    "exclude": [".git/**", "node_modules/**", "dist/**", "build/**", "coverage/**", ".next/**", "out/**"]
+    "exclude": [".git/**", "node_modules/**", "dist/**", "build/**", "coverage/**", ".next/**", "out/**"],
+    "folderStructure": true
   },
   "theme": "serif"
 }
@@ -346,6 +355,7 @@ interface HtmlConfig {
   sections: boolean;
   collapsibleSections: boolean;
   tableOfContents: boolean | "auto";
+  collapsibleTableOfContents: boolean;
   tocDepth: number;
   softBreak: "newline" | "space" | "br";
 }
@@ -363,6 +373,12 @@ HTML output remains fully readable until the reader chooses to collapse a
 section. Enabling `collapsibleSections` also enables `sections`; use
 `--no-collapsible-sections` to keep section wrappers but disable the controls.
 
+`collapsibleTableOfContents` adds native `<details>` / `<summary>` controls to
+TOC items that have child entries. Top-level TOC entries render open; nested
+entries render collapsed by default so large book outlines remain compact until
+the reader expands the branch they need. Use `--collapsible-toc` or
+`--no-collapsible-toc` to override this setting for a single CLI render.
+
 ### `theme`
 
 ```ts
@@ -377,6 +393,7 @@ A string can be a built-in theme name or a path.
 interface BookConfig {
   include: string[];
   exclude: string[];
+  folderStructure: boolean;
 }
 ```
 
@@ -384,6 +401,11 @@ interface BookConfig {
 `exclude` removes matching files or directories and extends the built-in default
 excludes. The CLI `--include` flag replaces `include` for a run; the CLI
 `--exclude` flag appends to `exclude`.
+
+`folderStructure` inserts TOC-only folder groups around file entries so the book
+navigation mirrors the traversed project tree without changing the main
+document body. It is enabled by default for books; use `--no-folder-structure`
+to keep a flat list of file entries in the book TOC.
 
 When a book is composed, mdalchemy inserts a master title, creates one section
 per included file, rewrites links between included Markdown files to same-page
@@ -454,6 +476,8 @@ HTML:
       --title <title>       Override document title
       --toc                 Force table of contents on
       --no-toc              Disable table of contents
+      --collapsible-toc     Add native expand/collapse controls to table of contents items
+      --no-collapsible-toc  Disable table of contents expand/collapse controls
       --sections            Wrap heading-led content in section elements
       --no-sections         Disable section wrappers
       --collapsible-sections

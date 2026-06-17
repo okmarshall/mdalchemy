@@ -3,6 +3,7 @@ import * as vscode from "vscode";
 import type { ResolvedConfig } from "../config/config-schema.js";
 import { builtInThemes } from "../theme/theme.js";
 import {
+  defaultBookConfigOverrides,
   buildBookConfigOverrides,
   defaultBookOutputPath,
   normalizeBookOutputPath,
@@ -32,6 +33,14 @@ interface SectionQuickPickItem extends vscode.QuickPickItem {
 
 interface TocQuickPickItem extends vscode.QuickPickItem {
   tocMode: BookTocMode;
+}
+
+interface TocCollapseQuickPickItem extends vscode.QuickPickItem {
+  collapsibleToc: boolean;
+}
+
+interface FolderStructureQuickPickItem extends vscode.QuickPickItem {
+  folderStructure: boolean;
 }
 
 export async function resolveBookRoot(resource: vscode.Uri | undefined): Promise<vscode.Uri> {
@@ -89,7 +98,7 @@ export async function promptForBookRoot(): Promise<vscode.Uri | undefined> {
 export function defaultBookRenderSettings(rootPath: string): BookRenderSettings {
   return {
     outputPath: defaultBookOutputPath(rootPath),
-    configOverrides: {}
+    configOverrides: defaultBookConfigOverrides()
   };
 }
 
@@ -102,6 +111,12 @@ export async function promptForBookSettings(rootUri: vscode.Uri): Promise<BookRe
 
   const tocMode = await promptForTocMode();
   if (!tocMode) return undefined;
+
+  const collapsibleToc = await promptForTocCollapse();
+  if (collapsibleToc === undefined) return undefined;
+
+  const folderStructure = await promptForFolderStructure();
+  if (folderStructure === undefined) return undefined;
 
   const outputUri = await vscode.window.showSaveDialog({
     title: "Save mdalchemy HTML book",
@@ -116,7 +131,9 @@ export async function promptForBookSettings(rootUri: vscode.Uri): Promise<BookRe
 
   const selections: BookPromptSelections = {
     sectionMode,
-    tocMode
+    tocMode,
+    collapsibleToc,
+    folderStructure
   };
   if (theme !== "config") selections.theme = theme;
 
@@ -202,7 +219,7 @@ async function promptForTocMode(): Promise<BookTocMode | undefined> {
   const selected = await vscode.window.showQuickPick<TocQuickPickItem>([
     {
       label: "Config/default",
-      description: "Use html.tableOfContents from config",
+      description: "Use TOC visibility from config with collapsible book navigation",
       tocMode: "config"
     },
     {
@@ -220,6 +237,44 @@ async function promptForTocMode(): Promise<BookTocMode | undefined> {
     placeHolder: "Choose TOC behavior"
   });
   return selected?.tocMode;
+}
+
+async function promptForTocCollapse(): Promise<boolean | undefined> {
+  const selected = await vscode.window.showQuickPick<TocCollapseQuickPickItem>([
+    {
+      label: "Collapsible table of contents",
+      description: "Nested branches collapse by default",
+      collapsibleToc: true
+    },
+    {
+      label: "Standard table of contents",
+      description: "Show nested entries as an expanded ordered list",
+      collapsibleToc: false
+    }
+  ], {
+    title: "mdalchemy: TOC Style",
+    placeHolder: "Choose TOC nesting behavior"
+  });
+  return selected?.collapsibleToc;
+}
+
+async function promptForFolderStructure(): Promise<boolean | undefined> {
+  const selected = await vscode.window.showQuickPick<FolderStructureQuickPickItem>([
+    {
+      label: "Show folder structure",
+      description: "Group book sections by traversed folders",
+      folderStructure: true
+    },
+    {
+      label: "Flat file list",
+      description: "Render file entries without TOC folder groups",
+      folderStructure: false
+    }
+  ], {
+    title: "mdalchemy: Book Folder Structure",
+    placeHolder: "Choose how source folders appear in the book"
+  });
+  return selected?.folderStructure;
 }
 
 async function isDirectory(uri: vscode.Uri): Promise<boolean> {

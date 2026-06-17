@@ -7,7 +7,7 @@ import type { Diagnostic } from "../../core/diagnostics.js";
 import { renderBlocks } from "./block-renderer.js";
 import { renderStandalone } from "./document-shell.js";
 import { appendFootnotes, collectFootnoteDefinitions } from "./footnotes.js";
-import { renderToc, shouldRenderToc } from "./toc-renderer.js";
+import { renderToc, shouldRenderToc, type TocItem } from "./toc-renderer.js";
 import type { RenderContext } from "./types.js";
 
 export interface RenderOptions {
@@ -16,6 +16,7 @@ export interface RenderOptions {
   theme?: ResolvedTheme;
   cwd?: string;
   commonmarkCompatible?: boolean;
+  tocItems?: readonly TocItem[] | undefined;
 }
 
 export interface RenderResult {
@@ -50,8 +51,11 @@ export async function renderDocument(document: DocumentNode, options: RenderOpti
   };
   const fragment = renderBlocks(document.children, context);
   const withFootnotes = appendFootnotes(fragment, context, renderBlocks);
+  const tocItems = options.tocItems ?? outline.tree;
   const withToc = shouldRenderToc(config, outline)
-    ? `${renderToc(outline.tree, config.html.tocDepth)}\n${withFootnotes}`
+    ? `${renderToc(tocItems, config.html.tocDepth, {
+      collapsible: config.html.collapsibleTableOfContents
+    })}\n${withFootnotes}`
     : withFootnotes;
   const content = config.output.standalone && !config.html.fragment
     ? renderStandalone(withToc, config, theme, outline.title)

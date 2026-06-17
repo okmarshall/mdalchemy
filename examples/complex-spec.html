@@ -65,6 +65,10 @@ body {
   min-height: 100vh;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 .mda-document {
   width: min(calc(100% - clamp(24px, 4vw, 80px)), var(--mda-layout-maxWidth));
   margin: clamp(18px, 4vw, 56px) auto;
@@ -420,6 +424,79 @@ tr:last-child td {
   margin: 0.35rem 0 0;
 }
 
+.mda-toc-details {
+  display: block;
+}
+
+.mda-toc-summary {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.45rem;
+  align-items: baseline;
+  cursor: pointer;
+  list-style: none;
+}
+
+.mda-toc-summary::-webkit-details-marker {
+  display: none;
+}
+
+.mda-toc-summary::before {
+  content: "";
+  width: 0.45rem;
+  height: 0.45rem;
+  margin-top: 0.1em;
+  border-right: 0.12rem solid var(--mda-color-accent);
+  border-bottom: 0.12rem solid var(--mda-color-accent);
+  transform: rotate(-45deg);
+  transition: transform 160ms ease;
+}
+
+.mda-toc-details[open] > .mda-toc-summary::before {
+  transform: rotate(45deg);
+}
+
+.mda-toc-summary:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--mda-color-accent), transparent 45%);
+  outline-offset: 0.15rem;
+  border-radius: calc(var(--mda-layout-radius) * 0.75);
+}
+
+.mda-toc-summary > a {
+  min-width: 0;
+}
+
+.mda-toc-label {
+  color: var(--mda-color-text);
+  font-weight: 700;
+}
+
+.mda-back-to-top {
+  position: fixed;
+  right: clamp(1rem, 3vw, 2rem);
+  bottom: clamp(1rem, 3vw, 2rem);
+  z-index: 20;
+  padding: 0.55rem 0.8rem;
+  border: var(--mda-layout-borderWidth) solid var(--mda-color-border);
+  border-radius: var(--mda-layout-radius);
+  background: color-mix(in srgb, var(--mda-color-document), transparent 8%);
+  box-shadow: 0 12px 30px var(--mda-color-shadow);
+  color: var(--mda-color-accent);
+  font-size: var(--mda-font-size-small);
+  font-weight: 700;
+  line-height: 1;
+  text-decoration: none;
+}
+
+.mda-back-to-top:hover {
+  color: var(--mda-color-secondary);
+}
+
+.mda-back-to-top:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--mda-color-accent), transparent 45%);
+  outline-offset: 0.15rem;
+}
+
 .mda-footnote-ref {
   display: inline-block;
   min-width: 1.35em;
@@ -502,14 +579,20 @@ h6:hover .mda-heading-anchor {
     break-inside: avoid;
   }
 
+  .mda-back-to-top {
+    display: none;
+  }
+
   .mda-table-scroll {
     overflow: visible;
   }
 
+  .mda-toc-summary::before,
   .mda-section-summary::before {
     display: none;
   }
 
+  .mda-toc-details:not([open]) > ol,
   .mda-section-details:not([open]) > .mda-section-body {
     display: block;
   }
@@ -532,7 +615,7 @@ h6:hover .mda-heading-anchor {
   </style>
 </head>
 <body>
-  <article class="mda-document">
+  <article id="top" class="mda-document">
     <main class="mda-content">
 <nav class="mda-toc" aria-label="Table of contents">
   <ol>
@@ -736,5 +819,6 @@ are implemented exactly.</p>
 </section>
     </main>
   </article>
+  <a class="mda-back-to-top" href="#top">Go to top</a>
 </body>
 </html>

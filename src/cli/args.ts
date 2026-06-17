@@ -22,6 +22,7 @@ export interface CliArgs {
   frontmatter: boolean;
   title: string | undefined;
   toc: boolean | undefined;
+  collapsibleToc: boolean | undefined;
   sections: boolean | undefined;
   collapsibleSections: boolean | undefined;
   help: boolean;
@@ -45,6 +46,9 @@ export function parseCliArgs(argv: string[]): CliArgs {
     }
     if (parsed.values.toc && parsed.values["no-toc"]) {
       throw new CliUsageError("Use either --toc or --no-toc, not both.");
+    }
+    if (parsed.values["collapsible-toc"] && parsed.values["no-collapsible-toc"]) {
+      throw new CliUsageError("Use either --collapsible-toc or --no-collapsible-toc, not both.");
     }
     if (parsed.values.sections && parsed.values["no-sections"]) {
       throw new CliUsageError("Use either --sections or --no-sections, not both.");
@@ -71,6 +75,11 @@ export function parseCliArgs(argv: string[]): CliArgs {
     frontmatter: Boolean(parsed.values.frontmatter),
     title: parsed.values.title,
     toc: parsed.values.toc === true ? true : parsed.values["no-toc"] === true ? false : undefined,
+    collapsibleToc: parsed.values["collapsible-toc"] === true
+      ? true
+      : parsed.values["no-collapsible-toc"] === true
+        ? false
+        : undefined,
     sections: parsed.values.sections === true ? true : parsed.values["no-sections"] === true ? false : undefined,
     collapsibleSections: parsed.values["collapsible-sections"] === true
       ? true
@@ -103,6 +112,8 @@ function parseCliArgValues(argv: string[]) {
         title: { type: "string" },
         toc: { type: "boolean" },
         "no-toc": { type: "boolean" },
+        "collapsible-toc": { type: "boolean" },
+        "no-collapsible-toc": { type: "boolean" },
         sections: { type: "boolean" },
         "no-sections": { type: "boolean" },
         "collapsible-sections": { type: "boolean" },
@@ -122,6 +133,7 @@ export function cliOverrides(args: CliArgs): Partial<ResolvedConfig> {
   if (args.fragment) html.fragment = true;
   if (args.title) html.title = args.title;
   if (args.toc !== undefined) html.tableOfContents = args.toc;
+  if (args.collapsibleToc !== undefined) html.collapsibleTableOfContents = args.collapsibleToc;
   if (args.sections !== undefined) html.sections = args.sections;
   if (args.sections === false) html.collapsibleSections = false;
   if (args.collapsibleSections !== undefined) {
@@ -169,6 +181,8 @@ HTML:
       --title <title>       Override document title
       --toc                 Force table of contents on
       --no-toc              Disable table of contents
+      --collapsible-toc     Add native expand/collapse controls to table of contents items
+      --no-collapsible-toc  Disable table of contents expand/collapse controls
       --sections            Wrap heading-led content in section elements
       --no-sections         Disable section wrappers
       --collapsible-sections

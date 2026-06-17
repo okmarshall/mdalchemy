@@ -40,7 +40,10 @@ Standalone HTML should look like:
         <!-- rendered markdown -->
       </main>
     </article>
-    <a class="mda-back-to-top" href="#top">Go to top</a>
+    <nav class="mda-floating-actions" aria-label="Document shortcuts">
+      <a class="mda-floating-action mda-back-to-top" href="#top">Go to top</a>
+      <!-- optional collapse/expand controls when the document has collapsible regions -->
+    </nav>
   </body>
 </html>
 ```
@@ -191,6 +194,11 @@ The TOC should not appear when there are fewer than two headings unless explicit
 When `collapsibleTableOfContents` is enabled, TOC entries with children should
 render with native `<details>` / `<summary>` controls. Top-level entries should
 be open, and nested child branches should be closed by default.
+
+Standalone HTML includes a bottom-right shortcut cluster. It always links back
+to `#top`; when the rendered document contains collapsible sections or a
+collapsible TOC, it also includes `Collapse all` and `Expand all` controls for
+the generated `<details>` regions.
 
 ## Raw HTML Policy
 

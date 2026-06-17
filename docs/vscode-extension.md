@@ -126,10 +126,12 @@ the webview so relative images inside the workspace can render in the preview.
 The written HTML file keeps normal relative paths, so it remains portable as an
 ordinary HTML document.
 
-Scripts are disabled in the preview webview, and the extension injects a
-restrictive content security policy for the in-editor view. The underlying
-rendered HTML still follows the configured mdalchemy raw HTML policy. Use the
-existing `html.rawHtml` and `html.safeUrls` config options for untrusted content.
+The preview webview enables scripts only so mdalchemy's first-party document
+shortcut controls can run. The extension injects a restrictive content security
+policy with a nonce for that generated control script, so user-authored raw
+scripts remain blocked in the in-editor view. The underlying rendered HTML still
+follows the configured mdalchemy raw HTML policy. Use the existing
+`html.rawHtml` and `html.safeUrls` config options for untrusted content.
 
 ## Development
 

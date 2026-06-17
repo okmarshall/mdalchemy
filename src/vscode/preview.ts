@@ -44,7 +44,7 @@ export function createPreviewPanel(options: PreviewPanelOptions): PreviewPanel {
     options.title,
     vscode.ViewColumn.Beside,
     {
-      enableScripts: false,
+      enableScripts: true,
       localResourceRoots: [
         options.localResourceRoot,
         options.context.extensionUri

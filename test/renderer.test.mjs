@@ -25,7 +25,9 @@ Text with [a link](https://example.com).
   assert.match(rendered.content, /<!doctype html>/);
   assert.match(rendered.content, /<article id="top" class="mda-document">/);
   assert.match(rendered.content, /<nav class="mda-toc" aria-label="Table of contents">/);
-  assert.match(rendered.content, /<a class="mda-back-to-top" href="#top">Go to top<\/a>/);
+  assert.match(rendered.content, /<a class="mda-floating-action mda-back-to-top" href="#top">Go to top<\/a>/);
+  assert.doesNotMatch(rendered.content, /Collapse all/);
+  assert.doesNotMatch(rendered.content, /data-mda-control-script/);
   assert.match(rendered.content, /id="main-title"/);
   assert.match(rendered.content, /href="https:\/\/example.com"/);
 });
@@ -86,6 +88,32 @@ Final text.
   assert.match(rendered.content, /<section class="mda-section mda-section-level-1" aria-labelledby="next">/);
   assert.match(rendered.content, /<h1 id="intro"><a class="mda-heading-anchor" href="#intro" aria-hidden="true">#<\/a>Intro<\/h1>/);
   assert.match(rendered.content, /Nested text/);
+});
+
+test("renders collapse and expand controls for standalone collapsible output", async () => {
+  const markdown = `# Intro
+
+Opening text.
+
+## Details
+
+Nested text.
+`;
+  const { document } = parseMarkdown(markdown);
+  const config = resolveConfig({}, {
+    overrides: {
+      html: {
+        fragment: false,
+        collapsibleSections: true
+      }
+    }
+  });
+  const rendered = await renderDocument(document, { config });
+
+  assert.match(rendered.content, /<button class="mda-floating-action" type="button" data-mda-collapse-all>Collapse all<\/button>/);
+  assert.match(rendered.content, /<button class="mda-floating-action" type="button" data-mda-expand-all>Expand all<\/button>/);
+  assert.match(rendered.content, /<script data-mda-control-script>/);
+  assert.match(rendered.content, /document\.querySelectorAll\(selector\)\.forEach/);
 });
 
 test("renders collapsible heading-derived sections when enabled", async () => {

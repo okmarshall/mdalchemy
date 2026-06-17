@@ -33,6 +33,7 @@ export interface HtmlConfig {
   sections?: boolean | undefined;
   collapsibleSections?: boolean | undefined;
   tableOfContents?: boolean | "auto" | undefined;
+  collapsibleTableOfContents?: boolean | undefined;
   tocDepth?: number | undefined;
   softBreak?: "newline" | "space" | "br" | undefined;
   fragment?: boolean | undefined;
@@ -42,6 +43,7 @@ export interface HtmlConfig {
 export interface BookConfig {
   include?: string[] | undefined;
   exclude?: string[] | undefined;
+  folderStructure?: boolean | undefined;
 }
 
 export interface ResolvedConfig {
@@ -63,6 +65,7 @@ export interface ResolvedConfig {
     sections: boolean;
     collapsibleSections: boolean;
     tableOfContents: boolean | "auto";
+    collapsibleTableOfContents: boolean;
     tocDepth: number;
     softBreak: "newline" | "space" | "br";
     fragment: boolean;
@@ -71,6 +74,7 @@ export interface ResolvedConfig {
   book: {
     include: string[];
     exclude: string[];
+    folderStructure: boolean;
   };
   theme: string | Record<string, unknown>;
   strict: boolean;
@@ -107,6 +111,7 @@ export const defaultConfig: ResolvedConfig = {
     sections: false,
     collapsibleSections: false,
     tableOfContents: "auto",
+    collapsibleTableOfContents: false,
     tocDepth: 3,
     softBreak: "newline",
     fragment: false,
@@ -114,7 +119,8 @@ export const defaultConfig: ResolvedConfig = {
   },
   book: {
     include: defaultBookInclude,
-    exclude: defaultBookExclude
+    exclude: defaultBookExclude,
+    folderStructure: true
   },
   theme: "serif",
   strict: false

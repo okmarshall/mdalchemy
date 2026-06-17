@@ -14,11 +14,12 @@ ${theme.css}
   </style>
 </head>
 <body>
-  <article class="mda-document">
+  <article id="top" class="mda-document">
     <main class="mda-content">
 ${content}
     </main>
   </article>
+  <a class="mda-back-to-top" href="#top">Go to top</a>
 </body>
 </html>
 `;

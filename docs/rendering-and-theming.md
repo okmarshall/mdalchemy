@@ -34,12 +34,13 @@ Standalone HTML should look like:
     </style>
   </head>
   <body>
-    <article class="mda-document">
+    <article id="top" class="mda-document">
       <!-- optional table of contents -->
       <main class="mda-content">
         <!-- rendered markdown -->
       </main>
     </article>
+    <a class="mda-back-to-top" href="#top">Go to top</a>
   </body>
 </html>
 ```
@@ -170,6 +171,7 @@ Config:
 {
   "html": {
     "tableOfContents": true,
+    "collapsibleTableOfContents": false,
     "tocDepth": 3
   }
 }
@@ -186,6 +188,9 @@ HTML:
 ```
 
 The TOC should not appear when there are fewer than two headings unless explicitly forced.
+When `collapsibleTableOfContents` is enabled, TOC entries with children should
+render with native `<details>` / `<summary>` controls. Top-level entries should
+be open, and nested child branches should be closed by default.
 
 ## Raw HTML Policy
 

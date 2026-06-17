@@ -80,7 +80,7 @@ Right-click a folder in the Explorer and run
 `mdalchemy: Generate HTML Book` to recursively build `mdalchemy-book.html` from
 the folder's Markdown files. Running the book command from the Command Palette
 opens a guided flow for folder, theme, section, table-of-contents, and output
-settings.
+settings, including TOC collapse style and folder-structure grouping.
 
 Show CLI help:
 
@@ -126,6 +126,12 @@ Add native expand/collapse controls to heading-led sections:
 mdalchemy input.md -o output.html --collapsible-sections
 ```
 
+Add native expand/collapse controls to table-of-contents entries:
+
+```sh
+mdalchemy book . -o project-docs.html --toc --collapsible-toc
+```
+
 Theme helpers:
 
 ```sh
@@ -149,6 +155,7 @@ Useful options:
 | `--gfm` | Enable supported GFM extensions: pipe tables, task lists, strikethrough, footnotes, literal autolinks, and tagfilter. |
 | `--frontmatter` | Parse a leading YAML-style frontmatter block and omit it from visible HTML. |
 | `--toc` / `--no-toc` | Force table of contents on or off. |
+| `--collapsible-toc` / `--no-collapsible-toc` | Force native table-of-contents expand/collapse controls on or off. |
 | `--sections` / `--no-sections` | Force heading-derived section wrappers on or off. |
 | `--collapsible-sections` / `--no-collapsible-sections` | Force native section expand/collapse controls on or off. |
 
@@ -159,8 +166,13 @@ Project book controls:
 | `mdalchemy book [root]` | Recursively scan a project for Markdown and render one standalone HTML documentation book. |
 | `--include <pattern>` | Include matching Markdown paths; repeat for multiple patterns. |
 | `--exclude <pattern>` | Exclude matching paths or directories; repeat for multiple patterns. |
+| `--folder-structure` / `--no-folder-structure` | Show or hide TOC folder groups that mirror the traversed book tree. |
 
-`mdalchemy book` enables the supported GFM bundle and frontmatter parsing by default because project READMEs commonly use GitHub Flavored Markdown. Opt a file out of a project book with leading frontmatter:
+`mdalchemy book` enables the supported GFM bundle and frontmatter parsing by
+default because project READMEs commonly use GitHub Flavored Markdown. Book
+output also groups TOC entries by folder structure by default so project and
+package boundaries are visible without changing the main document body. Opt a
+file out of a project book with leading frontmatter:
 
 ```yaml
 ---

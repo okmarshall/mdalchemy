@@ -23,9 +23,38 @@ Text with [a link](https://example.com).
   const rendered = await renderDocument(document, { config });
 
   assert.match(rendered.content, /<!doctype html>/);
+  assert.match(rendered.content, /<article id="top" class="mda-document">/);
   assert.match(rendered.content, /<nav class="mda-toc" aria-label="Table of contents">/);
+  assert.match(rendered.content, /<a class="mda-back-to-top" href="#top">Go to top<\/a>/);
   assert.match(rendered.content, /id="main-title"/);
   assert.match(rendered.content, /href="https:\/\/example.com"/);
+});
+
+test("renders collapsible table of contents with nested entries closed", async () => {
+  const markdown = `# Main Title
+
+## Section One
+
+### Deep Topic
+
+Text.
+`;
+  const { document } = parseMarkdown(markdown);
+  const config = resolveConfig({}, {
+    overrides: {
+      html: {
+        tableOfContents: true,
+        collapsibleTableOfContents: true,
+        fragment: true
+      }
+    }
+  });
+  const rendered = await renderDocument(document, { config });
+
+  assert.match(rendered.content, /<nav class="mda-toc" aria-label="Table of contents">/);
+  assert.match(rendered.content, /<details class="mda-toc-details" open><summary class="mda-toc-summary"><a href="#main-title">Main Title<\/a><\/summary>/);
+  assert.match(rendered.content, /<details class="mda-toc-details"><summary class="mda-toc-summary"><a href="#section-one">Section One<\/a><\/summary>/);
+  assert.match(rendered.content, /<li class="mda-toc-item"><a href="#deep-topic">Deep Topic<\/a><\/li>/);
 });
 
 test("renders heading-derived section wrappers when enabled", async () => {

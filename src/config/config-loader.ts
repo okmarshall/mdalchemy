@@ -90,6 +90,10 @@ export function resolveConfig(
       sections: booleanOr(fileHtml["sections"], defaultConfig.html.sections),
       collapsibleSections: booleanOr(fileHtml["collapsibleSections"], defaultConfig.html.collapsibleSections),
       tableOfContents: tableOfContentsOr(fileHtml["tableOfContents"], defaultConfig.html.tableOfContents),
+      collapsibleTableOfContents: booleanOr(
+        fileHtml["collapsibleTableOfContents"],
+        defaultConfig.html.collapsibleTableOfContents
+      ),
       tocDepth: numberOr(fileHtml["tocDepth"], defaultConfig.html.tocDepth),
       softBreak: stringOr(fileHtml["softBreak"], defaultConfig.html.softBreak) as "newline" | "space" | "br",
       fragment: booleanOr(fileHtml["fragment"], defaultConfig.html.fragment),
@@ -99,7 +103,8 @@ export function resolveConfig(
       include: stringArrayOr(fileBook["include"], defaultConfig.book.include),
       exclude: fileBook["exclude"] === undefined
         ? defaultConfig.book.exclude
-        : uniqueStrings([...defaultConfig.book.exclude, ...stringArrayOr(fileBook["exclude"], [])])
+        : uniqueStrings([...defaultConfig.book.exclude, ...stringArrayOr(fileBook["exclude"], [])]),
+      folderStructure: booleanOr(fileBook["folderStructure"], defaultConfig.book.folderStructure)
     },
     theme: typeof config.theme === "string" || isRecord(config.theme) ? config.theme : defaultConfig.theme,
     strict: options.strict ?? defaultConfig.strict
@@ -196,7 +201,7 @@ function validateConfig(config: ResolvedConfig): Diagnostic[] {
 const topLevelKeys = new Set(["version", "output", "markdown", "html", "book", "theme"]);
 const outputKeys = new Set(["format", "standalone", "createDirs"]);
 const markdownKeys = new Set(["profile", "extensions"]);
-const bookKeys = new Set(["include", "exclude"]);
+const bookKeys = new Set(["include", "exclude", "folderStructure"]);
 const htmlKeys = new Set([
   "lang",
   "rawHtml",
@@ -205,6 +210,7 @@ const htmlKeys = new Set([
   "sections",
   "collapsibleSections",
   "tableOfContents",
+  "collapsibleTableOfContents",
   "tocDepth",
   "softBreak",
   "fragment",
@@ -237,7 +243,8 @@ function validateConfigShape(config: Record<string, unknown>): Diagnostic[] {
   });
   validateSection(config["book"], "book", bookKeys, diagnostics, {
     include: "string[]",
-    exclude: "string[]"
+    exclude: "string[]",
+    folderStructure: "boolean"
   });
   validateSection(config["html"], "html", htmlKeys, diagnostics, {
     lang: "string",
@@ -247,6 +254,7 @@ function validateConfigShape(config: Record<string, unknown>): Diagnostic[] {
     sections: "boolean",
     collapsibleSections: "boolean",
     tableOfContents: "boolean-or-auto",
+    collapsibleTableOfContents: "boolean",
     tocDepth: "number",
     softBreak: "string",
     fragment: "boolean",

@@ -50,9 +50,10 @@ mdalchemy: Generate HTML Book
 
 The book command is also available from the Command Palette. When launched from
 the Command Palette, mdalchemy walks through a guided flow for the root folder,
-theme, section rendering, table of contents behavior, and output file. When
-launched from the Explorer folder context menu, it uses the configured defaults
-and writes the standard `mdalchemy-book.html` file immediately.
+theme, section rendering, table of contents behavior, TOC collapse style, folder
+structure, and output file. When launched from the Explorer folder context menu,
+it uses the configured defaults and writes the standard `mdalchemy-book.html`
+file immediately.
 
 ## File Behavior
 
@@ -106,7 +107,11 @@ editor state, updates the preview, and persists that HTML to disk.
 From the Command Palette, the generated file path and selected render options
 come from the guided prompts. Any prompt left on `Config/default` inherits
 `mdalchemy.config.json` or `.mdalchemyrc.json`, with mdalchemy's built-in
-defaults used when no config value exists.
+defaults used when no config value exists. The guided flow also lets readers
+choose collapsible or standard TOC nesting and folder-structure or flat file
+grouping. VS Code book generation defaults to collapsible TOC controls and
+folder-structure TOC groups so large project books stay easier to scan without
+changing the main document body.
 
 The generated book is the same kind of standalone HTML artifact produced by:
 

@@ -22,8 +22,10 @@ interface BookCliArgs {
   frontmatter: boolean;
   title: string | undefined;
   toc: boolean | undefined;
+  collapsibleToc: boolean | undefined;
   sections: boolean | undefined;
   collapsibleSections: boolean | undefined;
+  folderStructure: boolean | undefined;
   include: string[];
   exclude: string[];
   help: boolean;
@@ -157,6 +159,9 @@ function parseBookCliArgs(argv: string[]): BookCliArgs {
     if (parsed.values.toc && parsed.values["no-toc"]) {
       throw new CliUsageError("Use either --toc or --no-toc, not both.");
     }
+    if (parsed.values["collapsible-toc"] && parsed.values["no-collapsible-toc"]) {
+      throw new CliUsageError("Use either --collapsible-toc or --no-collapsible-toc, not both.");
+    }
     if (parsed.values.sections && parsed.values["no-sections"]) {
       throw new CliUsageError("Use either --sections or --no-sections, not both.");
     }
@@ -165,6 +170,9 @@ function parseBookCliArgs(argv: string[]): BookCliArgs {
     }
     if (parsed.values["no-sections"] && parsed.values["collapsible-sections"]) {
       throw new CliUsageError("Use either --no-sections or --collapsible-sections, not both.");
+    }
+    if (parsed.values["folder-structure"] && parsed.values["no-folder-structure"]) {
+      throw new CliUsageError("Use either --folder-structure or --no-folder-structure, not both.");
     }
   }
 
@@ -182,10 +190,20 @@ function parseBookCliArgs(argv: string[]): BookCliArgs {
     frontmatter: Boolean(parsed.values.frontmatter),
     title: parsed.values.title,
     toc: parsed.values.toc === true ? true : parsed.values["no-toc"] === true ? false : undefined,
+    collapsibleToc: parsed.values["collapsible-toc"] === true
+      ? true
+      : parsed.values["no-collapsible-toc"] === true
+        ? false
+        : undefined,
     sections: parsed.values.sections === true ? true : parsed.values["no-sections"] === true ? false : undefined,
     collapsibleSections: parsed.values["collapsible-sections"] === true
       ? true
       : parsed.values["no-collapsible-sections"] === true
+        ? false
+        : undefined,
+    folderStructure: parsed.values["folder-structure"] === true
+      ? true
+      : parsed.values["no-folder-structure"] === true
         ? false
         : undefined,
     include: stringArray(parsed.values.include),
@@ -214,10 +232,14 @@ function parseBookArgValues(argv: string[]) {
         title: { type: "string" },
         toc: { type: "boolean" },
         "no-toc": { type: "boolean" },
+        "collapsible-toc": { type: "boolean" },
+        "no-collapsible-toc": { type: "boolean" },
         sections: { type: "boolean" },
         "no-sections": { type: "boolean" },
         "collapsible-sections": { type: "boolean" },
         "no-collapsible-sections": { type: "boolean" },
+        "folder-structure": { type: "boolean" },
+        "no-folder-structure": { type: "boolean" },
         include: { type: "string", multiple: true },
         exclude: { type: "string", multiple: true },
         help: { type: "boolean", short: "h" },
@@ -231,15 +253,18 @@ function parseBookArgValues(argv: string[]) {
 
 function bookCliOverrides(args: BookCliArgs): Partial<ResolvedConfig> {
   const html: Partial<ResolvedConfig["html"]> = {};
+  const book: Partial<ResolvedConfig["book"]> = {};
   if (args.fragment) html.fragment = true;
   if (args.title) html.title = args.title;
   if (args.toc !== undefined) html.tableOfContents = args.toc;
+  if (args.collapsibleToc !== undefined) html.collapsibleTableOfContents = args.collapsibleToc;
   if (args.sections !== undefined) html.sections = args.sections;
   if (args.sections === false) html.collapsibleSections = false;
   if (args.collapsibleSections !== undefined) {
     html.collapsibleSections = args.collapsibleSections;
     if (args.collapsibleSections) html.sections = true;
   }
+  if (args.folderStructure !== undefined) book.folderStructure = args.folderStructure;
 
   const extensions = uniqueStrings([
     ...gfmMarkdownExtensions,
@@ -259,6 +284,7 @@ function bookCliOverrides(args: BookCliArgs): Partial<ResolvedConfig> {
   if (args.theme) overrides.theme = args.theme;
   if (args.format) overrides.output = { format: args.format, standalone: true, createDirs: false };
   if (Object.keys(html).length > 0) overrides.html = html as ResolvedConfig["html"];
+  if (Object.keys(book).length > 0) overrides.book = book as ResolvedConfig["book"];
   return overrides;
 }
 
@@ -279,6 +305,9 @@ Build a single HTML documentation book from a project Markdown tree.
 Project:
       --include <pattern>  Include Markdown paths; repeatable
       --exclude <pattern>  Exclude paths or directories; repeatable
+      --folder-structure   Group book TOC entries by traversed folders
+      --no-folder-structure
+                           Render a flat file list in the book TOC
 
 Output:
   -o, --output <path>      Write standalone HTML to a file
@@ -295,6 +324,8 @@ HTML:
       --title <title>      Override book title
       --toc                Force table of contents on
       --no-toc             Disable table of contents
+      --collapsible-toc    Add native expand/collapse controls to table of contents items
+      --no-collapsible-toc Disable table of contents expand/collapse controls
       --sections           Wrap heading-led content in section elements
       --no-sections        Disable section wrappers
       --collapsible-sections

@@ -8,8 +8,9 @@ import { parseMarkdown } from "../markdown/parser.js";
 import { resolveTheme } from "../theme/theme.js";
 import { renderDocument } from "../render/html/html-renderer.js";
 import { defaultOutputPath, inferFormat, readMarkdownFile, writeOutputFile } from "../io/files.js";
-import { CliUsageError, cliOverrides, helpText, parseCliArgs } from "./args.js";
+import { cliOverrides, helpText, parseCliArgs } from "./args.js";
 import { handleBookCommand } from "./book-command.js";
+import { CliUsageError } from "./options.js";
 import { handleThemeCommand } from "./theme-command.js";
 
 async function main(argv: string[]): Promise<number> {

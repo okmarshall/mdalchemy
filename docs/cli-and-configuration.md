@@ -31,6 +31,16 @@ mdalchemy help [book|theme]
 
 Options should be grouped by intent in help output.
 
+When adding a new CLI/config option, update the shared metadata first:
+
+- Config shape/default resolution lives in `src/config/config-options.ts`.
+- CLI parse options, conflicts, and shared override mapping live in
+  `src/cli/options.ts`.
+- CLI help row rendering lives in `src/cli/help.ts`.
+
+Command-specific files should mostly consume those helpers rather than
+redeclaring parse options, conflict checks, or HTML override mapping.
+
 Commands:
 
 ```text

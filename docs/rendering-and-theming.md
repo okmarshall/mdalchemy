@@ -63,7 +63,7 @@ The exact class names should be stable and documented. Rendered Markdown tables 
 | `list` unordered | `<ul>` |
 | `listItem` | `<li>` |
 | `table` | `<div class="mda-table-scroll"><table>` with `<thead>` and `<tbody>` |
-| `codeBlock` | `<pre><code>` |
+| `codeBlock` | `<pre><code>`; fenced `mermaid` and `mmd` blocks render as Mermaid diagram figures outside CommonMark-compatible output |
 | `htmlBlock` | raw, escaped, or stripped by policy |
 | `text` | escaped text |
 | `softBreak` | newline by default |
@@ -74,6 +74,38 @@ The exact class names should be stable and documented. Rendered Markdown tables 
 | `link` | `<a href>` |
 | `image` | `<img>` |
 | `htmlInline` | raw, escaped, or stripped by policy |
+
+## Mermaid Diagrams
+
+Fenced code blocks whose first info-string word is `mermaid` or `mmd` render as
+diagram-ready HTML in normal output:
+
+````markdown
+```mermaid
+graph TD
+  Draft --> Review
+  Review --> Publish
+```
+````
+
+HTML:
+
+```html
+<figure class="mda-mermaid" data-mda-mermaid role="region" aria-label="Mermaid diagram" tabindex="0">
+  <div class="mda-mermaid-canvas" data-mda-mermaid-canvas></div>
+  <pre class="mermaid" data-mda-mermaid-source>graph TD
+  Draft --&gt; Review
+  Review --&gt; Publish</pre>
+</figure>
+```
+
+The source is escaped and remains readable without JavaScript. Standalone HTML
+embeds mdalchemy's pinned Mermaid browser runtime only when a Mermaid block is
+present, then renders SVG into `mda-mermaid-canvas` with
+`securityLevel: "strict"`. If Mermaid cannot parse a diagram, the canvas stays
+empty and the source fallback remains visible. CommonMark-compatible rendering
+keeps Mermaid fences as regular `<pre><code class="language-mermaid">` blocks
+for conformance tests and literal Markdown rendering.
 
 ## Section Rendering
 

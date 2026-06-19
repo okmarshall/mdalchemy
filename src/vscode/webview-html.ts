@@ -1,5 +1,9 @@
 import { randomBytes } from "node:crypto";
 import { documentControlScriptAttribute } from "../render/html/document-actions.js";
+import {
+  mermaidInitializerScriptAttribute,
+  mermaidRuntimeScriptAttribute
+} from "../render/html/mermaid.js";
 
 export interface WebviewHtmlOptions {
   cspSource: string;
@@ -9,7 +13,7 @@ export interface WebviewHtmlOptions {
 export function prepareHtmlForWebview(html: string, options: WebviewHtmlOptions): string {
   const nonce = randomBytes(16).toString("base64");
   return insertContentSecurityPolicy(
-    addControlScriptNonce(rewriteLocalImageSources(html, options.mapLocalResource), nonce),
+    addFirstPartyScriptNonce(rewriteLocalImageSources(html, options.mapLocalResource), nonce),
     webviewContentSecurityPolicy(options.cspSource, nonce)
   );
 }
@@ -48,12 +52,17 @@ function isLocalResourceReference(reference: string): boolean {
     && !reference.startsWith("//");
 }
 
-function addControlScriptNonce(html: string, nonce: string): string {
-  const controlScriptPattern = new RegExp(
-    `<script\\b((?=[^>]*\\b${escapeRegExp(documentControlScriptAttribute)}\\b)[^>]*)>`,
+function addFirstPartyScriptNonce(html: string, nonce: string): string {
+  const firstPartyScriptAttributes = [
+    documentControlScriptAttribute,
+    mermaidRuntimeScriptAttribute,
+    mermaidInitializerScriptAttribute
+  ];
+  const firstPartyScriptPattern = new RegExp(
+    `<script\\b((?=[^>]*\\b(?:${firstPartyScriptAttributes.map(escapeRegExp).join("|")})\\b)[^>]*)>`,
     "gi"
   );
-  return html.replace(controlScriptPattern, (match, attributes: string) => {
+  return html.replace(firstPartyScriptPattern, (match, attributes: string) => {
     if (/\bnonce\s*=/.test(attributes)) return match;
     return `<script nonce="${escapeAttribute(nonce)}"${attributes}>`;
   });

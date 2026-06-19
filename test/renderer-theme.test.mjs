@@ -28,6 +28,7 @@ test("default theme includes print-friendly CSS rules", async () => {
   assert.match(theme.css, /@media print/);
   assert.match(theme.css, /\.mda-document \{\n    width: auto;/);
   assert.match(theme.css, /\.mda-table-scroll \{\n    overflow: visible;/);
+  assert.match(theme.css, /\.mda-mermaid \{\n    overflow: visible;/);
 });
 
 test("default theme uses responsive width and compact code tab stops", async () => {
@@ -36,5 +37,8 @@ test("default theme uses responsive width and compact code tab stops", async () 
   assert.equal(theme.tokens["layout.maxWidth"], "1440px");
   assert.match(theme.css, /width: min\(calc\(100% - clamp\(24px, 4vw, 80px\)\), var\(--mda-layout-maxWidth\)\);/);
   assert.match(theme.css, /tab-size: 2;/);
+  assert.match(theme.css, /\.mda-mermaid \{/);
+  assert.match(theme.css, /\.mda-mermaid-canvas svg \{/);
+  assert.match(theme.css, /\.mda-mermaid > \.mermaid \{/);
   assert.match(theme.css, /@media \(max-width: 720px\) \{\n  \.mda-document \{\n    width: 100%;/);
 });

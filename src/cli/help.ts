@@ -57,6 +57,7 @@ export function renderTopLevelHelp(): string {
     "      book                Build one HTML documentation book from a Markdown tree",
     "      theme               List and inspect built-in or custom themes",
     "",
+    renderTopLevelExamples(),
     renderHelpSection({ title: "Output", rows: outputRows }),
     renderHelpSection({ title: "Markdown", rows: topLevelMarkdownRows }),
     renderHelpSection({ title: "HTML", rows: htmlRows }),
@@ -92,6 +93,17 @@ function safetyRows(includeVersion: boolean): readonly HelpRow[] {
 
 function renderHelpSection(section: HelpSection): string {
   return `${section.title}:\n${section.rows.map(renderHelpRow).join("\n")}\n`;
+}
+
+function renderTopLevelExamples(): string {
+  return [
+    "Examples:",
+    "      mdalchemy examples/complex-spec.md -o examples/complex-spec.html --toc --gfm --frontmatter",
+    "                            Render the repo's broad Markdown fixture",
+    "      mdalchemy examples/mermaid.md -o examples/mermaid.generated.html",
+    "                            Render the repo's Mermaid fixture",
+    ""
+  ].join("\n");
 }
 
 function renderHelpRow(row: HelpRow): string {

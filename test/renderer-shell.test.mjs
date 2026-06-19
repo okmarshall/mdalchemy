@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { parseMarkdown, renderDocument } from "../dist/index.js";
+import { parseMarkdown, renderDocument, renderMarkdown } from "../dist/index.js";
 import { resolveConfig } from "../dist/config/config-loader.js";
 
 test("renders standalone themed HTML with heading anchors and toc", async () => {
@@ -55,6 +55,22 @@ Nested text.
   assert.match(rendered.content, /<button class="mda-floating-action" type="button" data-mda-expand-all>Expand all<\/button>/);
   assert.match(rendered.content, /<script data-mda-control-script>/);
   assert.match(rendered.content, /document\.querySelectorAll\(selector\)\.forEach/);
+});
+
+test("adds the Mermaid initializer only to standalone documents with diagrams", async () => {
+  const withMermaid = await renderMarkdown("```mermaid\ngraph LR\n  A --> B\n```\n");
+  const withoutMermaid = await renderMarkdown("```ts\nconst value = 1;\n```\n");
+
+  assert.match(withMermaid.content, /<script data-mda-mermaid-runtime>/);
+  assert.match(withMermaid.content, /<script data-mda-mermaid-script>/);
+  assert.match(withMermaid.content, /globalThis\["mermaid"\]/);
+  assert.match(withMermaid.content, /document\.querySelectorAll\("\[data-mda-mermaid\]"\)/);
+  assert.match(withMermaid.content, /mermaid\.render\(id, source\.textContent \|\| ""\)/);
+  assert.match(withMermaid.content, /securityLevel: "strict"/);
+  assert.match(withMermaid.content, /dataset\.mdaMermaidError/);
+  assert.match(withMermaid.content, /data-mda-mermaid-runtime[\s\S]*data-mda-mermaid-script/);
+  assert.doesNotMatch(withoutMermaid.content, /data-mda-mermaid-runtime/);
+  assert.doesNotMatch(withoutMermaid.content, /data-mda-mermaid-script/);
 });
 
 test("escapes raw html in safe mode", async () => {

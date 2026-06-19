@@ -27,6 +27,7 @@ The repository now contains a working TypeScript CLI and library:
 - HTML standalone and fragment rendering.
 - Built-in `serif`, `sans`, and `technical` themes. The default is `serif`.
 - Built-in syntax highlighting for JS/TS, C#, Python, Java, Go, Rust, SQL, YAML, Dockerfile, PowerShell, diff, JSON, HTML/XML, CSS, shell, and Markdown fences.
+- `mermaid` and `mmd` fenced diagrams render as SVG diagrams in standalone HTML with a readable source fallback and no CDN dependency.
 - JSON config loading with CLI overrides, unknown-key warnings, type validation, and strict-mode diagnostics.
 - Safe mode for raw HTML and unsafe URLs.
 - GFM pipe tables, task lists, strikethrough, footnotes, literal autolinks, and tagfilter through `--gfm` or `markdown.extensions`, with scroll-safe HTML output for wide tables.
@@ -131,6 +132,21 @@ Add native expand/collapse controls to table-of-contents entries:
 ```sh
 mdalchemy book . -o project-docs.html --toc --collapsible-toc
 ```
+
+Mermaid diagrams use standard fenced code syntax:
+
+````markdown
+```mermaid
+graph TD
+  Draft --> Review
+  Review --> Publish
+```
+````
+
+Generated standalone HTML embeds mdalchemy's pinned Mermaid browser runtime only
+when a document contains Mermaid diagrams, so diagrams work offline in the
+single output file. The escaped source remains in the document as a fallback if
+JavaScript is disabled or Mermaid cannot parse a diagram.
 
 Theme helpers:
 
@@ -254,6 +270,7 @@ Release preparation is documented in [docs/release.md](docs/release.md).
 
 - [examples/complex-spec.md](examples/complex-spec.md) is a broad Markdown fixture.
 - [examples/complex-spec.html](examples/complex-spec.html) is the generated HTML artifact.
+- [examples/mermaid.md](examples/mermaid.md) is a small Mermaid diagram fixture. Render it with `mdalchemy examples/mermaid.md -o examples/mermaid.generated.html`.
 - [examples/images](examples/images) contains local image fixtures used by the generated example.
 - [examples/skills/mdalchemy-markdown-authoring](examples/skills/mdalchemy-markdown-authoring) is an agent-facing skill for writing Markdown that renders well through mdalchemy.
 - [examples/themes/warm-report.json](examples/themes/warm-report.json) is a custom theme example.

@@ -63,6 +63,36 @@ Footnote reference.[^demo]
   assert.match(rendered.content, /Footnote body with <strong>strong<\/strong> text/);
 });
 
+test("renders Mermaid fences as diagram-ready HTML with escaped source", async () => {
+  const markdown = "```mermaid\ngraph TD\n  A[Start] --> B{\"Ship <safe> HTML?\"}\n```\n";
+  const config = resolveConfig({}, { overrides: { html: { fragment: true } } });
+  const rendered = await renderMarkdown(markdown, { config });
+  const alias = await renderMarkdown("```mmd\nsequenceDiagram\n  A->>B: Works\n```\n", { config });
+
+  assert.match(rendered.content, /<figure class="mda-mermaid" data-mda-mermaid role="region" aria-label="Mermaid diagram" tabindex="0">/);
+  assert.match(rendered.content, /<div class="mda-mermaid-canvas" data-mda-mermaid-canvas><\/div>/);
+  assert.match(rendered.content, /<pre class="mermaid" data-mda-mermaid-source>graph TD\n  A\[Start\] --&gt; B\{&quot;Ship &lt;safe&gt; HTML\?&quot;\}<\/pre>/);
+  assert.doesNotMatch(rendered.content, /data-language="mermaid"/);
+  assert.doesNotMatch(rendered.content, /language-mermaid/);
+  assert.match(alias.content, /<figure class="mda-mermaid" data-mda-mermaid/);
+  assert.doesNotMatch(alias.content, /language-mmd/);
+});
+
+test("preserves Mermaid fences as code in CommonMark-compatible output", async () => {
+  const markdown = "```mermaid\ngraph TD\n  A --> B\n```\n";
+  const config = resolveConfig({}, {
+    overrides: {
+      html: {
+        fragment: true,
+        headingAnchors: false
+      }
+    }
+  });
+  const rendered = await renderMarkdown(markdown, { config, commonmarkCompatible: true });
+
+  assert.equal(rendered.content, "<pre><code class=\"language-mermaid\">graph TD\n  A --&gt; B\n</code></pre>");
+});
+
 test("highlights C# fenced code blocks", async () => {
   const markdown = "```csharp\n[Fact(DisplayName = \"renders records\")]\npublic sealed record Demo(string Value)\n{\n    public string Render() => Value.Trim();\n}\n```\n";
   const rendered = await renderMarkdown(markdown, {

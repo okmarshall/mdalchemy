@@ -6,6 +6,7 @@ import { footnotesCss } from "./css/footnotes.js";
 import { headingAnchorsCss } from "./css/heading-anchors.js";
 import { layoutCss } from "./css/layout.js";
 import { mediaCss } from "./css/media.js";
+import { mermaidCss } from "./css/mermaid.js";
 import { printCss } from "./css/print.js";
 import { responsiveCss } from "./css/responsive.js";
 import { sectionsCss } from "./css/sections.js";
@@ -26,6 +27,7 @@ export function themeToCss(tokens: Record<string, string>): string {
     typographyCss,
     blockCss,
     codeCss,
+    mermaidCss,
     mediaCss,
     tablesCss,
     tocCss,

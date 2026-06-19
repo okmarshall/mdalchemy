@@ -14,7 +14,8 @@ export const printCss = `@media print {
   pre,
   blockquote,
   .mda-section,
-  .mda-table-scroll {
+  .mda-table-scroll,
+  .mda-mermaid {
     break-inside: avoid;
   }
 
@@ -24,6 +25,11 @@ export const printCss = `@media print {
 
   .mda-table-scroll {
     overflow: visible;
+  }
+
+  .mda-mermaid {
+    overflow: visible;
+    box-shadow: none;
   }
 
   .mda-toc-summary::before,

@@ -127,9 +127,11 @@ The written HTML file keeps normal relative paths, so it remains portable as an
 ordinary HTML document.
 
 The preview webview enables scripts only so mdalchemy's first-party document
-shortcut controls can run. The extension injects a restrictive content security
-policy with a nonce for that generated control script, so user-authored raw
-scripts remain blocked in the in-editor view. The underlying rendered HTML still
+shortcut controls and bundled Mermaid renderer can run. The extension injects a
+restrictive content security policy with a nonce for those generated scripts, so
+user-authored raw scripts remain blocked in the in-editor view. Mermaid fenced
+blocks render from mdalchemy's local pinned runtime and keep a readable source
+fallback if a diagram cannot be parsed. The underlying rendered HTML still
 follows the configured mdalchemy raw HTML policy. Use the existing
 `html.rawHtml` and `html.safeUrls` config options for untrusted content.
 

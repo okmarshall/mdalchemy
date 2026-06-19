@@ -27,20 +27,8 @@ interface ThemeQuickPickItem extends vscode.QuickPickItem {
   custom?: boolean | undefined;
 }
 
-interface SectionQuickPickItem extends vscode.QuickPickItem {
-  sectionMode: BookSectionMode;
-}
-
-interface TocQuickPickItem extends vscode.QuickPickItem {
-  tocMode: BookTocMode;
-}
-
-interface TocCollapseQuickPickItem extends vscode.QuickPickItem {
-  collapsibleToc: boolean;
-}
-
-interface FolderStructureQuickPickItem extends vscode.QuickPickItem {
-  folderStructure: boolean;
+interface ChoiceQuickPickItem<T> extends vscode.QuickPickItem {
+  value: T;
 }
 
 export async function resolveBookRoot(resource: vscode.Uri | undefined): Promise<vscode.Uri> {
@@ -187,94 +175,98 @@ async function promptForBookTheme(): Promise<string | "config" | undefined> {
 }
 
 async function promptForSectionMode(): Promise<BookSectionMode | undefined> {
-  const selected = await vscode.window.showQuickPick<SectionQuickPickItem>([
+  return promptChoice<BookSectionMode>([
     {
       label: "Config/default",
       description: "Use html.sections and html.collapsibleSections from config",
-      sectionMode: "config"
+      value: "config"
     },
     {
       label: "No sections",
       description: "Render headings without section wrappers",
-      sectionMode: "none"
+      value: "none"
     },
     {
       label: "Sections",
       description: "Wrap heading-led content in section elements",
-      sectionMode: "sections"
+      value: "sections"
     },
     {
       label: "Collapsible sections",
       description: "Add native expand/collapse controls to heading sections",
-      sectionMode: "collapsible"
+      value: "collapsible"
     }
   ], {
     title: "mdalchemy: Section Rendering",
     placeHolder: "Choose section behavior"
   });
-  return selected?.sectionMode;
 }
 
 async function promptForTocMode(): Promise<BookTocMode | undefined> {
-  const selected = await vscode.window.showQuickPick<TocQuickPickItem>([
+  return promptChoice<BookTocMode>([
     {
       label: "Config/default",
       description: "Use TOC visibility from config with collapsible book navigation",
-      tocMode: "config"
+      value: "config"
     },
     {
       label: "Show table of contents",
       description: "Force the book table of contents on",
-      tocMode: "on"
+      value: "on"
     },
     {
       label: "Hide table of contents",
       description: "Force the book table of contents off",
-      tocMode: "off"
+      value: "off"
     }
   ], {
     title: "mdalchemy: Table Of Contents",
     placeHolder: "Choose TOC behavior"
   });
-  return selected?.tocMode;
 }
 
 async function promptForTocCollapse(): Promise<boolean | undefined> {
-  const selected = await vscode.window.showQuickPick<TocCollapseQuickPickItem>([
+  return promptChoice<boolean>([
     {
       label: "Collapsible table of contents",
       description: "Nested branches collapse by default",
-      collapsibleToc: true
+      value: true
     },
     {
       label: "Standard table of contents",
       description: "Show nested entries as an expanded ordered list",
-      collapsibleToc: false
+      value: false
     }
   ], {
     title: "mdalchemy: TOC Style",
     placeHolder: "Choose TOC nesting behavior"
   });
-  return selected?.collapsibleToc;
 }
 
 async function promptForFolderStructure(): Promise<boolean | undefined> {
-  const selected = await vscode.window.showQuickPick<FolderStructureQuickPickItem>([
+  return promptChoice<boolean>([
     {
       label: "Show folder structure",
-      description: "Group book sections by traversed folders",
-      folderStructure: true
+      description: "Group book TOC entries by traversed folders",
+      value: true
     },
     {
       label: "Flat file list",
       description: "Render file entries without TOC folder groups",
-      folderStructure: false
+      value: false
     }
   ], {
     title: "mdalchemy: Book Folder Structure",
     placeHolder: "Choose how source folders appear in the book"
   });
-  return selected?.folderStructure;
+}
+
+async function promptChoice<T>(
+  items: readonly ChoiceQuickPickItem<T>[],
+  options: vscode.QuickPickOptions
+): Promise<T | undefined> {
+  const selected = await vscode.window.showQuickPick(items, options);
+  return selected?.value;
 }
 
 async function isDirectory(uri: vscode.Uri): Promise<boolean> {

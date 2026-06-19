@@ -8,6 +8,13 @@ This audit tightened compiler enforcement, clarified extension ownership, isolat
 
 The v1 readiness follow-up audit focused on the newer VS Code extension surface. That integration had grown quickly as file rendering, project-book rendering, webview previews, diagnostics, and prompted Command Palette flows were added. The extension now has smaller modules split by responsibility, while the package manifest and public library exports remain unchanged.
 
+The extensibility follow-up audit focused on feature-addition pressure after the
+book, collapsible TOC, folder-structure TOC, and document shortcut controls
+landed. It reduced change amplification in option handling, split the project
+book builder, isolated document controls from the standalone shell, split the
+built-in stylesheet into feature fragments, and split broad renderer/CLI tests
+without removing coverage.
+
 ## Strengths
 
 - The project uses modern TypeScript with ESM, `NodeNext`, declarations, source maps, and no runtime dependencies.
@@ -28,6 +35,38 @@ The v1 readiness follow-up audit focused on the newer VS Code extension surface.
 - Ignored generated warm-theme example output with `examples/*.warm.html`.
 - Split block, inline, theme, and HTML renderer helpers into focused modules.
 - Added JSON-driven conformance seed fixture packs and `npm run test:conformance`.
+
+## Extensibility Follow-Up
+
+### Changes Made
+
+- Added `src/config/config-options.ts` so config field metadata drives default
+  resolution and shape validation.
+- Added `src/cli/options.ts` and `src/cli/help.ts` so top-level and book CLI
+  commands share parse options, conflicts, HTML override mapping, extension
+  defaults, and help rows.
+- Split `src/book/book-builder.ts` into book orchestration, composition, TOC
+  construction, link/asset rewriting, and shared types.
+- Moved standalone shortcut controls into `src/render/html/document-actions.ts`
+  and made the VS Code webview nonce rewrite import the same control-script
+  marker.
+- Split `src/theme/css.ts` into focused fragments under `src/theme/css/`.
+- Refactored VS Code book prompts around a shared quick-pick choice helper and
+  corrected folder-structure prompt copy to describe TOC grouping.
+- Split broad renderer and CLI tests into behavior-focused files while keeping
+  the same assertions.
+
+### Current Assessment
+
+- Adding a new HTML/book option now has clearer extension points: config
+  descriptors, shared CLI option helpers, VS Code prompt choices, and focused
+  tests.
+- `renderProjectBook` is now a small public workflow instead of the owner of
+  composition, TOC, cloning, and URL rewriting internals.
+- Theme CSS still renders as one standalone stylesheet, but source ownership is
+  split by feature.
+- Document shortcut controls and webview CSP behavior share code-level
+  constants instead of relying on duplicated string knowledge.
 
 ## V1 Readiness Follow-Up
 
@@ -52,8 +91,10 @@ The v1 readiness follow-up audit focused on the newer VS Code extension surface.
 ### Watchlist
 
 - `src/markdown/parser.ts` and `src/markdown/inline-parser.ts` remain the largest handwritten source files. They are complex because Markdown parsing is complex, but future parser changes should keep pushing isolated recognizers into focused helper modules.
-- `src/book/book-builder.ts` is cohesive but large. If project-book features grow again, the next likely split is clone/composition helpers versus link/asset rewriting helpers.
-- `src/theme/css.ts` is intentionally long because it owns the built-in stylesheet. If theme variants become more numerous, consider splitting structural layout, block styling, inline styling, syntax highlighting, and print CSS into separate CSS-generation helpers.
+- If CLI/config options keep growing, consider using the shared descriptors to
+  generate more of the public docs and VS Code prompt choices.
+- If project-book features grow again, keep new behavior in the focused
+  `src/book/*` modules rather than returning logic to `book-builder.ts`.
 
 ## Advisory Status
 
@@ -77,7 +118,8 @@ Addressed. Theme responsibilities are now split:
 - Built-in token definitions: `src/theme/tokens.ts`.
 - Theme types: `src/theme/types.ts`.
 - Theme token validation: `src/theme/validation.ts`.
-- CSS generation: `src/theme/css.ts`.
+- CSS generation entrypoint: `src/theme/css.ts`.
+- CSS feature fragments: `src/theme/css/*.ts`.
 - Theme loading and inheritance: `src/theme/theme.ts`.
 
 The public `resolveTheme` API is preserved.
@@ -91,6 +133,7 @@ Addressed. HTML rendering is now split by boundary:
 - Footnote rendering: `src/render/html/footnotes.ts`.
 - Standalone document shell: `src/render/html/document-shell.ts`.
 - Table of contents rendering: `src/render/html/toc-renderer.ts`.
+- Standalone document shortcut controls: `src/render/html/document-actions.ts`.
 - Shared renderer formatting helpers: `src/render/html/formatting.ts`.
 
 ### Conformance

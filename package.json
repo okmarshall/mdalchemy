@@ -146,7 +146,7 @@
     "vscode:prepublish": "npm run build",
     "build": "tsc -p tsconfig.json && node scripts/copy-mermaid-asset.mjs",
     "test": "npm run build && node --test test/*.test.mjs",
-    "test:unit": "npm run build && node --test test/parser.test.mjs test/renderer.test.mjs test/cli.test.mjs",
+    "test:unit": "npm run build && node --test test/parser.test.mjs test/renderer-*.test.mjs test/cli-*.test.mjs",
     "test:fixtures": "npm run build && node --test test/example-fixture.test.mjs",
     "test:conformance": "npm run build && node --test test/conformance.test.mjs",
     "test:commonmark": "npm run build && node test/commonmark-corpus-report.mjs",

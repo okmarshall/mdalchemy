@@ -7,6 +7,8 @@ const mermaidRuntimeUrl = new URL("../../vendor/mermaid.min.js", import.meta.url
 let mermaidRuntimeScript: Promise<string> | undefined;
 
 export const mermaidDiagramAttribute = "data-mda-mermaid";
+export const mermaidRuntimeScriptAttribute = "data-mda-mermaid-runtime";
+export const mermaidInitializerScriptAttribute = "data-mda-mermaid-script";
 
 export function isMermaidCodeBlock(block: CodeBlockNode): boolean {
   return block.kind === "fenced" && mermaidLanguages.has(block.language?.toLowerCase() ?? "");
@@ -22,11 +24,11 @@ export function hasMermaidDiagrams(content: string): boolean {
 
 export async function renderMermaidRuntimeScript(): Promise<string> {
   const script = await loadMermaidRuntimeScript();
-  return `  <script data-mda-mermaid-runtime>\n${script}\n  </script>`;
+  return `  <script ${mermaidRuntimeScriptAttribute}>\n${script}\n  </script>`;
 }
 
 export function renderMermaidInitializerScript(): string {
-  return `  <script data-mda-mermaid-script>
+  return `  <script ${mermaidInitializerScriptAttribute}>
     (() => {
       const renderDiagrams = async () => {
         const mermaid = window.mermaid;

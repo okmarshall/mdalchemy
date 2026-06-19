@@ -58,7 +58,7 @@ export async function renderDocument(document: DocumentNode, options: RenderOpti
     })}\n${withFootnotes}`
     : withFootnotes;
   const content = config.output.standalone && !config.html.fragment
-    ? renderStandalone(withToc, config, theme, outline.title)
+    ? await renderStandalone(withToc, config, theme, outline.title)
     : withToc;
 
   return {

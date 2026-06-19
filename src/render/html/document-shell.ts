@@ -1,11 +1,23 @@
 import type { ResolvedConfig } from "../../config/config-schema.js";
 import type { ResolvedTheme } from "../../theme/theme.js";
 import { escapeAttribute, escapeText } from "./escape.js";
+import { hasMermaidDiagrams, renderMermaidInitializerScript, renderMermaidRuntimeScript } from "./mermaid.js";
 
-export function renderStandalone(content: string, config: ResolvedConfig, theme: ResolvedTheme, title: string): string {
+export async function renderStandalone(
+  content: string,
+  config: ResolvedConfig,
+  theme: ResolvedTheme,
+  title: string
+): Promise<string> {
   const hasCollapsibleRegions = content.includes("mda-section-details") || content.includes("mda-toc-details");
+  const hasMermaid = hasMermaidDiagrams(content);
   const controls = renderFloatingControls(hasCollapsibleRegions);
-  const script = hasCollapsibleRegions ? `\n${renderCollapsibleControlsScript()}` : "";
+  const scripts = [
+    hasCollapsibleRegions ? renderCollapsibleControlsScript() : "",
+    hasMermaid ? await renderMermaidRuntimeScript() : "",
+    hasMermaid ? renderMermaidInitializerScript() : ""
+  ].filter(Boolean);
+  const script = scripts.length > 0 ? `\n${scripts.join("\n")}` : "";
 
   return `<!doctype html>
 <html lang="${escapeAttribute(config.html.lang)}">

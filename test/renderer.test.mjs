@@ -177,6 +177,49 @@ test("renders accessible image alt text and table overflow regions", async () =>
   assert.match(rendered.content, /<div class="mda-table-scroll" role="region" aria-label="Scrollable table" tabindex="0">/);
 });
 
+test("renders Mermaid fences as diagram-ready HTML with escaped source", async () => {
+  const markdown = "```mermaid\ngraph TD\n  A[Start] --> B{\"Ship <safe> HTML?\"}\n```\n";
+  const config = resolveConfig({}, { overrides: { html: { fragment: true } } });
+  const rendered = await renderMarkdown(markdown, { config });
+
+  assert.match(rendered.content, /<figure class="mda-mermaid" data-mda-mermaid role="region" aria-label="Mermaid diagram" tabindex="0">/);
+  assert.match(rendered.content, /<div class="mda-mermaid-canvas" data-mda-mermaid-canvas><\/div>/);
+  assert.match(rendered.content, /<pre class="mermaid" data-mda-mermaid-source>graph TD\n  A\[Start\] --&gt; B\{&quot;Ship &lt;safe&gt; HTML\?&quot;\}<\/pre>/);
+  assert.doesNotMatch(rendered.content, /data-language="mermaid"/);
+  assert.doesNotMatch(rendered.content, /language-mermaid/);
+});
+
+test("preserves Mermaid fences as code in CommonMark-compatible output", async () => {
+  const markdown = "```mermaid\ngraph TD\n  A --> B\n```\n";
+  const config = resolveConfig({}, {
+    overrides: {
+      html: {
+        fragment: true,
+        headingAnchors: false
+      }
+    }
+  });
+  const rendered = await renderMarkdown(markdown, { config, commonmarkCompatible: true });
+
+  assert.equal(rendered.content, "<pre><code class=\"language-mermaid\">graph TD\n  A --&gt; B\n</code></pre>");
+});
+
+test("adds the Mermaid initializer only to standalone documents with diagrams", async () => {
+  const withMermaid = await renderMarkdown("```mermaid\ngraph LR\n  A --> B\n```\n");
+  const withoutMermaid = await renderMarkdown("```ts\nconst value = 1;\n```\n");
+
+  assert.match(withMermaid.content, /<script data-mda-mermaid-runtime>/);
+  assert.match(withMermaid.content, /<script data-mda-mermaid-script>/);
+  assert.match(withMermaid.content, /globalThis\["mermaid"\]/);
+  assert.match(withMermaid.content, /document\.querySelectorAll\("\[data-mda-mermaid\]"\)/);
+  assert.match(withMermaid.content, /mermaid\.render\(id, source\.textContent \|\| ""\)/);
+  assert.match(withMermaid.content, /securityLevel: "strict"/);
+  assert.match(withMermaid.content, /dataset\.mdaMermaidError/);
+  assert.match(withMermaid.content, /data-mda-mermaid-runtime[\s\S]*data-mda-mermaid-script/);
+  assert.doesNotMatch(withoutMermaid.content, /data-mda-mermaid-runtime/);
+  assert.doesNotMatch(withoutMermaid.content, /data-mda-mermaid-script/);
+});
+
 test("escapes raw html in safe mode", async () => {
   const markdown = `<script>alert("x")</script>`;
   const { document } = parseMarkdown(markdown);
@@ -232,6 +275,9 @@ test("default theme uses responsive width and compact code tab stops", async () 
   assert.equal(theme.tokens["layout.maxWidth"], "1440px");
   assert.match(theme.css, /width: min\(calc\(100% - clamp\(24px, 4vw, 80px\)\), var\(--mda-layout-maxWidth\)\);/);
   assert.match(theme.css, /tab-size: 2;/);
+  assert.match(theme.css, /\.mda-mermaid \{/);
+  assert.match(theme.css, /\.mda-mermaid-canvas svg \{/);
+  assert.match(theme.css, /\.mda-mermaid > \.mermaid \{/);
   assert.match(theme.css, /@media \(max-width: 720px\) \{\n  \.mda-document \{\n    width: 100%;/);
 });
 

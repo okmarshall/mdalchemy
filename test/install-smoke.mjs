@@ -74,6 +74,11 @@ try {
     "```csharp",
     "public sealed class SmokeTest { }",
     "```",
+    "",
+    "```mermaid",
+    "flowchart LR",
+    "  Install --> Render",
+    "```",
     ""
   ].join("\n"), "utf8");
 
@@ -85,6 +90,9 @@ try {
   assert.match(renderedHtml, /<!doctype html>/i);
   assert.match(renderedHtml, /<table>/);
   assert.match(renderedHtml, /SmokeTest/);
+  assert.match(renderedHtml, /<figure class="mda-mermaid"/);
+  assert.match(renderedHtml, /data-mda-mermaid-runtime/);
+  assert.match(renderedHtml, /globalThis\["mermaid"\]/);
 
   await writeFile(path.join(projectDir, "guide.md"), [
     "# Guide",

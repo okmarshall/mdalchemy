@@ -132,6 +132,7 @@
     "docs",
     "examples/complex-spec.md",
     "examples/complex-spec.html",
+    "examples/mermaid.md",
     "examples/images",
     "examples/themes",
     "media",
@@ -143,7 +144,7 @@
   ],
   "scripts": {
     "vscode:prepublish": "npm run build",
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.json && node scripts/copy-mermaid-asset.mjs",
     "test": "npm run build && node --test test/*.test.mjs",
     "test:unit": "npm run build && node --test test/parser.test.mjs test/renderer.test.mjs test/cli.test.mjs",
     "test:fixtures": "npm run build && node --test test/example-fixture.test.mjs",
@@ -179,6 +180,7 @@
   "devDependencies": {
     "@types/node": "^24.0.0",
     "@types/vscode": "^1.120.0",
+    "mermaid": "11.15.0",
     "typescript": "^5.8.0"
   }
 }

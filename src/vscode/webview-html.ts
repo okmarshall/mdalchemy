@@ -8,7 +8,7 @@ export interface WebviewHtmlOptions {
 export function prepareHtmlForWebview(html: string, options: WebviewHtmlOptions): string {
   const nonce = randomBytes(16).toString("base64");
   return insertContentSecurityPolicy(
-    addControlScriptNonce(rewriteLocalImageSources(html, options.mapLocalResource), nonce),
+    addFirstPartyScriptNonce(rewriteLocalImageSources(html, options.mapLocalResource), nonce),
     webviewContentSecurityPolicy(options.cspSource, nonce)
   );
 }
@@ -47,8 +47,8 @@ function isLocalResourceReference(reference: string): boolean {
     && !reference.startsWith("//");
 }
 
-function addControlScriptNonce(html: string, nonce: string): string {
-  return html.replace(/<script\b((?=[^>]*\bdata-mda-control-script\b)[^>]*)>/gi, (match, attributes: string) => {
+function addFirstPartyScriptNonce(html: string, nonce: string): string {
+  return html.replace(/<script\b((?=[^>]*\bdata-mda-(?:control-script|mermaid-(?:runtime|script))\b)[^>]*)>/gi, (match, attributes: string) => {
     if (/\bnonce\s*=/.test(attributes)) return match;
     return `<script nonce="${escapeAttribute(nonce)}"${attributes}>`;
   });

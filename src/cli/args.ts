@@ -166,6 +166,12 @@ Commands:
       book                Build one HTML documentation book from a Markdown tree
       theme               List and inspect built-in or custom themes
 
+Examples:
+      mdalchemy examples/complex-spec.md -o examples/complex-spec.html --toc --gfm --frontmatter
+                            Render the repo's broad Markdown fixture
+      mdalchemy examples/mermaid.md -o examples/mermaid.generated.html
+                            Render the repo's Mermaid fixture
+
 Output:
   -o, --output <path>       Write standalone HTML to a file
       --stdout              Write rendered HTML to stdout

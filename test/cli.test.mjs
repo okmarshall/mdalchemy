@@ -99,6 +99,8 @@ test("cli exposes top-level and theme help", async () => {
   assert.match(help.stdout, /Usage:/);
   assert.match(help.stdout, /mdalchemy book \[root\]/);
   assert.match(help.stdout, /Markdown:/);
+  assert.match(help.stdout, /mdalchemy examples\/complex-spec\.md -o examples\/complex-spec\.html --toc --gfm --frontmatter/);
+  assert.match(help.stdout, /mdalchemy examples\/mermaid\.md -o examples\/mermaid\.generated\.html/);
   assert.match(help.stdout, /--collapsible-toc/);
   assert.match(help.stdout, /Safety and diagnostics:/);
 

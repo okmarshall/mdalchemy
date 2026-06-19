@@ -97,6 +97,7 @@ Status labels:
 | Frontmatter | `[Done]` | `src/markdown/parser.ts`, `test/parser.test.mjs`, `test/renderer.test.mjs` | Keep metadata separate from CommonMark core parsing. |
 | Literal autolinks | `[Done]` | `src/markdown/inline-parser.ts`, `test/parser.test.mjs`, `test/renderer.test.mjs`, `test/fixtures/conformance/gfm-supported.seed.json` | URI, email, and trailing punctuation trimming are covered. |
 | Tagfilter | `[Done]` | `src/render/html/inline-renderer.ts`, `test/fixtures/conformance/gfm-supported.seed.json`, `npm run test:gfm:strict` | Disallowed GFM raw HTML tags are filtered when `gfm-tagfilter` is enabled. |
+| Mermaid fenced diagrams | `[Done]` | `src/render/html/mermaid.ts`, `src/render/html/block-renderer.ts`, `src/render/html/document-shell.ts`, `test/renderer.test.mjs` | Fenced `mermaid` and `mmd` code blocks render as escaped, diagram-ready HTML with a readable source fallback; standalone output embeds mdalchemy's pinned Mermaid runtime when diagrams are present. CommonMark-compatible output remains regular code. |
 
 ### Rendering And Document Features
 
@@ -116,6 +117,7 @@ Status labels:
 | Collapsible sections | `[Done]` | `src/render/html/block-renderer.ts`, `src/theme/css.ts`, `src/cli/args.ts`, `test/renderer.test.mjs`, `test/cli.test.mjs` | `html.collapsibleSections` plus `--collapsible-sections` / `--no-collapsible-sections` add native expanded-by-default details controls to heading-derived sections. |
 | Collapsible book navigation | `[Done]` | `src/render/html/toc-renderer.ts`, `src/book/book-builder.ts`, `src/cli/book-command.ts`, `test/renderer.test.mjs`, `test/cli.test.mjs` | `html.collapsibleTableOfContents` plus `--collapsible-toc` / `--no-collapsible-toc` compact nested TOC branches, while `book.folderStructure` plus `--folder-structure` / `--no-folder-structure` exposes traversed folders as TOC-only groups. |
 | Images | `[Done]` | `examples/complex-spec.md` | Add image safety and broken path notes if needed. |
+| Mermaid diagram rendering | `[Done]` | `src/render/html/mermaid.ts`, `src/theme/css.ts`, `scripts/copy-mermaid-asset.mjs`, `test/renderer.test.mjs`, `test/vscode-webview.test.mjs` | Normal HTML output uses `figure.mda-mermaid`, `mda-mermaid-canvas`, and `pre.mermaid`; theme CSS keeps wide diagrams scroll-safe, the build copies a pinned Mermaid browser runtime into `dist/vendor`, standalone output embeds it only when needed, and VS Code webviews nonce the first-party scripts. |
 | Lightweight syntax highlighting | `[Done]` | `src/render/html/syntax-highlight.ts`, `src/render/html/syntax/*`, `test/renderer.test.mjs` | Keep language fixtures focused on practical documentation examples. |
 | C# syntax highlighting | `[Done]` | `test/renderer.test.mjs` | C# keywords, records, attributes with arguments, built-ins, functions, numbers, comments, strings, operators, and punctuation are covered by the lightweight renderer highlighter. Add additional constructs as regressions appear. |
 | Expanded syntax highlighting | `[Done]` | `src/render/html/syntax/languages.ts`, `test/renderer.test.mjs`, `examples/complex-spec.md` | Dependency-free registry now covers JS/TS, C#, Python, Java, Go, Rust, SQL, YAML, Dockerfile, PowerShell, diff, JSON, HTML/XML, CSS, shell, and Markdown fences. Revisit whether a small dependency is justified only if the lightweight highlighter reaches its natural limit. |
@@ -221,6 +223,10 @@ This is the current post-`1.1.0` planning batch. These items are intended to mak
 - **VS Code preview-only HTML** now renders Markdown into a temporary live
   webview, watches editor/config changes through the shared watch-render
   controller, and can persist the current Markdown state on demand.
+- **Mermaid diagram support** now renders fenced Mermaid diagrams as
+  diagram-ready HTML with an offline-readable source fallback, scroll-safe
+  theme styling, and a bundled pinned Mermaid runtime that standalone output
+  embeds only when diagrams are present.
 
 ### Candidate Killer Features To Discuss
 
@@ -229,7 +235,6 @@ These are not committed scope yet. They should be reviewed before implementation
 - **Searchable project books**: generated project books with client-side search over headings and body text.
 - **Book navigation sidebar**: a persistent generated navigation rail for project-book output, separate from the current table of contents.
 - **Config/theme gallery command**: choose from polished starter profiles like technical report, design doc, release notes, API notes, and engineering RFC.
-- **Mermaid diagram support**: render fenced Mermaid diagrams into the HTML output. This would need a careful dependency/security review before committing.
 - **Broken-link and missing-asset report**: an optional diagnostics mode for project books that reports unresolved Markdown links, images, and local assets.
 
 ## Phase 0: Project Foundation

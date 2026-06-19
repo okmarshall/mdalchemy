@@ -1,5 +1,6 @@
 import type {
   BlockNode,
+  CodeBlockNode,
   HeadingNode,
   ListItemNode,
   ListNode,
@@ -9,6 +10,7 @@ import type {
 } from "../../markdown/ast.js";
 import { escapeAttribute, escapeText } from "./escape.js";
 import { indent } from "./formatting.js";
+import { isMermaidCodeBlock, renderMermaidDiagram } from "./mermaid.js";
 import { highlightCode } from "./syntax-highlight.js";
 import { renderInlines, renderRawHtml } from "./inline-renderer.js";
 import type { RenderContext } from "./types.js";
@@ -220,12 +222,14 @@ function shouldRenderListItemWithBlockFormatting(item: ListItemNode, parentList?
   return item.children[0]?.type !== "paragraph";
 }
 
-function renderCodeBlock(block: Extract<BlockNode, { type: "codeBlock" }>, context: RenderContext): string {
+function renderCodeBlock(block: CodeBlockNode, context: RenderContext): string {
   const languageClass = block.language ? ` class="language-${escapeAttribute(block.language)}"` : "";
   if (context.commonmarkCompatible) {
     const literal = block.literal === "" ? "" : `${block.literal}\n`;
     return `<pre><code${languageClass}>${escapeText(literal)}</code></pre>`;
   }
+
+  if (isMermaidCodeBlock(block)) return renderMermaidDiagram(block);
 
   const languageLabel = block.language ? ` data-language="${escapeAttribute(block.language)}"` : "";
   return `<pre${languageLabel}><code${languageClass}>${highlightCode(block.literal, block.language)}</code></pre>`;

@@ -34,6 +34,7 @@ npm run pack:dry-run
 
 ## Development Guidelines
 
+- Agent-specific orientation lives in `AGENTS.md`.
 - Keep the parser renderer-neutral. Add Markdown syntax to the AST and renderer
   separately.
 - Keep CommonMark core behavior green with `npm run test:commonmark:strict`.

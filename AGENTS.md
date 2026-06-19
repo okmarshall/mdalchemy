@@ -15,6 +15,8 @@ or broad utility layers.
 Start with these docs when the task touches their area:
 
 - `README.md`: user-facing features, usage, examples, and current limits.
+- `CHANGELOG.md`: notable user-facing additions, changes, and fixes since the
+  last release; keep it up to date at all times.
 - `CONTRIBUTING.md`: setup, daily checks, documentation expectations.
 - `docs/architecture.md`: module boundaries, dependency policy, pipeline.
 - `docs/parser-design.md`: parser design and CommonMark edge cases.
@@ -83,6 +85,10 @@ or Mermaid runtime changes.
 
 ## Change-Specific Notes
 
+- Changelog updates: keep `CHANGELOG.md` up to date at all times. Any
+  user-visible addition, behavior change, fix, CLI/config change, VS Code
+  change, packaging/release change, or notable documentation/workflow change
+  should update the `Unreleased` section in the same change.
 - CLI/config changes: update `src/cli/options.ts`, `src/cli/help.ts`,
   `src/config/config-options.ts`, tests, and `docs/cli-and-configuration.md`
   together.

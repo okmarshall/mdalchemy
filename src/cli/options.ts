@@ -69,6 +69,10 @@ export const bookCliOptions = {
   ...commonCliOptions,
   "folder-structure": { type: "boolean" },
   "no-folder-structure": { type: "boolean" },
+  sidebar: { type: "boolean" },
+  "no-sidebar": { type: "boolean" },
+  search: { type: "boolean" },
+  "no-search": { type: "boolean" },
   include: { type: "string", multiple: true },
   exclude: { type: "string", multiple: true },
   help: { type: "boolean", short: "h" }
@@ -103,6 +107,16 @@ export const bookCliConflicts: readonly CliConflict[] = [
     left: "folder-structure",
     right: "no-folder-structure",
     message: "Use either --folder-structure or --no-folder-structure, not both."
+  },
+  {
+    left: "sidebar",
+    right: "no-sidebar",
+    message: "Use either --sidebar or --no-sidebar, not both."
+  },
+  {
+    left: "search",
+    right: "no-search",
+    message: "Use either --search or --no-search, not both."
   }
 ];
 

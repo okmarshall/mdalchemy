@@ -53,7 +53,9 @@ export const configSections = [
     fields: [
       { key: "include", type: "string[]" },
       { key: "exclude", type: "string[]", merge: "append-default-unique" },
-      { key: "folderStructure", type: "boolean" }
+      { key: "folderStructure", type: "boolean" },
+      { key: "sidebar", type: "boolean" },
+      { key: "search", type: "boolean" }
     ]
   }
 ] as const satisfies readonly ConfigSectionDescriptor[];

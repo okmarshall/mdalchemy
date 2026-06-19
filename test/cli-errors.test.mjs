@@ -43,6 +43,8 @@ test("cli exposes top-level and theme help", async () => {
   assert.match(bookHelp.stdout, /mdalchemy book \[root\]/);
   assert.match(bookHelp.stdout, /--include <pattern>/);
   assert.match(bookHelp.stdout, /--folder-structure/);
+  assert.match(bookHelp.stdout, /--no-sidebar/);
+  assert.match(bookHelp.stdout, /--no-search/);
 });
 
 test("cli returns usage error when output path matches input path", async () => {
@@ -84,6 +86,8 @@ test("cli returns usage errors for invalid argument combinations", async () => {
     { args: [input, "--collapsible-sections", "--no-collapsible-sections"], message: /Use either --collapsible-sections or --no-collapsible-sections/ },
     { args: [input, "--no-sections", "--collapsible-sections"], message: /Use either --no-sections or --collapsible-sections/ },
     { args: ["book", dir, "--folder-structure", "--no-folder-structure"], message: /Use either --folder-structure or --no-folder-structure/ },
+    { args: ["book", dir, "--sidebar", "--no-sidebar"], message: /Use either --sidebar or --no-sidebar/ },
+    { args: ["book", dir, "--search", "--no-search"], message: /Use either --search or --no-search/ },
     { args: ["theme", "list", "serif"], message: /theme list does not accept arguments/ }
   ];
 

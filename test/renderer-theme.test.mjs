@@ -40,5 +40,10 @@ test("default theme uses responsive width and compact code tab stops", async () 
   assert.match(theme.css, /\.mda-mermaid \{/);
   assert.match(theme.css, /\.mda-mermaid-canvas svg \{/);
   assert.match(theme.css, /\.mda-mermaid > \.mermaid \{/);
+  assert.match(theme.css, /grid-template-columns: minmax\(300px, 360px\) minmax\(0, 1fr\);/);
+  assert.match(theme.css, /\.mda-book-layout \.mda-document \{\n  width: min\(calc\(100% - clamp\(24px, 4vw, 80px\)\), var\(--mda-layout-maxWidth\)\);\n  margin-left: auto;\n  margin-right: auto;\n\}/);
+  assert.match(theme.css, /\.mda-section-details:not\(\[open\]\) > \.mda-section-body \{\n  display: none;\n\}/);
+  assert.match(theme.css, /\.mda-toc-details:not\(\[open\]\) > ol \{\n  display: none;\n\}/);
+  assert.match(theme.css, /\.mda-section-summary > :is\(h1, h2, h3, h4, h5, h6\) \{\n  min-width: 0;\n  margin: 0;\n\}/);
   assert.match(theme.css, /@media \(max-width: 720px\) \{\n  \.mda-document \{\n    width: 100%;/);
 });

@@ -55,6 +55,13 @@ mdalchemy:
   assert.equal(result.exitCode, 0);
   assert.match(result.stderr, /wrote/);
   assert.match(result.stderr, /\(2 files\)/);
+  assert.match(html, /<body class="mda-book-layout">/);
+  assert.match(html, /<aside class="mda-book-sidebar" aria-label="Book navigation">/);
+  assert.match(html, /<a class="mda-book-sidebar-title" href="#top">Project Book<\/a>/);
+  assert.match(html, /<div class="mda-book-search" role="search" data-mda-book-search>/);
+  assert.match(html, /<input class="mda-book-search-input" id="mda-book-search-input" type="search"/);
+  assert.match(html, /<script data-mda-book-search-script>/);
+  assert.match(html, /document\.querySelectorAll\("\.mda-content h1\[id\]/);
   assert.match(html, /Project Book/);
   assert.match(html, /Root Project/);
   assert.match(html, /Guide Doc/);
@@ -78,6 +85,24 @@ mdalchemy:
   const flat = await runCli(["book", dir, "--stdout", "--fragment", "--title", "Project Book", "--no-folder-structure"]);
 
   assert.equal(flat.exitCode, 0);
+  assert.doesNotMatch(flat.stdout, /mda-book-sidebar/);
+  assert.doesNotMatch(flat.stdout, /data-mda-book-search-script/);
   assert.doesNotMatch(flat.stdout, /<span class="mda-toc-label">docs<\/span>/);
   assert.match(flat.stdout, /<h2 id="guide-doc">/);
+
+  const searchWithoutSidebar = await runCli(["book", dir, "--stdout", "--title", "Project Book", "--no-sidebar"]);
+
+  assert.equal(searchWithoutSidebar.exitCode, 0);
+  assert.doesNotMatch(searchWithoutSidebar.stdout, /<body class="mda-book-layout">/);
+  assert.doesNotMatch(searchWithoutSidebar.stdout, /<aside class="mda-book-sidebar"/);
+  assert.match(searchWithoutSidebar.stdout, /<section class="mda-book-search-panel" aria-label="Book search">/);
+  assert.match(searchWithoutSidebar.stdout, /<script data-mda-book-search-script>/);
+
+  const withoutBookChrome = await runCli(["book", dir, "--stdout", "--title", "Project Book", "--no-sidebar", "--no-search"]);
+
+  assert.equal(withoutBookChrome.exitCode, 0);
+  assert.doesNotMatch(withoutBookChrome.stdout, /<body class="mda-book-layout">/);
+  assert.doesNotMatch(withoutBookChrome.stdout, /<aside class="mda-book-sidebar"/);
+  assert.doesNotMatch(withoutBookChrome.stdout, /<div class="mda-book-search" role="search"/);
+  assert.doesNotMatch(withoutBookChrome.stdout, /data-mda-book-search-script/);
 });

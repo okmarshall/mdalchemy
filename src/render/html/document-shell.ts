@@ -1,5 +1,10 @@
 import type { ResolvedConfig } from "../../config/config-schema.js";
 import type { ResolvedTheme } from "../../theme/theme.js";
+import {
+  renderBookNavigation,
+  renderBookNavigationScript,
+  type BookNavigationRenderOptions
+} from "./book-navigation.js";
 import { hasDocumentActionControls, renderCollapsibleControlsScript, renderFloatingActions } from "./document-actions.js";
 import { escapeAttribute, escapeText } from "./escape.js";
 import { hasMermaidDiagrams, renderMermaidInitializerScript, renderMermaidRuntimeScript } from "./mermaid.js";
@@ -8,17 +13,22 @@ export async function renderStandalone(
   content: string,
   config: ResolvedConfig,
   theme: ResolvedTheme,
-  title: string
+  title: string,
+  bookNavigation?: BookNavigationRenderOptions | undefined
 ): Promise<string> {
   const hasCollapsibleRegions = hasDocumentActionControls(content);
   const hasMermaid = hasMermaidDiagrams(content);
   const controls = renderFloatingActions(hasCollapsibleRegions);
+  const bookNavigationMarkup = bookNavigation ? `${renderBookNavigation(bookNavigation)}\n` : "";
   const scripts = [
     hasCollapsibleRegions ? renderCollapsibleControlsScript() : "",
+    renderBookNavigationScript(bookNavigation),
     hasMermaid ? await renderMermaidRuntimeScript() : "",
     hasMermaid ? renderMermaidInitializerScript() : ""
   ].filter(Boolean);
   const script = scripts.length > 0 ? `\n${scripts.join("\n")}` : "";
+  const bodyClass = bookNavigation?.sidebar ? ` class="mda-book-layout"` : "";
+  const documentClass = bookNavigation?.sidebar ? "mda-document mda-document-with-book-sidebar" : "mda-document";
 
   return `<!doctype html>
 <html lang="${escapeAttribute(config.html.lang)}">
@@ -30,8 +40,8 @@ export async function renderStandalone(
 ${theme.css}
   </style>
 </head>
-<body>
-  <article id="top" class="mda-document">
+<body${bodyClass}>
+${bookNavigationMarkup}  <article id="top" class="${documentClass}">
     <main class="mda-content">
 ${content}
     </main>

@@ -1,4 +1,5 @@
 import { baseTokens } from "./tokens.js";
+import { bookNavigationCss } from "./css/book-navigation.js";
 import { blockCss } from "./css/block.js";
 import { codeCss } from "./css/code.js";
 import { floatingActionsCss } from "./css/floating-actions.js";
@@ -23,6 +24,7 @@ export function themeToCss(tokens: Record<string, string>): string {
   return [
     `:root {\n${vars}\n}`,
     layoutCss,
+    bookNavigationCss,
     sectionsCss,
     typographyCss,
     blockCss,

@@ -50,6 +50,13 @@ export async function renderProjectBook(options: RenderProjectBookOptions): Prom
   if (options.config.book.folderStructure) {
     renderOptions.tocItems = buildBookTocItems(composed, bookTitle);
   }
+  if (options.config.book.sidebar || options.config.book.search) {
+    renderOptions.bookNavigation = {
+      title: bookTitle,
+      sidebar: options.config.book.sidebar,
+      search: options.config.book.search
+    };
+  }
   const rendered = await renderDocument(composed.document, renderOptions);
 
   return {

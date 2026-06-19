@@ -107,7 +107,9 @@ test("config loader validates and resolves book discovery settings", async () =>
     book: {
       include: "**/*.md",
       exclude: [123],
-      folderStructure: "yes"
+      folderStructure: "yes",
+      sidebar: "yes",
+      search: "yes"
     }
   }), "utf8");
 
@@ -125,12 +127,22 @@ test("config loader validates and resolves book discovery settings", async () =>
     diagnostic.code === "MDA_CONFIG_INVALID_TYPE"
     && diagnostic.message.includes("book.folderStructure")
   )), true);
+  assert.equal(result.diagnostics.some((diagnostic) => (
+    diagnostic.code === "MDA_CONFIG_INVALID_TYPE"
+    && diagnostic.message.includes("book.sidebar")
+  )), true);
+  assert.equal(result.diagnostics.some((diagnostic) => (
+    diagnostic.code === "MDA_CONFIG_INVALID_TYPE"
+    && diagnostic.message.includes("book.search")
+  )), true);
 
   const config = resolveConfig({
     book: {
       include: ["docs/**/*.md"],
       exclude: ["docs/private/**"],
-      folderStructure: false
+      folderStructure: false,
+      sidebar: false,
+      search: false
     }
   });
 
@@ -138,6 +150,8 @@ test("config loader validates and resolves book discovery settings", async () =>
   assert.equal(config.book.exclude.includes("node_modules/**"), true);
   assert.equal(config.book.exclude.includes("docs/private/**"), true);
   assert.equal(config.book.folderStructure, false);
+  assert.equal(config.book.sidebar, false);
+  assert.equal(config.book.search, false);
 });
 
 test("config loader reports unsupported but well-typed extension names", async () => {

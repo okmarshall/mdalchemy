@@ -50,10 +50,11 @@ mdalchemy: Generate HTML Book
 
 The book command is also available from the Command Palette. When launched from
 the Command Palette, mdalchemy walks through a guided flow for the root folder,
-theme, section rendering, table of contents behavior, TOC collapse style, folder
-structure, sidebar, search, and output file. When launched from the Explorer
-folder context menu, it uses the configured defaults and writes the standard
-`mdalchemy-book.html` file immediately.
+theme, section rendering, table of contents behavior, sidebar, search,
+navigation style, folder grouping, and output file. Navigation style and folder
+grouping prompts appear only when the selected TOC/sidebar choices can use them.
+When launched from the Explorer folder context menu, it uses the configured
+defaults and writes the standard `mdalchemy-book.html` file immediately.
 
 ## File Behavior
 
@@ -108,11 +109,12 @@ From the Command Palette, the generated file path and selected render options
 come from the guided prompts. Any prompt left on `Config/default` inherits
 `mdalchemy.config.json` or `.mdalchemyrc.json`, with mdalchemy's built-in
 defaults used when no config value exists. The guided flow also lets readers
-choose collapsible or standard TOC nesting and folder-structure or flat file
-grouping, plus whether to include the generated sidebar and book search. VS Code
-book generation defaults to collapsible TOC controls, folder-structure TOC
-groups, the sidebar, and local search so large project books stay easier to scan
-without changing the main document body.
+choose whether to include the generated sidebar and book search. When an inline
+TOC or sidebar will be rendered, the flow also asks whether navigation should be
+collapsible or expanded and whether file entries should be grouped by folder.
+VS Code book generation defaults to collapsible navigation controls,
+folder-structure navigation groups, the sidebar, and local search so large
+project books stay easier to scan without changing the main document body.
 
 The generated book is the same kind of standalone HTML artifact produced by:
 

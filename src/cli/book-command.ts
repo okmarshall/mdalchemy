@@ -43,6 +43,8 @@ interface BookCliArgs {
   sections: boolean | undefined;
   collapsibleSections: boolean | undefined;
   folderStructure: boolean | undefined;
+  sidebar: boolean | undefined;
+  search: boolean | undefined;
   include: string[];
   exclude: string[];
   help: boolean;
@@ -192,6 +194,8 @@ function parseBookCliArgs(argv: string[]): BookCliArgs {
     sections: htmlSelections.sections,
     collapsibleSections: htmlSelections.collapsibleSections,
     folderStructure: booleanPairValue(parsed.values, "folder-structure", "no-folder-structure"),
+    sidebar: booleanPairValue(parsed.values, "sidebar", "no-sidebar"),
+    search: booleanPairValue(parsed.values, "search", "no-search"),
     include: stringArrayValue(parsed.values, "include"),
     exclude: stringArrayValue(parsed.values, "exclude"),
     help: flagValue(parsed.values, "help"),
@@ -203,6 +207,8 @@ function bookCliOverrides(args: BookCliArgs): Partial<ResolvedConfig> {
   const html = htmlCliOverridesFromSelections(args);
   const book: Partial<ResolvedConfig["book"]> = {};
   if (args.folderStructure !== undefined) book.folderStructure = args.folderStructure;
+  if (args.sidebar !== undefined) book.sidebar = args.sidebar;
+  if (args.search !== undefined) book.search = args.search;
 
   const extensions = bookMarkdownCliExtensions({
     gfm: args.gfm,

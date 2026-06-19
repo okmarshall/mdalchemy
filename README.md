@@ -183,11 +183,16 @@ Project book controls:
 | `--include <pattern>` | Include matching Markdown paths; repeat for multiple patterns. |
 | `--exclude <pattern>` | Exclude matching paths or directories; repeat for multiple patterns. |
 | `--folder-structure` / `--no-folder-structure` | Show or hide TOC folder groups that mirror the traversed book tree. |
+| `--sidebar` / `--no-sidebar` | Show or hide the persistent book navigation sidebar. |
+| `--search` / `--no-search` | Show or hide client-side search in generated books. |
 
 `mdalchemy book` enables the supported GFM bundle and frontmatter parsing by
 default because project READMEs commonly use GitHub Flavored Markdown. Book
 output also groups TOC entries by folder structure by default so project and
-package boundaries are visible without changing the main document body. Opt a
+package boundaries are visible without changing the main document body. It also
+adds a persistent sidebar and local browser search by default because book
+navigation is most useful when it stays available away from the top-of-page TOC.
+Use `--no-sidebar` or `--no-search` when you want plainer standalone HTML. Opt a
 file out of a project book with leading frontmatter:
 
 Standalone HTML includes bottom-right document shortcuts. `Go to top` is always

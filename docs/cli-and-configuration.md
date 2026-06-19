@@ -130,6 +130,10 @@ Book-specific options:
 --exclude <pattern>       Exclude paths or directories; repeatable.
 --folder-structure        Group book TOC entries by traversed folders.
 --no-folder-structure     Render a flat file list in the book TOC.
+--sidebar                 Show the generated book navigation sidebar.
+--no-sidebar              Hide the generated book navigation sidebar.
+--search                  Show client-side book search controls.
+--no-search               Hide client-side book search controls.
 ```
 
 Default include patterns:
@@ -227,6 +231,8 @@ Invalid command combinations:
 - `--collapsible-sections` and `--no-collapsible-sections` together are a usage error.
 - `--no-sections` and `--collapsible-sections` together are a usage error.
 - `--folder-structure` and `--no-folder-structure` together are a usage error.
+- `--sidebar` and `--no-sidebar` together are a usage error.
+- `--search` and `--no-search` together are a usage error.
 - Theme subcommands reject unexpected extra arguments.
 
 ## Format Inference
@@ -310,7 +316,9 @@ Versioned config:
   "book": {
     "include": ["**/*.md", "**/*.markdown"],
     "exclude": [".git/**", "node_modules/**", "dist/**", "build/**", "coverage/**", ".next/**", "out/**"],
-    "folderStructure": true
+    "folderStructure": true,
+    "sidebar": true,
+    "search": true
   },
   "theme": "serif"
 }
@@ -404,6 +412,8 @@ interface BookConfig {
   include: string[];
   exclude: string[];
   folderStructure: boolean;
+  sidebar: boolean;
+  search: boolean;
 }
 ```
 
@@ -416,6 +426,19 @@ excludes. The CLI `--include` flag replaces `include` for a run; the CLI
 navigation mirrors the traversed project tree without changing the main
 document body. It is enabled by default for books; use `--no-folder-structure`
 to keep a flat list of file entries in the book TOC.
+
+`sidebar` adds a persistent navigation rail to standalone project-book output.
+It reuses the generated book outline, including folder groups when
+`folderStructure` is enabled, and is enabled by default because it keeps
+navigation available after the reader has scrolled away from the inline TOC. Use
+`--no-sidebar` to generate a simpler single-column book.
+
+`search` adds first-party client-side search controls to standalone project
+books. Search runs locally in the browser over generated headings and nearby
+body text, uses no network service, and is enabled by default for project books.
+When `sidebar` is enabled, the search control appears in that rail; without the
+sidebar it appears above the document. Use `--no-search` to omit the controls
+and script.
 
 When a book is composed, mdalchemy inserts a master title, creates one section
 per included file, rewrites links between included Markdown files to same-page

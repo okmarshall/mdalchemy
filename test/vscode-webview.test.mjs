@@ -12,6 +12,7 @@ test("prepares rendered HTML for VS Code webviews", () => {
 <img src="images/example one.png" alt="local">
 <img src="https://example.com/image.png" alt="remote">
 <img src="data:image/png;base64,abc" alt="data">
+<script data-mda-book-search-script>document.body.dataset.search = "ready";</script>
 <script data-mda-control-script>document.body.dataset.mda = "ready";</script>
 <script data-mda-mermaid-runtime>window.mermaid = {};</script>
 <script data-mda-mermaid-script>document.body.dataset.mermaid = "ready";</script>
@@ -28,6 +29,7 @@ test("prepares rendered HTML for VS Code webviews", () => {
   assert.match(prepared, /<img src="vscode-resource:images\/example one\.png\?mapped=1&amp;safe=true" alt="local">/);
   assert.match(prepared, /<img src="https:\/\/example\.com\/image\.png" alt="remote">/);
   assert.match(prepared, /<img src="data:image\/png;base64,abc" alt="data">/);
+  assert.match(prepared, /<script nonce="[^"]+" data-mda-book-search-script>document\.body\.dataset\.search = "ready";<\/script>/);
   assert.match(prepared, /<script nonce="[^"]+" data-mda-control-script>document\.body\.dataset\.mda = "ready";<\/script>/);
   assert.match(prepared, /<script nonce="[^"]+" data-mda-mermaid-runtime>window\.mermaid = \{};<\/script>/);
   assert.match(prepared, /<script nonce="[^"]+" data-mda-mermaid-script>document\.body\.dataset\.mermaid = "ready";<\/script>/);

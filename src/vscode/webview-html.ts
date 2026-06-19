@@ -1,4 +1,5 @@
 import { randomBytes } from "node:crypto";
+import { bookSearchScriptAttribute } from "../render/html/book-navigation.js";
 import { documentControlScriptAttribute } from "../render/html/document-actions.js";
 import {
   mermaidInitializerScriptAttribute,
@@ -54,6 +55,7 @@ function isLocalResourceReference(reference: string): boolean {
 
 function addFirstPartyScriptNonce(html: string, nonce: string): string {
   const firstPartyScriptAttributes = [
+    bookSearchScriptAttribute,
     documentControlScriptAttribute,
     mermaidRuntimeScriptAttribute,
     mermaidInitializerScriptAttribute

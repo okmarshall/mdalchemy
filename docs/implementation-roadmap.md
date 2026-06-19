@@ -116,6 +116,8 @@ Status labels:
 | Section wrappers | `[Done]` | `src/render/html/block-renderer.ts`, `src/cli/args.ts`, `test/renderer.test.mjs`, `test/cli.test.mjs` | `html.sections` plus `--sections` / `--no-sections` render heading-derived nested sections outside CommonMark-compatible output. |
 | Collapsible sections | `[Done]` | `src/render/html/block-renderer.ts`, `src/theme/css.ts`, `src/cli/args.ts`, `test/renderer.test.mjs`, `test/cli.test.mjs` | `html.collapsibleSections` plus `--collapsible-sections` / `--no-collapsible-sections` add native expanded-by-default details controls to heading-derived sections. |
 | Collapsible book navigation | `[Done]` | `src/render/html/toc-renderer.ts`, `src/book/book-builder.ts`, `src/cli/book-command.ts`, `test/renderer.test.mjs`, `test/cli.test.mjs` | `html.collapsibleTableOfContents` plus `--collapsible-toc` / `--no-collapsible-toc` compact nested TOC branches, while `book.folderStructure` plus `--folder-structure` / `--no-folder-structure` exposes traversed folders as TOC-only groups. |
+| Searchable project books | `[Done]` | `src/render/html/book-navigation.ts`, `src/book/book-builder.ts`, `src/cli/book-command.ts`, `test/cli-book.test.mjs` | `book.search` plus `--search` / `--no-search` adds first-party local browser search over generated project-book headings and body text. |
+| Book navigation sidebar | `[Done]` | `src/render/html/book-navigation.ts`, `src/theme/css/book-navigation.ts`, `src/vscode/book-options.ts`, `test/cli-book.test.mjs`, `test/vscode-book-options.test.mjs` | `book.sidebar` plus `--sidebar` / `--no-sidebar` adds a standalone-only persistent navigation rail for project books, reusing folder-aware book TOC items when enabled. |
 | Images | `[Done]` | `examples/complex-spec.md` | Add image safety and broken path notes if needed. |
 | Mermaid diagram rendering | `[Done]` | `src/render/html/mermaid.ts`, `src/theme/css.ts`, `scripts/copy-mermaid-asset.mjs`, `test/renderer.test.mjs`, `test/vscode-webview.test.mjs` | Normal HTML output uses `figure.mda-mermaid`, `mda-mermaid-canvas`, and `pre.mermaid`; theme CSS keeps wide diagrams scroll-safe, the build copies a pinned Mermaid browser runtime into `dist/vendor`, standalone output embeds it only when needed, and VS Code webviews nonce the first-party scripts. |
 | Lightweight syntax highlighting | `[Done]` | `src/render/html/syntax-highlight.ts`, `src/render/html/syntax/*`, `test/renderer.test.mjs` | Keep language fixtures focused on practical documentation examples. |
@@ -227,13 +229,14 @@ This is the current post-`1.1.0` planning batch. These items are intended to mak
   diagram-ready HTML with an offline-readable source fallback, scroll-safe
   theme styling, and a bundled pinned Mermaid runtime that standalone output
   embeds only when diagrams are present.
+- **Searchable project books and book navigation sidebar** now add default
+  standalone book chrome, with `book.search`, `book.sidebar`, and matching CLI
+  and VS Code controls for opt-out.
 
 ### Candidate Killer Features To Discuss
 
 These are not committed scope yet. They should be reviewed before implementation.
 
-- **Searchable project books**: generated project books with client-side search over headings and body text.
-- **Book navigation sidebar**: a persistent generated navigation rail for project-book output, separate from the current table of contents.
 - **Config/theme gallery command**: choose from polished starter profiles like technical report, design doc, release notes, API notes, and engineering RFC.
 - **Broken-link and missing-asset report**: an optional diagnostics mode for project books that reports unresolved Markdown links, images, and local assets.
 

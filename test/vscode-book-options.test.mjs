@@ -23,7 +23,9 @@ test("VS Code book options default to collapsible TOCs and folder structure", ()
       collapsibleTableOfContents: true
     },
     book: {
-      folderStructure: true
+      folderStructure: true,
+      sidebar: true,
+      search: true
     }
   });
 });
@@ -34,14 +36,18 @@ test("VS Code book options map prompt selections to config overrides", () => {
       sectionMode: "config",
       tocMode: "config",
       collapsibleToc: true,
-      folderStructure: true
+      folderStructure: true,
+      sidebar: true,
+      search: true
     }),
     {
       html: {
         collapsibleTableOfContents: true
       },
       book: {
-        folderStructure: true
+        folderStructure: true,
+        sidebar: true,
+        search: true
       }
     }
   );
@@ -52,7 +58,9 @@ test("VS Code book options map prompt selections to config overrides", () => {
       sectionMode: "collapsible",
       tocMode: "on",
       collapsibleToc: true,
-      folderStructure: true
+      folderStructure: true,
+      sidebar: true,
+      search: true
     }),
     {
       theme: "technical",
@@ -63,7 +71,9 @@ test("VS Code book options map prompt selections to config overrides", () => {
         collapsibleSections: true
       },
       book: {
-        folderStructure: true
+        folderStructure: true,
+        sidebar: true,
+        search: true
       }
     }
   );
@@ -73,7 +83,9 @@ test("VS Code book options map prompt selections to config overrides", () => {
       sectionMode: "none",
       tocMode: "off",
       collapsibleToc: false,
-      folderStructure: false
+      folderStructure: false,
+      sidebar: false,
+      search: false
     }),
     {
       html: {
@@ -83,7 +95,9 @@ test("VS Code book options map prompt selections to config overrides", () => {
         collapsibleSections: false
       },
       book: {
-        folderStructure: false
+        folderStructure: false,
+        sidebar: false,
+        search: false
       }
     }
   );

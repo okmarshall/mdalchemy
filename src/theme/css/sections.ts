@@ -10,6 +10,14 @@ export const sectionsCss = `.mda-section {
   display: block;
 }
 
+.mda-section-details:not([open]) > .mda-section-body {
+  display: none;
+}
+
+.mda-section-collapsible + .mda-section-collapsible {
+  margin-top: 0.85rem;
+}
+
 .mda-section-summary {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
@@ -46,9 +54,10 @@ export const sectionsCss = `.mda-section {
 
 .mda-section-summary > :is(h1, h2, h3, h4, h5, h6) {
   min-width: 0;
-  margin-top: var(--mda-space-headingBefore);
+  margin: 0;
 }
 
 .mda-section-body {
   min-width: 0;
+  margin-top: var(--mda-space-headingAfter);
 }`;

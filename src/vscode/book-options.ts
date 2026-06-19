@@ -10,6 +10,8 @@ export interface BookPromptSelections {
   tocMode: BookTocMode;
   collapsibleToc: boolean;
   folderStructure: boolean;
+  sidebar: boolean;
+  search: boolean;
 }
 
 export function defaultBookConfigOverrides(): Partial<ResolvedConfig> {
@@ -18,7 +20,9 @@ export function defaultBookConfigOverrides(): Partial<ResolvedConfig> {
       collapsibleTableOfContents: true
     } as ResolvedConfig["html"],
     book: {
-      folderStructure: true
+      folderStructure: true,
+      sidebar: true,
+      search: true
     } as ResolvedConfig["book"]
   };
 }
@@ -51,6 +55,8 @@ export function buildBookConfigOverrides(selections: BookPromptSelections): Part
 
   const book: Partial<ResolvedConfig["book"]> = { ...overrides.book };
   book.folderStructure = selections.folderStructure;
+  book.sidebar = selections.sidebar;
+  book.search = selections.search;
 
   if (selections.sectionMode === "none") {
     html.sections = false;

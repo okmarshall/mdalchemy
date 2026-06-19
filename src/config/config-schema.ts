@@ -44,6 +44,8 @@ export interface BookConfig {
   include?: string[] | undefined;
   exclude?: string[] | undefined;
   folderStructure?: boolean | undefined;
+  sidebar?: boolean | undefined;
+  search?: boolean | undefined;
 }
 
 export interface ResolvedConfig {
@@ -75,6 +77,8 @@ export interface ResolvedConfig {
     include: string[];
     exclude: string[];
     folderStructure: boolean;
+    sidebar: boolean;
+    search: boolean;
   };
   theme: string | Record<string, unknown>;
   strict: boolean;
@@ -120,7 +124,9 @@ export const defaultConfig: ResolvedConfig = {
   book: {
     include: defaultBookInclude,
     exclude: defaultBookExclude,
-    folderStructure: true
+    folderStructure: true,
+    sidebar: true,
+    search: true
   },
   theme: "serif",
   strict: false

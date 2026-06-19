@@ -5,6 +5,7 @@ import { defaultConfig, type ResolvedConfig } from "../../config/config-schema.j
 import { resolveTheme, type ResolvedTheme } from "../../theme/theme.js";
 import type { Diagnostic } from "../../core/diagnostics.js";
 import { renderBlocks } from "./block-renderer.js";
+import type { BookNavigationRenderOptions } from "./book-navigation.js";
 import { renderStandalone } from "./document-shell.js";
 import { appendFootnotes, collectFootnoteDefinitions } from "./footnotes.js";
 import { renderToc, shouldRenderToc, type TocItem } from "./toc-renderer.js";
@@ -17,6 +18,7 @@ export interface RenderOptions {
   cwd?: string;
   commonmarkCompatible?: boolean;
   tocItems?: readonly TocItem[] | undefined;
+  bookNavigation?: Pick<BookNavigationRenderOptions, "title" | "sidebar" | "search"> | undefined;
 }
 
 export interface RenderResult {
@@ -52,13 +54,21 @@ export async function renderDocument(document: DocumentNode, options: RenderOpti
   const fragment = renderBlocks(document.children, context);
   const withFootnotes = appendFootnotes(fragment, context, renderBlocks);
   const tocItems = options.tocItems ?? outline.tree;
+  const bookNavigation = options.bookNavigation
+    ? {
+      ...options.bookNavigation,
+      items: tocItems,
+      depth: config.html.tocDepth,
+      collapsible: config.html.collapsibleTableOfContents
+    }
+    : undefined;
   const withToc = shouldRenderToc(config, outline)
     ? `${renderToc(tocItems, config.html.tocDepth, {
       collapsible: config.html.collapsibleTableOfContents
     })}\n${withFootnotes}`
     : withFootnotes;
   const content = config.output.standalone && !config.html.fragment
-    ? await renderStandalone(withToc, config, theme, outline.title)
+    ? await renderStandalone(withToc, config, theme, outline.title, bookNavigation)
     : withToc;
 
   return {

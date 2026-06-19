@@ -14,6 +14,10 @@ export const tocCss = `.mda-toc {
   display: block;
 }
 
+.mda-toc-details:not([open]) > ol {
+  display: none;
+}
+
 .mda-toc-summary {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);

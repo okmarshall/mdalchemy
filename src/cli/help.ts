@@ -42,7 +42,11 @@ const bookProjectRows: readonly HelpRow[] = [
   { flag: "--include <pattern>", description: "Include Markdown paths; repeatable" },
   { flag: "--exclude <pattern>", description: "Exclude paths or directories; repeatable" },
   { flag: "--folder-structure", description: "Group book TOC entries by traversed folders" },
-  { flag: "--no-folder-structure", description: "Render a flat file list in the book TOC" }
+  { flag: "--no-folder-structure", description: "Render a flat file list in the book TOC" },
+  { flag: "--sidebar", description: "Show the generated book navigation sidebar" },
+  { flag: "--no-sidebar", description: "Hide the generated book navigation sidebar" },
+  { flag: "--search", description: "Show client-side book search controls" },
+  { flag: "--no-search", description: "Hide client-side book search controls" }
 ];
 
 export function renderTopLevelHelp(): string {

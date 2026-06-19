@@ -106,6 +106,12 @@ export async function promptForBookSettings(rootUri: vscode.Uri): Promise<BookRe
   const folderStructure = await promptForFolderStructure();
   if (folderStructure === undefined) return undefined;
 
+  const sidebar = await promptForSidebar();
+  if (sidebar === undefined) return undefined;
+
+  const search = await promptForSearch();
+  if (search === undefined) return undefined;
+
   const outputUri = await vscode.window.showSaveDialog({
     title: "Save mdalchemy HTML book",
     saveLabel: "Generate HTML Book",
@@ -121,7 +127,9 @@ export async function promptForBookSettings(rootUri: vscode.Uri): Promise<BookRe
     sectionMode,
     tocMode,
     collapsibleToc,
-    folderStructure
+    folderStructure,
+    sidebar,
+    search
   };
   if (theme !== "config") selections.theme = theme;
 
@@ -258,6 +266,42 @@ async function promptForFolderStructure(): Promise<boolean | undefined> {
   ], {
     title: "mdalchemy: Book Folder Structure",
     placeHolder: "Choose how source folders appear in the book"
+  });
+}
+
+async function promptForSidebar(): Promise<boolean | undefined> {
+  return promptChoice<boolean>([
+    {
+      label: "Show navigation sidebar",
+      description: "Keep book navigation visible beside the document",
+      value: true
+    },
+    {
+      label: "Hide navigation sidebar",
+      description: "Use the document table of contents only",
+      value: false
+    }
+  ], {
+    title: "mdalchemy: Book Sidebar",
+    placeHolder: "Choose sidebar behavior"
+  });
+}
+
+async function promptForSearch(): Promise<boolean | undefined> {
+  return promptChoice<boolean>([
+    {
+      label: "Show book search",
+      description: "Add client-side search to the generated HTML book",
+      value: true
+    },
+    {
+      label: "Hide book search",
+      description: "Generate the book without search controls",
+      value: false
+    }
+  ], {
+    title: "mdalchemy: Book Search",
+    placeHolder: "Choose search behavior"
   });
 }
 

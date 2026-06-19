@@ -32,7 +32,9 @@
   "book": {
     "include": ["**/*.md", "**/*.markdown"],
     "exclude": [".git/**", "node_modules/**", "dist/**", "build/**", "coverage/**", ".next/**", "out/**"],
-    "folderStructure": true
+    "folderStructure": true,
+    "sidebar": true,
+    "search": true
   },
   "theme": "./examples/themes/warm-report.json"
 }

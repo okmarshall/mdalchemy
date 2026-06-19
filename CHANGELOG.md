@@ -7,6 +7,18 @@ created.
 
 ### Added
 
+- Searchable project books, enabled by default, with `book.search`,
+  `--search` / `--no-search`, and VS Code book-generation prompt controls.
+- Persistent project-book navigation sidebars, enabled by default, with
+  `book.sidebar`, `--sidebar` / `--no-sidebar`, and VS Code prompt controls.
+- Mermaid diagram rendering for fenced `mermaid` and `mmd` code blocks in
+  standalone HTML, including an embedded pinned Mermaid runtime, strict
+  initialization, scroll-safe theme styling, and readable source fallbacks.
+- Collapsible book table-of-contents navigation with
+  `html.collapsibleTableOfContents`, `--collapsible-toc` /
+  `--no-collapsible-toc`, and VS Code book prompt controls.
+- Floating standalone document shortcuts for returning to the top of the
+  document and expanding or collapsing generated section and TOC controls.
 - Expanded dependency-free syntax highlighting for Python, Java, Go, Rust, SQL,
   YAML, Dockerfile, PowerShell, and diff fences, with broader C# attribute and
   record coverage.
@@ -15,6 +27,26 @@ created.
 - Reusable watch-render controller for debounced live preview updates, with a
   VS Code preview title-bar `Save Preview HTML` action for rendering the current
   Markdown state and persisting it as HTML.
+- Repository-wide `AGENTS.md` guidance for coding agents working in this
+  project.
+
+### Changed
+
+- Project-book output now keeps content centered when the sidebar is enabled,
+  uses a wider sidebar, and explicitly hides closed collapsible section and TOC
+  bodies so hidden content does not reserve blank space.
+- VS Code preview save behavior now uses native title-bar actions and the active
+  webview context instead of custom in-page save controls.
+- Renderer, book, CLI, config, theme CSS, and syntax-highlighting internals were
+  split into smaller focused modules, with the broad CLI and renderer tests
+  reorganized into behavior-specific suites.
+- The implementation roadmap now tracks the post-`1.1.0` authoring workflow
+  priorities.
+
+### Fixed
+
+- VSIX packaging now uses the `package.json` `files` allowlist as the single
+  packaging strategy and removes the conflicting `.vscodeignore` setup.
 
 ## 1.1.0 - 2026-06-15
 

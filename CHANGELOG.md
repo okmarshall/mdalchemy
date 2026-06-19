@@ -32,6 +32,10 @@ created.
 
 ### Changed
 
+- VS Code book-generation prompts now ask for sidebar and search choices before
+  navigation details, use sidebar/navigation wording when no inline TOC is
+  selected, and skip navigation-detail prompts when both inline TOC and sidebar
+  output are disabled.
 - Project-book output now keeps content centered when the sidebar is enabled,
   uses a wider sidebar, and explicitly hides closed collapsible section and TOC
   bodies so hidden content does not reserve blank space.

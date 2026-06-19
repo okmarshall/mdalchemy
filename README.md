@@ -80,8 +80,9 @@ to write a sibling
 Right-click a folder in the Explorer and run
 `mdalchemy: Generate HTML Book` to recursively build `mdalchemy-book.html` from
 the folder's Markdown files. Running the book command from the Command Palette
-opens a guided flow for folder, theme, section, table-of-contents, and output
-settings, including TOC collapse style and folder-structure grouping.
+opens a guided flow for folder, theme, section, table-of-contents, sidebar,
+search, and output settings. Navigation style and folder grouping prompts appear
+only when the selected TOC/sidebar choices can use them.
 
 Show CLI help:
 

@@ -14,6 +14,11 @@ export interface BookPromptSelections {
   search: boolean;
 }
 
+export interface BookNavigationPromptPlan {
+  outlineStyle: boolean;
+  folderStructure: boolean;
+}
+
 export function defaultBookConfigOverrides(): Partial<ResolvedConfig> {
   return {
     html: {
@@ -42,6 +47,16 @@ export function normalizeBookOutputPath(rootPath: string, outputPath: string): s
     throw new Error("mdalchemy can only generate .html or .htm book output files.");
   }
   return resolved;
+}
+
+export function resolveBookNavigationPromptPlan(
+  selections: Pick<BookPromptSelections, "tocMode" | "sidebar">
+): BookNavigationPromptPlan {
+  const rendersNavigationOutline = selections.sidebar || selections.tocMode !== "off";
+  return {
+    outlineStyle: rendersNavigationOutline,
+    folderStructure: rendersNavigationOutline
+  };
 }
 
 export function buildBookConfigOverrides(selections: BookPromptSelections): Partial<ResolvedConfig> {

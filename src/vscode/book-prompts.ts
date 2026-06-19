@@ -7,10 +7,13 @@ import {
   buildBookConfigOverrides,
   defaultBookOutputPath,
   normalizeBookOutputPath,
-  type BookPromptSelections,
   type BookSectionMode,
   type BookTocMode
 } from "./book-options.js";
+import {
+  collectBookPromptSelections,
+  resolveBookNavigationStylePromptCopy
+} from "./book-prompt-flow.js";
 
 export interface BookRenderSettings {
   outputPath: string;
@@ -91,26 +94,16 @@ export function defaultBookRenderSettings(rootPath: string): BookRenderSettings 
 }
 
 export async function promptForBookSettings(rootUri: vscode.Uri): Promise<BookRenderSettings | undefined> {
-  const theme = await promptForBookTheme();
-  if (!theme) return undefined;
-
-  const sectionMode = await promptForSectionMode();
-  if (!sectionMode) return undefined;
-
-  const tocMode = await promptForTocMode();
-  if (!tocMode) return undefined;
-
-  const collapsibleToc = await promptForTocCollapse();
-  if (collapsibleToc === undefined) return undefined;
-
-  const folderStructure = await promptForFolderStructure();
-  if (folderStructure === undefined) return undefined;
-
-  const sidebar = await promptForSidebar();
-  if (sidebar === undefined) return undefined;
-
-  const search = await promptForSearch();
-  if (search === undefined) return undefined;
+  const selections = await collectBookPromptSelections({
+    promptTheme: promptForBookTheme,
+    promptSectionMode: promptForSectionMode,
+    promptTocMode: promptForTocMode,
+    promptSidebar: promptForSidebar,
+    promptSearch: promptForSearch,
+    promptNavigationStyle: promptForNavigationStyle,
+    promptFolderStructure: promptForFolderStructure
+  });
+  if (!selections) return undefined;
 
   const outputUri = await vscode.window.showSaveDialog({
     title: "Save mdalchemy HTML book",
@@ -122,16 +115,6 @@ export async function promptForBookSettings(rootUri: vscode.Uri): Promise<BookRe
   });
   if (!outputUri) return undefined;
   if (outputUri.scheme !== "file") throw new Error("mdalchemy can only write HTML books to local files.");
-
-  const selections: BookPromptSelections = {
-    sectionMode,
-    tocMode,
-    collapsibleToc,
-    folderStructure,
-    sidebar,
-    search
-  };
-  if (theme !== "config") selections.theme = theme;
 
   return {
     outputPath: normalizeBookOutputPath(rootUri.fsPath, outputUri.fsPath),
@@ -233,34 +216,36 @@ async function promptForTocMode(): Promise<BookTocMode | undefined> {
   });
 }
 
-async function promptForTocCollapse(): Promise<boolean | undefined> {
+async function promptForNavigationStyle(tocMode: BookTocMode, sidebar: boolean): Promise<boolean | undefined> {
+  const copy = resolveBookNavigationStylePromptCopy(tocMode, sidebar);
+
   return promptChoice<boolean>([
     {
-      label: "Collapsible table of contents",
+      label: copy.collapsibleLabel,
       description: "Nested branches collapse by default",
       value: true
     },
     {
-      label: "Standard table of contents",
+      label: copy.expandedLabel,
       description: "Show nested entries as an expanded ordered list",
       value: false
     }
   ], {
-    title: "mdalchemy: TOC Style",
-    placeHolder: "Choose TOC nesting behavior"
+    title: copy.title,
+    placeHolder: copy.placeHolder
   });
 }
 
 async function promptForFolderStructure(): Promise<boolean | undefined> {
   return promptChoice<boolean>([
     {
-      label: "Show folder structure",
-      description: "Group book TOC entries by traversed folders",
+      label: "Show folder groups",
+      description: "Group book navigation entries by traversed folders",
       value: true
     },
     {
       label: "Flat file list",
-      description: "Render file entries without TOC folder groups",
+      description: "Render file entries without folder groups",
       value: false
     }
   ], {
@@ -269,7 +254,7 @@ async function promptForFolderStructure(): Promise<boolean | undefined> {
   });
 }
 
-async function promptForSidebar(): Promise<boolean | undefined> {
+async function promptForSidebar(tocMode: BookTocMode): Promise<boolean | undefined> {
   return promptChoice<boolean>([
     {
       label: "Show navigation sidebar",
@@ -278,7 +263,9 @@ async function promptForSidebar(): Promise<boolean | undefined> {
     },
     {
       label: "Hide navigation sidebar",
-      description: "Use the document table of contents only",
+      description: tocMode === "off"
+        ? "Generate without a persistent navigation rail"
+        : "Use inline navigation and the document body only",
       value: false
     }
   ], {

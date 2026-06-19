@@ -1,6 +1,6 @@
 {
   "name": "mdalchemy",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Preview and generate polished HTML from Markdown in VS Code or the mdalchemy CLI.",
   "displayName": "mdalchemy",
   "publisher": "okmarshall",

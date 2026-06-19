@@ -5,6 +5,8 @@ created.
 
 ## Unreleased
 
+## 1.2.0 - 2026-06-20
+
 ### Added
 
 - Searchable project books, enabled by default, with `book.search`,
